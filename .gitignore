@@ -1,0 +1,9 @@
+# IDE Files
+.vscode/
+.idea/
+
+# Output files
+build/
+cache/
+*target/
+*Cargo.lock
