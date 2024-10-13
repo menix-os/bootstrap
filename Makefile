@@ -1,5 +1,8 @@
 BUILD_DIR=build
-CACHE_DIR=tmp
+ifeq ($(DEBUG),1)
+DEBUG_FLAG=--debug
+endif
+CURRENT_DIR = $(shell pwd)
 
 ###################################
 
@@ -10,24 +13,21 @@ all: iso
 .PHONY: iso
 iso: dir
 	@echo "Building an ISO image..."
-# TODO
 
 # Builds a rootfs
 .PHONY: rootfs
 rootfs: dir
 	@echo "Building a rootfs image..."
-# TODO
 
 # Only builds to a directory
 .PHONY: dir
 dir:
-# TODO
+	@cargo run --manifest-path=builder/Cargo.toml -- --all --path pkg $(DEBUG_FLAG) build
 
 # Removes all output files
 .PHONY: clean
 clean:
 	@rm -rf $(BUILD_DIR)
-	@rm -rf $(CACHE_DIR)
 	@rm -rf builder/target/
 	@echo "Cleaned output files"
 

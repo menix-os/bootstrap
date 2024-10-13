@@ -1,11 +1,10 @@
 [package]
 name = "binutils-host"
 version = "latest"
-revision = 1
-architectures = ["x86_64"]
+archs = ["x86_64"]
 
 [[sources]]
-git = "https://sourceware.org/git/binutils-gdb.git"
+repo = "https://sourceware.org/git/binutils-gdb.git"
 branch = "master"
 
 [[patches]]
@@ -14,9 +13,12 @@ file = "menix.patch"
 [[deps.build]]
 name = "make"
 
-[[deps.runtime]]
-
 [build]
-script = ""
+script = """
+
+"""
 
 [install]
+script = """
+
+"""

@@ -1,11 +1,10 @@
 [package]
 name = "gcc-host"
 version = "latest"
-revision = 1
-architectures = ["x86_64"]
+archs = ["x86_64"]
 
 [[sources]]
-git = "https://gcc.gnu.org/git/gcc.git"
+repo = "https://gcc.gnu.org/git/gcc.git"
 branch = "master"
 
 [[patches]]
@@ -17,6 +16,11 @@ name = "make"
 [[deps.runtime]]
 
 [build]
-script = ""
+script = """
+
+"""
 
 [install]
+script = """
+
+"""
