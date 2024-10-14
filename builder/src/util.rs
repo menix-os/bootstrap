@@ -79,6 +79,9 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<
 
 /// Like the linux `touch` command
 pub fn touch(file: &Path) -> anyhow::Result<()> {
+    if file.exists() {
+        fs::remove_file(file)?;
+    }
     File::options()
         .create(true)
         .write(true)

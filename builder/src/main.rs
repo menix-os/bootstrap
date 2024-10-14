@@ -157,6 +157,7 @@ fn step_source(args: &Args, base_dir: &Path, package: &Package) -> anyhow::Resul
     Ok(())
 }
 
+/// Builds a package from the source directory to the build dir.
 fn step_build(args: &Args, package: &Package) -> anyhow::Result<()> {
     let mut build_cmd = Command::new("bash");
     build_cmd.current_dir(args.source_path.join(&package.package.name));
@@ -166,6 +167,7 @@ fn step_build(args: &Args, package: &Package) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Installs a package from the build directory to the install dir.
 fn step_install(args: &Args, package: &Package) -> anyhow::Result<()> {
     let mut install_cmd = Command::new("bash");
     install_cmd.current_dir(args.build_path.join(&package.package.name));
