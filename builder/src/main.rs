@@ -64,6 +64,7 @@ struct Package {
     package: PackageInfo,
     #[serde(default)]
     sources: Vec<PackageSource>,
+    dependencies: PackageDeps,
     build: PackageScript,
     install: PackageScript,
 }
@@ -73,6 +74,16 @@ struct PackageInfo {
     name: String,
     version: String,
     archs: Vec<String>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+struct PackageDeps {
+    #[serde(default)]
+    build: Vec<String>,
+    #[serde(default)]
+    host: Vec<String>,
+    #[serde(default)]
+    runtime: Vec<String>,
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -92,6 +103,8 @@ enum PackageSource {
 
 #[derive(Deserialize, Clone, Debug)]
 struct PackageScript {
+    #[serde(default)]
+    patches: Vec<PathBuf>,
     script: String,
 }
 
@@ -224,6 +237,10 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
 
     // Build package.
     if determine_if_step_needed(&pkg_path, &build_marker_path)? || args.command == Commands::Build {
+        for patch in &package.build.patches {
+            println!("[{}]\tApplying patch {:?}", &package.package.name, &patch);
+        }
+
         println!("[{}]\tBuilding package", &package.package.name);
         step_build(args, &package)?;
         touch(&build_marker_path).context("Failed to update source marker file (.build)")?;
@@ -231,14 +248,14 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
         // Install package to build root.
         println!("[{}]\tInstalling to sysroot", &package.package.name);
         step_install(args, &package)?;
+
+        println!(
+            "[{}]\tBuild finished for version \"{}\"",
+            package.package.name, package.package.version
+        );
     } else {
         println!("[{}]\tAlready up to date", package.package.name);
     }
-
-    println!(
-        "[{}]\tBuild finished for version \"{}\"",
-        package.package.name, package.package.version
-    );
 
     return Ok(());
 }

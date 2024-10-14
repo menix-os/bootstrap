@@ -7,15 +7,11 @@ archs = ["x86_64"]
 repo = "https://gcc.gnu.org/git/gcc.git"
 branch = "master"
 
-[[patches]]
-file = "menix.patch"
-
-[[deps.build]]
-name = "make"
-
-[[deps.runtime]]
+[dependencies]
+host = ["make"]
 
 [build]
+patches = ["menix.patch"]
 script = """
 
 """

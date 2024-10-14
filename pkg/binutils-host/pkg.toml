@@ -7,13 +7,12 @@ archs = ["x86_64"]
 repo = "https://sourceware.org/git/binutils-gdb.git"
 branch = "master"
 
-[[patches]]
-file = "menix.patch"
+[dependencies]
+host = ["make"]
 
-[[deps.build]]
-name = "make"
 
 [build]
+patches = ["menix.patch"]
 script = """
 
 """
