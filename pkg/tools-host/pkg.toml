@@ -1,0 +1,7 @@
+[package]
+name = "tools-host"
+version = "latest"
+archs = []
+
+[dependencies]
+host = ["make", "automake", "gcc", "ld", "as", "cmake"]

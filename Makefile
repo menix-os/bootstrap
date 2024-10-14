@@ -1,4 +1,5 @@
-BUILD_DIR=build/install
+BUILD_DIR=build
+INSTALL_DIR=build/install
 ifeq ($(DEBUG),1)
 DEBUG_FLAG=--debug
 endif
@@ -35,7 +36,6 @@ install:
 .PHONY: clean
 clean:
 	@rm -rf $(BUILD_DIR)
-	@rm -rf builder/target/
 	@echo "Cleaned output files"
 
 ###################################
@@ -45,7 +45,7 @@ QEMU_DEBUG=-d cpu_reset -s -S
 endif
 ifeq ($(FULL),1)
 QEMU_FULL=-smp 8 -m 4G \
-	-drive file=fat:rw:$(BUILD_DIR),if=none,id=fatfs \
+	-drive file=fat:rw:$(INSTALL_DIR),if=none,id=fatfs \
 	-device pcie-pci-bridge,id=bridge1 \
 	-device virtio-gpu,bus=bridge1 \
 	-device nvme,serial=deadbeef,drive=fatfs,bus=bridge1 \
@@ -53,7 +53,7 @@ QEMU_FULL=-smp 8 -m 4G \
 	-device usb-kbd,bus=xhci.0 \
 	-device usb-mouse,bus=xhci.0
 else
-QEMU_FULL=-drive file=fat:rw:$(BUILD_DIR)
+QEMU_FULL=-drive file=fat:rw:$(INSTALL_DIR)
 endif
 
 .PHONY: qemu-x86_64

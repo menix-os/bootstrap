@@ -1,13 +1,14 @@
 use anyhow::Context;
 use decompress::ExtractOptsBuilder;
 use std::{
+    env,
     fs::{self, File},
     io::{self, Write},
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
 
-use crate::Args;
+use crate::{Args, Package};
 
 pub fn run_command(mut command: Command) -> anyhow::Result<()> {
     let output = command
@@ -120,12 +121,40 @@ pub fn determine_if_step_needed(pkg_path: &Path, marker: &Path) -> anyhow::Resul
     }
 }
 
-pub fn add_env_to_cmd(cmd: &mut Command, args: &Args) -> anyhow::Result<()> {
-    cmd.env("SOURCE_DIR", &args.source_path.canonicalize()?);
-    cmd.env("BUILD_DIR", &args.build_path.canonicalize()?);
+pub fn check_host_program<P>(exe_name: P) -> Option<PathBuf>
+where
+    P: AsRef<Path>,
+{
+    env::var_os("PATH").and_then(|paths| {
+        env::split_paths(&paths)
+            .filter_map(|dir| {
+                let full_path = dir.join(&exe_name);
+                if full_path.is_file() {
+                    Some(full_path)
+                } else {
+                    None
+                }
+            })
+            .next()
+    })
+}
+
+pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyhow::Result<()> {
+    cmd.env(
+        "SOURCE_DIR",
+        &args.source_path.canonicalize()?.join(&package.package.name),
+    );
+    cmd.env(
+        "BUILD_DIR",
+        &args.build_path.canonicalize()?.join(&package.package.name),
+    );
     cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("CFLAGS", if args.debug { "-O0 -g" } else { "-O3" });
+    cmd.env("OS_TRIPLET", args.target.clone() + "-pc-menix");
+    cmd.env("THREADS", "12"); // TODO
+    cmd.env("PREFIX", "/usr");
+    cmd.env("PREFIX_HOST", "/usr/local");
 
     Ok(())
 }

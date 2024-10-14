@@ -1,0 +1,26 @@
+[package]
+name = "kernel"
+version = "latest"
+archs = ["x86_64"]
+
+[dependencies]
+build = ["tools-host"]
+
+[[sources]]
+path = "../../../menix"
+
+[configure]
+script = """
+cmake -B $BUILD_DIR -S $SOURCE_DIR
+"""
+
+[build]
+script = """
+cmake --build $BUILD_DIR -j$THREADS
+"""
+
+[install]
+script = """
+mkdir -p $INSTALL_DIR/boot/
+cp -r $BUILD_DIR/bin/menix $INSTALL_DIR/boot/
+"""

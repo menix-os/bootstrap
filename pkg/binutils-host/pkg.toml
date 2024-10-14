@@ -6,18 +6,29 @@ archs = ["x86_64"]
 [[sources]]
 repo = "https://sourceware.org/git/binutils-gdb.git"
 branch = "master"
+patches = ["menix.patch"]
 
 [dependencies]
-host = ["make"]
+build = ["tools-host"]
 
+[configure]
+script = """
+$SOURCE_DIR/configure \
+	--target=$OS_TRIPLET \
+	--enable-cet \
+	--disable-nls \
+	--disable-werror \
+	--disable-dependency-tracking \
+	--with-sysroot="$INSTALL_DIR"\
+	--prefix="$PREFIX_HOST"
+"""
 
 [build]
-patches = ["menix.patch"]
 script = """
-
+make -j$THREADS
 """
 
 [install]
 script = """
-
+DESTDIR="$INSTALL_DIR" make install
 """
