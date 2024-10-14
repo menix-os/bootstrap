@@ -101,7 +101,10 @@ pub fn decompress_archive(archive: &Path, decompress_to: &Path) -> anyhow::Resul
 }
 
 pub fn determine_if_step_needed(pkg_path: &Path, marker: &Path) -> anyhow::Result<bool> {
-    let pkg_meta = pkg_path.metadata().context("Failed to stat package file")?;
+    let pkg_meta = match pkg_path.metadata() {
+        Ok(x) => x,
+        Err(_) => return Ok(true),
+    };
 
     if let Ok(marker_meta) = marker.metadata() {
         if pkg_meta.modified()? > marker_meta.modified()? {
@@ -118,6 +121,7 @@ pub fn add_env_to_cmd(cmd: &mut Command, args: &Args) -> anyhow::Result<()> {
     cmd.env("SOURCE_DIR", &args.source_path.canonicalize()?);
     cmd.env("BUILD_DIR", &args.build_path.canonicalize()?);
     cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
+    cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("CFLAGS", if args.debug { "-O0 -g" } else { "-O3" });
 
     Ok(())

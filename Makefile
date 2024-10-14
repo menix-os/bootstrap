@@ -1,4 +1,4 @@
-BUILD_DIR=build
+BUILD_DIR=build/install
 ifeq ($(DEBUG),1)
 DEBUG_FLAG=--debug
 endif
@@ -11,18 +11,25 @@ all: iso
 
 # Builds an ISO file
 .PHONY: iso
-iso: dir
+iso: install
 	@echo "Building an ISO image..."
 
 # Builds a rootfs
 .PHONY: rootfs
-rootfs: dir
+rootfs: install
 	@echo "Building a rootfs image..."
 
-# Only builds to a directory
-.PHONY: dir
-dir:
-	@cargo run --manifest-path=builder/Cargo.toml -- --all --path pkg $(DEBUG_FLAG) build
+.PHONY: source
+source:
+	@cargo run --manifest-path=builder/Cargo.toml -- --all $(DEBUG_FLAG) source
+
+.PHONY: build
+build:
+	@cargo run --manifest-path=builder/Cargo.toml -- --all $(DEBUG_FLAG) build
+
+.PHONY: install
+install:
+	@cargo run --manifest-path=builder/Cargo.toml -- --all $(DEBUG_FLAG) install
 
 # Removes all output files
 .PHONY: clean
@@ -34,7 +41,7 @@ clean:
 ###################################
 
 ifeq ($(DEBUG),1)
-QEMU_DEBUG=-d cpu_reset,int -s -S
+QEMU_DEBUG=-d cpu_reset -s -S
 endif
 ifeq ($(FULL),1)
 QEMU_FULL=-smp 8 -m 4G \

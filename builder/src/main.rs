@@ -55,6 +55,8 @@ enum Commands {
     Source,
     /// Builds the given package(s).
     Build,
+    /// Build all packages where something changed.
+    Install,
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -157,7 +159,7 @@ fn step_source(args: &Args, base_dir: &Path, package: &Package) -> anyhow::Resul
 
 fn step_build(args: &Args, package: &Package) -> anyhow::Result<()> {
     let mut build_cmd = Command::new("bash");
-    build_cmd.current_dir(&args.source_path);
+    build_cmd.current_dir(args.source_path.join(&package.package.name));
     add_env_to_cmd(&mut build_cmd, args)?;
 
     run_command_stdin(&mut build_cmd, &package.build.script.as_bytes())?;
@@ -166,7 +168,7 @@ fn step_build(args: &Args, package: &Package) -> anyhow::Result<()> {
 
 fn step_install(args: &Args, package: &Package) -> anyhow::Result<()> {
     let mut install_cmd = Command::new("bash");
-    install_cmd.current_dir(&args.build_path);
+    install_cmd.current_dir(args.build_path.join(&package.package.name));
     add_env_to_cmd(&mut install_cmd, args)?;
 
     run_command_stdin(&mut install_cmd, &package.install.script.as_bytes())?;
@@ -195,11 +197,6 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
         anyhow::bail!("Arch not targeted");
     }
 
-    println!(
-        "Building \"{}\" ({})",
-        package.package.name, package.package.version
-    );
-
     let source_path = args.source_path.join(&package.package.name);
     fs::create_dir_all(&source_path)?;
     let source_path = source_path.canonicalize()?;
@@ -216,9 +213,8 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     let pkg_path = &pkg_base_dir.join("pkg.toml");
 
     // Get source files.
-    if source_marker_path.exists() || args.command == Commands::Source {
+    if !source_marker_path.exists() || args.command == Commands::Source {
         println!("[{}]\tGetting sources", &package.package.name);
-
         fs::remove_dir_all(&source_path).context("Failed to remove existing dir")?;
         step_source(args, &source_path, &package)?;
         touch(&source_marker_path).context("Failed to update source marker file (.source)")?;
@@ -234,11 +230,11 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
         println!("[{}]\tInstalling to sysroot", &package.package.name);
         step_install(args, &package)?;
     } else {
-        println!("[{}]\tAlready up to date.", package.package.name);
+        println!("[{}]\tAlready up to date", package.package.name);
     }
 
     println!(
-        "Built \"{}\" ({})",
+        "[{}]\tBuild finished for version \"{}\"",
         package.package.name, package.package.version
     );
 
