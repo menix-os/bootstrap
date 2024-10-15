@@ -17,7 +17,7 @@ pub struct Package {
     pub package: PackageInfo,
     #[serde(default)]
     pub sources: Vec<PackageSource>,
-    pub dependencies: PackageDeps,
+    pub dependencies: Option<PackageDeps>,
     pub configure: Option<PackageScript>,
     pub build: Option<PackageScript>,
     pub install: Option<PackageScript>,
@@ -28,6 +28,8 @@ pub struct PackageInfo {
     pub name: String,
     pub version: String,
     pub archs: Vec<String>,
+    pub shared_source: Option<PathBuf>,
+    pub shared_build: Option<PathBuf>,
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -87,7 +89,6 @@ pub fn run_command(mut command: Command) -> anyhow::Result<()> {
     Ok(())
 }
 
-// TODO: Redirect stdout, stderr and only print it on child process failure.
 pub fn run_command_stdin(command: &mut Command, stdin_data: &[u8]) -> anyhow::Result<()> {
     command.stdin(Stdio::piped());
 
@@ -217,14 +218,23 @@ where
 }
 
 pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyhow::Result<()> {
-    cmd.env(
-        "SOURCE_DIR",
-        &args.source_path.canonicalize()?.join(&package.package.name),
-    );
-    cmd.env(
-        "BUILD_DIR",
-        &args.build_path.canonicalize()?.join(&package.package.name),
-    );
+    match &package.package.shared_build {
+        Some(x) => {
+            cmd.env("SOURCE_DIR", &args.source_path.canonicalize()?.join(x));
+            cmd.env("BUILD_DIR", &args.build_path.canonicalize()?.join(x));
+        }
+        None => {
+            cmd.env(
+                "SOURCE_DIR",
+                &args.source_path.canonicalize()?.join(&package.package.name),
+            );
+            cmd.env(
+                "BUILD_DIR",
+                &args.build_path.canonicalize()?.join(&package.package.name),
+            );
+        }
+    }
+
     cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("CFLAGS", if args.debug { "-O0 -g" } else { "-O3" });

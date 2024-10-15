@@ -1,12 +1,11 @@
-BUILD_DIR=build
-INSTALL_DIR=build/install
-JOBS=$(shell nproc)
+BUILD_DIR?=build
+INSTALL_DIR?=build/install
+JOBS?=$(shell nproc)
+ARCH?=x86_64
+QEMU_FLAGS?=
 ifeq ($(DEBUG),1)
 DEBUG_FLAG=--debug
 endif
-CURRENT_DIR=$(shell pwd)
-ARCH=x86_64
-QEMU_FLAGS=
 
 ###################################
 
@@ -33,6 +32,10 @@ source:
 .PHONY: build
 build:
 	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) build
+
+.PHONY: configure
+configure:
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) configure
 
 .PHONY: install
 install:

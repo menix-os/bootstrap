@@ -224,11 +224,17 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     let build_marker_path = build_path.join(".build");
 
     // Get source files.
-    if package.sources.len() > 0 {
-        if !source_marker_path.exists() || args.command == Commands::Source {
-            println!("[{}]\tGetting sources", &package.package.name);
-            step_source(args, &pkg_base_dir, &package)?;
-            touch(&source_marker_path).context("Failed to update source marker file (.source)")?;
+    match &package.package.shared_source {
+        Some(shared_source) => try_run_make_pkg(args, &args.path.clone().join(shared_source))?,
+        None => {
+            if package.sources.len() > 0 {
+                if !source_marker_path.exists() || args.command == Commands::Source {
+                    println!("[{}]\tGetting sources", &package.package.name);
+                    step_source(args, &pkg_base_dir, &package)?;
+                    touch(&source_marker_path)
+                        .context("Failed to update source marker file (.source)")?;
+                }
+            }
         }
     }
 
@@ -243,40 +249,48 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     }
 
     // Build package.
-    if determine_if_step_needed(&pkg_file_path, &build_marker_path)?
-        || determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
-        || args.command == Commands::Configure
-        || args.command == Commands::Build
-    {
-        for host_dep in &package.dependencies.host {
-            check_host_program(host_dep).expect(&format!(
-                "Host dependency \"{}\" could not be satisfied.",
-                &host_dep
-            ));
+    if package.package.shared_build.is_none() {
+        if determine_if_step_needed(&pkg_file_path, &build_marker_path)?
+            || determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
+            || args.command == Commands::Configure
+            || args.command == Commands::Build
+        {
+            if let Some(deps) = &package.dependencies {
+                for host_dep in &deps.host {
+                    check_host_program(host_dep).expect(&format!(
+                        "Host dependency \"{}\" could not be satisfied.",
+                        &host_dep
+                    ));
+                }
+            }
+
+            if let Some(deps) = &package.dependencies {
+                for build_dep in &deps.build {
+                    try_run_make_pkg(args, &args.path.clone().join(build_dep))?;
+                }
+            }
+
+            println!("[{}]\tBuilding package", &package.package.name);
+            step_build(args, &package)?;
+            touch(&build_marker_path).context("Failed to update source marker file (.build)")?;
+
+            // Install package to build root.
+            println!("[{}]\tInstalling to sysroot", &package.package.name);
+            step_install(args, &package)?;
+
+            println!(
+                "[{}]\tBuild finished for version \"{}\"",
+                package.package.name, package.package.version
+            );
+
+            if let Some(deps) = &package.dependencies {
+                for runtime_dep in &deps.runtime {
+                    try_run_make_pkg(args, &args.path.clone().join(runtime_dep))?;
+                }
+            }
+        } else {
+            println!("[{}]\tAlready up to date", package.package.name);
         }
-
-        for build_dep in &package.dependencies.build {
-            try_run_make_pkg(args, &args.path.clone().join(build_dep))?;
-        }
-
-        println!("[{}]\tBuilding package", &package.package.name);
-        step_build(args, &package)?;
-        touch(&build_marker_path).context("Failed to update source marker file (.build)")?;
-
-        // Install package to build root.
-        println!("[{}]\tInstalling to sysroot", &package.package.name);
-        step_install(args, &package)?;
-
-        println!(
-            "[{}]\tBuild finished for version \"{}\"",
-            package.package.name, package.package.version
-        );
-
-        for runtime_dep in &package.dependencies.runtime {
-            try_run_make_pkg(args, &args.path.clone().join(runtime_dep))?;
-        }
-    } else {
-        println!("[{}]\tAlready up to date", package.package.name);
     }
 
     return Ok(());

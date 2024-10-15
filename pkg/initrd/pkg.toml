@@ -1,0 +1,12 @@
+[package]
+name = "initrd"
+version = "latest"
+archs = ["x86_64"]
+shared_source = "kernel"
+shared_build = "kernel"
+
+[install]
+script = """
+mkdir -p $INSTALL_DIR/boot/
+cp -r $BUILD_DIR/bin/menix $INSTALL_DIR/boot/
+"""
