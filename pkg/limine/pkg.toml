@@ -5,7 +5,7 @@ archs = ["x86_64"]
 
 [[sources]]
 repo = "https://github.com/limine-bootloader/limine"
-branch = "v8.x"
+branch = "v8.1.1"
 
 [dependencies]
 build = ["tools-host"]
@@ -15,6 +15,9 @@ script = """
 if [ $ARCH = "x86_64" ]; then
 	export ARCH=x86-64
 fi
+
+# Temporary workaround because -O0 seems to break
+export CFLAGS=-O3
 
 $SOURCE_DIR/bootstrap
 $SOURCE_DIR/configure TOOLCHAIN_FOR_TARGET=llvm \
