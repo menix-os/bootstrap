@@ -38,7 +38,7 @@ struct Args {
 
     /// Target architecture.
     #[arg(short, long, default_value = std::env::consts::ARCH)]
-    target: String,
+    arch: String,
 
     /// Path to the package(s) to build.
     #[arg(long, default_value = "pkg")]
@@ -206,7 +206,7 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
         toml::from_str::<Package>(&package_file).context("Failed to deserialize package file")?;
 
     // Check if the package is architecture dependent. If yes, check if we're targeting this architecture.
-    if !package.package.archs.is_empty() && !package.package.archs.contains(&args.target) {
+    if !package.package.archs.is_empty() && !package.package.archs.contains(&args.arch) {
         anyhow::bail!("Arch not targeted");
     }
 

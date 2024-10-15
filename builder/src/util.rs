@@ -228,7 +228,7 @@ pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyh
     cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("CFLAGS", if args.debug { "-O0 -g" } else { "-O3" });
-    cmd.env("OS_TRIPLET", args.target.clone() + "-pc-menix");
+    cmd.env("OS_TRIPLET", args.arch.clone() + "-pc-menix");
     let threads = available_parallelism().unwrap().get();
     cmd.env(
         "THREADS",

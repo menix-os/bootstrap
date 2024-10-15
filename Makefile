@@ -1,9 +1,11 @@
 BUILD_DIR=build
 INSTALL_DIR=build/install
+JOBS=$(shell nproc)
 ifeq ($(DEBUG),1)
 DEBUG_FLAG=--debug
 endif
-CURRENT_DIR = $(shell pwd)
+CURRENT_DIR=$(shell pwd)
+ARCH=x86_64
 
 ###################################
 
@@ -14,23 +16,26 @@ all: iso
 .PHONY: iso
 iso: install
 	@echo "Building an ISO image..."
+	# TODO
 
 # Builds a rootfs
 .PHONY: rootfs
 rootfs: install
 	@echo "Building a rootfs image..."
+	# TODO
+
 
 .PHONY: source
 source:
-	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) source
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) source
 
 .PHONY: build
 build:
-	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) build
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) build
 
 .PHONY: install
 install:
-	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) install
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) install
 
 # Removes all output files
 .PHONY: clean
@@ -38,7 +43,9 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "Cleaned output files"
 
-###################################
+########
+# QEMU #
+########
 
 ifeq ($(DEBUG),1)
 QEMU_DEBUG=-d cpu_reset -s -S
@@ -55,6 +62,9 @@ QEMU_FULL=-smp 8 -m 4G \
 else
 QEMU_FULL=-drive file=fat:rw:$(INSTALL_DIR)
 endif
+
+.PHONY: qemu
+qemu: install qemu-$(ARCH)
 
 .PHONY: qemu-x86_64
 qemu-x86_64:
