@@ -6,6 +6,7 @@ DEBUG_FLAG=--debug
 endif
 CURRENT_DIR=$(shell pwd)
 ARCH=x86_64
+QEMU_FLAGS=
 
 ###################################
 
