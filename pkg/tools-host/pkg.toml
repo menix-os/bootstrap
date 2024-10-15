@@ -4,4 +4,16 @@ version = "latest"
 archs = []
 
 [dependencies]
-host = ["make", "automake", "gcc", "ld", "as", "cmake", "clang", "lld", "nasm"]
+host = [
+	"make",
+	"automake",
+	"gcc",
+	"ld",
+	"as",
+	"cmake",
+	"clang",
+	"lld",
+	"nasm",
+	"cargo",
+	"rustc",
+]

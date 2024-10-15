@@ -36,6 +36,10 @@ struct Args {
     #[arg(long, default_value = "build/source")]
     source_path: PathBuf,
 
+    /// Directory where to store meta information.
+    #[arg(long, default_value = "build/meta")]
+    meta_path: PathBuf,
+
     /// Target architecture.
     #[arg(short, long, default_value = std::env::consts::ARCH)]
     arch: String,
@@ -216,12 +220,15 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     let build_path = args.build_path.join(&package.package.name);
     fs::create_dir_all(&build_path)?;
 
+    let meta_path = args.meta_path.join(&package.package.name);
+    fs::create_dir_all(&meta_path)?;
+
     // This is redundant most of the time, but in the case it isn't, create the install dir.
     fs::create_dir_all(&args.install_path)?;
 
-    let source_marker_path = build_path.join(".source");
-    let configure_marker_path = build_path.join(".configure");
-    let build_marker_path = build_path.join(".build");
+    let source_marker_path = meta_path.join(".source");
+    let configure_marker_path = meta_path.join(".configure");
+    let build_marker_path = meta_path.join(".build");
 
     // Get source files.
     match &package.package.shared_source {
@@ -243,6 +250,8 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
         || args.command == Commands::Configure
         || args.command == Commands::Source
     {
+        fs::remove_dir_all(&build_path).context("Failed to remove existing dir")?;
+        fs::create_dir_all(&build_path)?;
         step_configure(args, &package)?;
         touch(&configure_marker_path)
             .context("Failed to update configure marker file (.configure)")?;
