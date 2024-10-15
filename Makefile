@@ -22,15 +22,15 @@ rootfs: install
 
 .PHONY: source
 source:
-	@cargo run --manifest-path=builder/Cargo.toml -- --all $(DEBUG_FLAG) source
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) source
 
 .PHONY: build
 build:
-	@cargo run --manifest-path=builder/Cargo.toml -- --all $(DEBUG_FLAG) build
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) build
 
 .PHONY: install
 install:
-	@cargo run --manifest-path=builder/Cargo.toml -- --all $(DEBUG_FLAG) install
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) install
 
 # Removes all output files
 .PHONY: clean

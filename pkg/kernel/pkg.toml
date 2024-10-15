@@ -7,6 +7,7 @@ archs = ["x86_64"]
 build = ["tools-host"]
 
 [[sources]]
+repo = "https://github.com/menix-os/menix"
 path = "../../../menix"
 
 [configure]

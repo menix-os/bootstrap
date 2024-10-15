@@ -1,6 +1,5 @@
 use anyhow::Context;
 use clap::{Parser, Subcommand};
-use serde::Deserialize;
 use std::{
     fs::{self},
     os::unix::fs::symlink,
@@ -9,7 +8,7 @@ use std::{
 };
 use util::{
     add_env_to_cmd, check_host_program, copy_dir_all, decompress_archive, determine_if_step_needed,
-    resolve_path, run_command, run_command_stdin, touch,
+    do_git_clone, resolve_path, run_command, run_command_stdin, touch, Package, PackageSourceType,
 };
 
 mod util;
@@ -17,16 +16,16 @@ mod util;
 #[derive(Parser, Debug)]
 #[command(version)]
 struct Args {
-    /// Build all packages in `path`.
-    #[arg(long, default_value = "true")]
-    all: bool,
+    /// If set, builds only one package, otherwise build all packages in `path`.
+    #[arg(short, long)]
+    pkg: Option<PathBuf>,
 
-    /// If false, env_release.sh is used, otherwise env_debug.sh
+    /// If set, the DEBUG env variable is set to 1.
     #[arg(long)]
     debug: bool,
 
     /// Target install path.
-    #[arg(long, default_value = "build/install")]
+    #[arg(short, long, default_value = "build/install")]
     install_path: PathBuf,
 
     /// Target install path.
@@ -38,7 +37,7 @@ struct Args {
     source_path: PathBuf,
 
     /// Target architecture.
-    #[arg(long, default_value = std::env::consts::ARCH)]
+    #[arg(short, long, default_value = std::env::consts::ARCH)]
     target: String,
 
     /// Path to the package(s) to build.
@@ -46,8 +45,12 @@ struct Args {
     path: PathBuf,
 
     /// Path to the base files.
-    #[arg(long, default_value = "base")]
+    #[arg(short, long, default_value = "base")]
     base: PathBuf,
+
+    /// Amount of threads to use for compiling.
+    #[arg(short, long, default_value = "0")]
+    jobs: usize,
 
     /// The operation to perform.
     #[command(subcommand)]
@@ -66,66 +69,12 @@ enum Commands {
     Install,
 }
 
-#[derive(Deserialize, Clone, Debug)]
-struct Package {
-    package: PackageInfo,
-    #[serde(default)]
-    sources: Vec<PackageSource>,
-    dependencies: PackageDeps,
-    configure: Option<PackageScript>,
-    build: Option<PackageScript>,
-    install: Option<PackageScript>,
-}
-
-#[derive(Deserialize, Clone, Debug)]
-struct PackageInfo {
-    name: String,
-    version: String,
-    archs: Vec<String>,
-}
-
-#[derive(Deserialize, Clone, Debug)]
-struct PackageDeps {
-    #[serde(default)]
-    build: Vec<String>,
-    #[serde(default)]
-    host: Vec<String>,
-    #[serde(default)]
-    runtime: Vec<String>,
-}
-
-#[derive(Deserialize, Clone, Debug)]
-struct PackageSource {
-    #[serde(flatten)]
-    source: PackageSourceType,
-    #[serde(default)]
-    patches: Vec<PathBuf>,
-}
-
-#[derive(Deserialize, Clone, Debug)]
-#[serde(untagged)]
-enum PackageSourceType {
-    Archive {
-        archive: PathBuf,
-    },
-    Git {
-        repo: String,
-        branch: Option<String>,
-    },
-    Local {
-        path: PathBuf,
-    },
-}
-
-#[derive(Deserialize, Clone, Debug)]
-struct PackageScript {
-    script: String,
-}
-
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    if args.all {
+    if let Some(single_package) = &args.pkg {
+        try_run_make_pkg(&args, &args.path.join(single_package))?;
+    } else {
         copy_dir_all(&args.base, &args.install_path)?;
 
         // Build all packages in the path directory.
@@ -143,8 +92,6 @@ fn main() -> anyhow::Result<()> {
                 try_run_make_pkg(&args, &path)?;
             }
         }
-    } else {
-        try_run_make_pkg(&args, &args.path)?;
     }
 
     Ok(())
@@ -157,16 +104,19 @@ fn step_source(args: &Args, base_dir: &Path, package: &Package) -> anyhow::Resul
 
     for source in &package.sources {
         match &source.source {
-            PackageSourceType::Git { repo, branch } => {
-                let mut clone_cmd = Command::new("git");
-                clone_cmd.arg("clone");
-
-                if let Some(branch_name) = branch {
-                    clone_cmd.args(vec!["--branch", branch_name]);
+            PackageSourceType::Git { repo, branch, path } => {
+                if let Some(local_path) = path {
+                    let symlink_path = base_dir.join(local_path);
+                    if !symlink_path.exists() {
+                        do_git_clone(branch, repo, &source_path)?;
+                    } else {
+                        let symlink_path = base_dir.join(local_path).canonicalize()?;
+                        symlink(symlink_path, &source_path)
+                            .context("Failed to copy local directory to build directory")?;
+                    }
+                } else {
+                    do_git_clone(branch, repo, &source_path)?;
                 }
-
-                clone_cmd.arg(repo).arg(&source_path);
-                run_command(clone_cmd).context("Failed to clone package repository")?;
             }
             PackageSourceType::Archive {
                 archive: archive_path,
@@ -285,6 +235,7 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     // Configure package
     if determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
         || args.command == Commands::Configure
+        || args.command == Commands::Source
     {
         step_configure(args, &package)?;
         touch(&configure_marker_path)

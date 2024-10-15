@@ -1,14 +1,73 @@
 use anyhow::Context;
 use decompress::ExtractOptsBuilder;
+use serde::Deserialize;
 use std::{
     env,
     fs::{self, File},
     io::{self, Write},
     path::{Path, PathBuf},
     process::{Command, Stdio},
+    thread::available_parallelism,
 };
 
-use crate::{Args, Package};
+use crate::Args;
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct Package {
+    pub package: PackageInfo,
+    #[serde(default)]
+    pub sources: Vec<PackageSource>,
+    pub dependencies: PackageDeps,
+    pub configure: Option<PackageScript>,
+    pub build: Option<PackageScript>,
+    pub install: Option<PackageScript>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct PackageInfo {
+    pub name: String,
+    pub version: String,
+    pub archs: Vec<String>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct PackageDeps {
+    #[serde(default)]
+    pub build: Vec<String>,
+    #[serde(default)]
+    pub host: Vec<String>,
+    #[serde(default)]
+    pub runtime: Vec<String>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct PackageSource {
+    #[serde(flatten)]
+    pub source: PackageSourceType,
+    #[serde(default)]
+    pub patches: Vec<PathBuf>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+#[serde(untagged)]
+pub enum PackageSourceType {
+    Archive {
+        archive: PathBuf,
+    },
+    Git {
+        repo: String,
+        branch: Option<String>,
+        path: Option<PathBuf>,
+    },
+    Local {
+        path: PathBuf,
+    },
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct PackageScript {
+    pub script: String,
+}
 
 pub fn run_command(mut command: Command) -> anyhow::Result<()> {
     let output = command
@@ -104,6 +163,24 @@ pub fn decompress_archive(archive: &Path, decompress_to: &Path) -> anyhow::Resul
     Ok(())
 }
 
+pub fn do_git_clone(
+    branch: &Option<String>,
+    repo: &String,
+    source_path: &PathBuf,
+) -> anyhow::Result<()> {
+    let mut clone_cmd = Command::new("git");
+    clone_cmd.arg("clone");
+
+    if let Some(branch_name) = branch {
+        clone_cmd.args(vec!["--branch", branch_name]);
+    }
+
+    clone_cmd.arg(repo).arg(&source_path);
+    run_command(clone_cmd).context("Failed to clone package repository")?;
+
+    Ok(())
+}
+
 pub fn determine_if_step_needed(pkg_path: &Path, marker: &Path) -> anyhow::Result<bool> {
     let pkg_meta = match pkg_path.metadata() {
         Ok(x) => x,
@@ -152,7 +229,11 @@ pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyh
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("CFLAGS", if args.debug { "-O0 -g" } else { "-O3" });
     cmd.env("OS_TRIPLET", args.target.clone() + "-pc-menix");
-    cmd.env("THREADS", "12"); // TODO
+    let threads = available_parallelism().unwrap().get();
+    cmd.env(
+        "THREADS",
+        format!("{}", if args.jobs == 0 { threads } else { args.jobs }),
+    );
     cmd.env("PREFIX", "/usr");
     cmd.env("PREFIX_HOST", "/usr/local");
 
