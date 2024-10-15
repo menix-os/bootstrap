@@ -218,16 +218,22 @@ where
 }
 
 pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyhow::Result<()> {
-    match &package.package.shared_build {
+    match &package.package.shared_source {
         Some(x) => {
             cmd.env("SOURCE_DIR", &args.source_path.canonicalize()?.join(x));
-            cmd.env("BUILD_DIR", &args.build_path.canonicalize()?.join(x));
         }
         None => {
             cmd.env(
                 "SOURCE_DIR",
                 &args.source_path.canonicalize()?.join(&package.package.name),
             );
+        }
+    }
+    match &package.package.shared_build {
+        Some(x) => {
+            cmd.env("BUILD_DIR", &args.build_path.canonicalize()?.join(x));
+        }
+        None => {
             cmd.env(
                 "BUILD_DIR",
                 &args.build_path.canonicalize()?.join(&package.package.name),
@@ -235,9 +241,14 @@ pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyh
         }
     }
 
+    cmd.env(
+        "PACKAGE_DIR",
+        &args.path.join(&package.package.name).canonicalize()?,
+    );
     cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("CFLAGS", if args.debug { "-O0 -g" } else { "-O3" });
+    cmd.env("ARCH", &args.arch);
     cmd.env("OS_TRIPLET", args.arch.clone() + "-pc-menix");
     let threads = available_parallelism().unwrap().get();
     cmd.env(

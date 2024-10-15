@@ -52,7 +52,7 @@ clean:
 ########
 
 ifeq ($(DEBUG),1)
-QEMU_DEBUG=-d cpu_reset -s -S
+QEMU_DEBUG=-d cpu_reset,int -s -S
 endif
 ifeq ($(FULL),1)
 QEMU_FULL=-smp 8 -m 4G \

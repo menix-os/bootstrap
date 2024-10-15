@@ -12,7 +12,12 @@ path = "../../../menix"
 
 [configure]
 script = """
-cmake -B $BUILD_DIR -S $SOURCE_DIR
+if [ $DEBUG == "1" ]; then {
+	cmake -B $BUILD_DIR -S $SOURCE_DIR -DCMAKE_BUILD_TYPE=Debug
+} else {
+	cmake -B $BUILD_DIR -S $SOURCE_DIR -DCMAKE_BUILD_TYPE=Release
+} fi
+
 """
 
 [build]

@@ -1,0 +1,35 @@
+[package]
+name = "limine"
+version = "latest"
+archs = ["x86_64"]
+
+[[sources]]
+repo = "https://github.com/limine-bootloader/limine"
+branch = "v8.x"
+
+[dependencies]
+build = ["tools-host"]
+
+[configure]
+script = """
+if [ $ARCH = "x86_64" ]; then
+	export ARCH=x86-64
+fi
+
+$SOURCE_DIR/bootstrap
+$SOURCE_DIR/configure TOOLCHAIN_FOR_TARGET=llvm \
+    --enable-uefi-$ARCH \
+	--with-sysroot="$INSTALL_DIR" \
+	--prefix="$PREFIX"
+"""
+
+[build]
+script = """
+make -j$THREADS
+"""
+
+[install]
+script = """
+DESTDIR="$INSTALL_DIR" make install
+cp $PACKAGE_DIR/limine.conf $INSTALL_DIR/boot/
+"""
