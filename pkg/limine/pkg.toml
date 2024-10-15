@@ -1,6 +1,6 @@
 [package]
 name = "limine"
-version = "8"
+version = "8.1.1"
 archs = ["x86_64"]
 
 [[sources]]
