@@ -48,6 +48,10 @@ struct Args {
     #[arg(long, default_value = "pkg")]
     path: PathBuf,
 
+    /// Path to the support directory.
+    #[arg(long, default_value = "support")]
+    support: PathBuf,
+
     /// Path to the base files.
     #[arg(short, long, default_value = "base")]
     base: PathBuf,
@@ -150,7 +154,7 @@ fn step_source(args: &Args, base_dir: &Path, package: &Package) -> anyhow::Resul
                         .context(format!("Couldn't find patch {:?}", full_patch_path))?,
                 )
                 .current_dir(&source_path);
-            run_command(cmd)?;
+            run_command(cmd).context("Failed to run apply command")?;
         }
     }
     Ok(())
@@ -237,7 +241,7 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
             if package.sources.len() > 0 {
                 if !source_marker_path.exists() || args.command == Commands::Source {
                     println!("[{}]\tGetting sources", &package.package.name);
-                    step_source(args, &pkg_base_dir, &package)?;
+                    step_source(args, &pkg_base_dir, &package).context("Failed to get sources")?;
                     touch(&source_marker_path)
                         .context("Failed to update source marker file (.source)")?;
                 }
@@ -252,7 +256,7 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     {
         fs::remove_dir_all(&build_path).context("Failed to remove existing dir")?;
         fs::create_dir_all(&build_path)?;
-        step_configure(args, &package)?;
+        step_configure(args, &package).context("Failed to configure package")?;
         touch(&configure_marker_path)
             .context("Failed to update configure marker file (.configure)")?;
     }
@@ -275,7 +279,8 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
 
             if let Some(deps) = &package.dependencies {
                 for build_dep in &deps.build {
-                    try_run_make_pkg(args, &args.path.clone().join(build_dep))?;
+                    try_run_make_pkg(args, &args.path.clone().join(build_dep))
+                        .context("Failed to build dependency")?;
                 }
             }
 

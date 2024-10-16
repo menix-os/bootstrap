@@ -1,5 +1,5 @@
 [package]
-name = "tools-host"
+name = "host-tools"
 version = "latest"
 archs = []
 
@@ -11,6 +11,7 @@ host = [
 	"ld",
 	"as",
 	"cmake",
+	"meson",
 	"clang",
 	"lld",
 	"nasm",

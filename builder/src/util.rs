@@ -96,6 +96,9 @@ pub fn run_command_stdin(command: &mut Command, stdin_data: &[u8]) -> anyhow::Re
 
     if let Some(ref mut stdin) = child.stdin {
         stdin
+            .write_all(include_bytes!("context.sh"))
+            .context(format!("failed to write stdin of {:?}", command))?;
+        stdin
             .write_all(stdin_data)
             .context(format!("failed to write stdin of {:?}", command))?;
     } else {
@@ -227,6 +230,7 @@ pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyh
             );
         }
     }
+
     match &package.package.shared_build {
         Some(x) => {
             cmd.env("BUILD_DIR", &args.build_path.canonicalize()?.join(x));
@@ -239,22 +243,19 @@ pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyh
         }
     }
 
+    cmd.env("SUPPORT_DIR", &args.support.canonicalize()?);
     cmd.env(
         "PACKAGE_DIR",
         &args.path.join(&package.package.name).canonicalize()?,
     );
     cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
-    cmd.env("CFLAGS", if args.debug { "-O0 -g" } else { "-O3" });
     cmd.env("ARCH", &args.arch);
-    cmd.env("OS_TRIPLET", args.arch.clone() + "-pc-menix");
     let threads = available_parallelism().unwrap().get();
     cmd.env(
         "THREADS",
         format!("{}", if args.jobs == 0 { threads } else { args.jobs }),
     );
-    cmd.env("PREFIX", "/usr");
-    cmd.env("PREFIX_HOST", "/usr/local");
 
     Ok(())
 }

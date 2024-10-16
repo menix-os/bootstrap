@@ -1,5 +1,5 @@
 [package]
-name = "binutils-host"
+name = "binutils"
 version = "latest"
 archs = ["x86_64"]
 
@@ -9,26 +9,28 @@ branch = "master"
 patches = ["menix.patch"]
 
 [dependencies]
-build = ["tools-host"]
+build = ["host-tools"]
 
 [configure]
 script = """
-$SOURCE_DIR/configure \
-	--target=$OS_TRIPLET \
+${SOURCE_DIR}/configure \
+	--target=${OS_TRIPLET} \
 	--enable-cet \
+	--enable-separate-code \
 	--disable-nls \
 	--disable-werror \
 	--disable-dependency-tracking \
-	--with-sysroot="$INSTALL_DIR"\
-	--prefix="$PREFIX_HOST"
+	--with-pic \
+	--with-sysroot="${INSTALL_DIR}"\
+	--prefix="${PREFIX_HOST}"
 """
 
 [build]
 script = """
-make -j$THREADS
+make -j${THREADS}
 """
 
 [install]
 script = """
-DESTDIR="$INSTALL_DIR" make install
+DESTDIR="${INSTALL_DIR}" make install
 """

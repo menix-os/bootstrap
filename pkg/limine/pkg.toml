@@ -8,19 +8,19 @@ repo = "https://github.com/limine-bootloader/limine"
 branch = "v8.1.1"
 
 [dependencies]
-build = ["tools-host"]
+build = ["host-tools"]
 
 [configure]
 script = """
-if [ $ARCH = "x86_64" ]; then
+if [ ${ARCH} = "x86_64" ]; then
 	export ARCH=x86-64
 fi
 
 # Temporary workaround because -O0 seems to break
 export CFLAGS=-O3
 
-$SOURCE_DIR/bootstrap
-$SOURCE_DIR/configure TOOLCHAIN_FOR_TARGET=llvm \
+${SOURCE_DIR}/bootstrap
+${SOURCE_DIR}/configure TOOLCHAIN_FOR_TARGET=llvm \
     --enable-uefi-${ARCH} \
 	--with-sysroot="${INSTALL_DIR}" \
 	--prefix="${PREFIX}"

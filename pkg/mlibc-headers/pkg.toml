@@ -1,0 +1,34 @@
+[package]
+name = "mlibc-headers"
+version = "latest"
+archs = ["x86_64"]
+
+[[sources]]
+repo = "https://github.com/managarm/mlibc"
+branch = "master"
+
+[dependencies]
+build = ["host-tools"]
+
+[configure]
+script = """
+meson_configure \
+	-Dheaders_only=true \
+	-Ddisable_crypt_option=true \
+	-Ddisable_iconv_option=true \
+	-Ddisable_intl_option=true  \
+	-Ddisable_libgcc_dependency=true
+"""
+
+[build]
+script = """
+make -j${THREADS}
+"""
+
+[install]
+script = """
+DESTDIR="${INSTALL_DIR}" make install
+cp ${PACKAGE_DIR}/limine.conf ${INSTALL_DIR}/boot/
+mkdir -p ${INSTALL_DIR}/EFI/BOOT
+cp -r ${INSTALL_DIR}/usr/share/limine/* ${INSTALL_DIR}/EFI/BOOT
+"""

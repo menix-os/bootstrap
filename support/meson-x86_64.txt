@@ -1,0 +1,11 @@
+[binaries]
+c = 'x86_64-pc-menix-gcc'
+cpp = 'x86_64-pc-menix-g++'
+ar = 'x86_64-pc-menix-ar'
+strip = 'x86_64-pc-menix-strip'
+
+[host_machine]
+system = 'menix'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'

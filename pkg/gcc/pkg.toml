@@ -1,0 +1,39 @@
+[package]
+name = "gcc"
+version = "latest"
+archs = ["x86_64"]
+
+[[sources]]
+repo = "https://gcc.gnu.org/git/gcc.git"
+branch = "master"
+patches = ["menix.patch"]
+
+[dependencies]
+build = ["host-tools", "mlibc-headers"]
+
+[configure]
+script = """
+${SOURCE_DIR}/configure \
+	--target=${OS_TRIPLET} \
+	--enable-shared \
+	--enable-languages=c,c++,lto \
+	--with-sysroot="${INSTALL_DIR}" \
+	--prefix="${PREFIX}" \
+	--disable-nls \
+	--with-linker-hash-style=gnu \
+	--enable-linker-build-id \
+	--enable-default-pie \
+	--enable-default-ssp \
+	--disable-multilib \
+	--enable-initfini-array
+"""
+
+[build]
+script = """
+make -j${THREADS} all-gcc
+"""
+
+[install]
+script = """
+DESTDIR="${INSTALL_DIR}" make install-gcc
+"""
