@@ -72,18 +72,16 @@ pub struct PackageScript {
 }
 
 pub fn run_command(mut command: Command) -> anyhow::Result<()> {
-    let output = command
-        .output()
+    let mut child = command
+        .spawn()
         .context(format!("failed to run command: {:?}", command))?;
 
-    if !output.status.success() {
-        anyhow::bail!(
-            "failed to run {:?}: exited with status {}:\nstderr:\n{}\nstdout:\n{}",
-            command,
-            output.status,
-            String::from_utf8(output.stdout)?,
-            String::from_utf8(output.stderr)?
-        );
+    let status = child
+        .wait()
+        .context(format!("failed to run {:?}", command))?;
+
+    if !status.success() {
+        anyhow::bail!("failed to run {:?}: exited with status {}", command, status,);
     }
 
     Ok(())
