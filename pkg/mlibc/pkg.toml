@@ -1,17 +1,18 @@
 [package]
-name = "mlibc-headers"
+name = "mlibc"
 version = "latest"
 archs = ["x86_64"]
-shared_source = "mlibc"
+
+[[sources]]
+repo = "https://github.com/menix-os/mlibc"
+branch = "master"
+path = "../../../mlibc"
 
 [dependencies]
 build = ["host-tools"]
 
 [configure]
 script = """
-meson_configure \
-	-Dheaders_only=true \
-	-Ddisable_libgcc_dependency=true
 """
 
 [build]

@@ -50,7 +50,7 @@ meson_configure_noflags() {
 		MESON_BUILD_TYPE="release"
 	fi
 
-	meson setup ${BUILD_DIR} ${SOURCE_DIR} \
+	meson setup ${SOURCE_DIR} ${BUILD_DIR} \
 		--cross-file "${SUPPORT_DIR}/meson-${ARCH}.txt" \
 		--prefix=${PREFIX} \
 		--sysconfdir=${ETC_DIR} \
