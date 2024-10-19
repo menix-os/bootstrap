@@ -25,7 +25,8 @@ ${SOURCE_DIR}/configure \
 	--enable-default-pie \
 	--enable-default-ssp \
 	--disable-multilib \
-	--enable-initfini-array
+	--enable-initfini-array \
+	--libdir="${PREFIX}/lib"
 """
 
 [build]

@@ -5,20 +5,23 @@ archs = ["x86_64"]
 
 [[sources]]
 repo = "https://github.com/menix-os/mlibc"
-branch = "master"
+branch = "add-menix"
 path = "../../../mlibc"
 
 [dependencies]
-build = ["host-tools"]
+build = ["host-tools", "gcc", "libgcc"]
 
 [configure]
 script = """
+meson_configure
 """
 
 [build]
 script = """
+ninja -j${THREADS}
 """
 
 [install]
 script = """
+DESTDIR="${INSTALL_DIR}" ninja install
 """

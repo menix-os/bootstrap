@@ -81,7 +81,7 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if let Some(single_package) = &args.pkg {
-        try_run_make_pkg(&args, &args.path.join(single_package))?;
+        try_run_make_pkg(&args, &args.path.join(single_package), false)?;
     } else {
         copy_dir_all(&args.base, &args.install_path)?;
 
@@ -97,7 +97,7 @@ fn main() -> anyhow::Result<()> {
                 .context("Failed to stat target dir entry")?;
             if file_type.is_dir() {
                 let path = entry.path();
-                try_run_make_pkg(&args, &path)?;
+                try_run_make_pkg(&args, &path, false)?;
             }
         }
     }
@@ -196,7 +196,7 @@ fn step_install(args: &Args, package: &Package) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
+fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     let (pkg_base_dir, pkg_file_path) = if path.is_dir() {
         (path.to_owned(), path.join("pkg.toml"))
     } else {
@@ -234,9 +234,14 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     let configure_marker_path = meta_path.join(".configure");
     let build_marker_path = meta_path.join(".build");
 
+	println!("[{}]\tPreparing", &package.package.name);
+
     // Get source files.
     match &package.package.shared_source {
-        Some(shared_source) => try_run_make_pkg(args, &args.path.clone().join(shared_source))?,
+        Some(shared_source) => {
+			println!("[{}]\tShared sources with {:?}", &package.package.name, &shared_source);
+			try_run_make_pkg(args, &args.path.clone().join(shared_source), true)?
+		},
         None => {
             if package.sources.len() > 0 {
                 if !source_marker_path.exists() || args.command == Commands::Source {
@@ -246,8 +251,31 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
                         .context("Failed to update source marker file (.source)")?;
                 }
             }
+
+			if just_source {
+				return Ok(());
+			}
         }
     }
+
+	// Make sure all host dependencies exist.
+	if let Some(deps) = &package.dependencies {
+		for host_dep in &deps.host {
+			check_host_program(host_dep).expect(&format!(
+				"Host dependency \"{}\" could not be satisfied.",
+				&host_dep
+			));
+		}
+	}
+
+	// Build any build dependencies before configuring.
+	if let Some(deps) = &package.dependencies {
+		for build_dep in &deps.build {
+			try_run_make_pkg(args, &args.path.clone().join(build_dep), false)
+				.context("Failed to build dependency")?;
+		}
+	}
+
 
     // Configure package
     if determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
@@ -268,22 +296,6 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
             || args.command == Commands::Configure
             || args.command == Commands::Build
         {
-            if let Some(deps) = &package.dependencies {
-                for host_dep in &deps.host {
-                    check_host_program(host_dep).expect(&format!(
-                        "Host dependency \"{}\" could not be satisfied.",
-                        &host_dep
-                    ));
-                }
-            }
-
-            if let Some(deps) = &package.dependencies {
-                for build_dep in &deps.build {
-                    try_run_make_pkg(args, &args.path.clone().join(build_dep))
-                        .context("Failed to build dependency")?;
-                }
-            }
-
             println!("[{}]\tBuilding package", &package.package.name);
             step_build(args, &package)?;
             touch(&build_marker_path).context("Failed to update source marker file (.build)")?;
@@ -299,7 +311,7 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
 
             if let Some(deps) = &package.dependencies {
                 for runtime_dep in &deps.runtime {
-                    try_run_make_pkg(args, &args.path.clone().join(runtime_dep))?;
+                    try_run_make_pkg(args, &args.path.clone().join(runtime_dep), false)?;
                 }
             }
         } else {
@@ -310,6 +322,6 @@ fn make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
     return Ok(());
 }
 
-fn try_run_make_pkg(args: &Args, path: &Path) -> anyhow::Result<()> {
-    make_pkg(&args, &path).context(format!("Failed to build package {:?}", &path))
+fn try_run_make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
+    make_pkg(&args, &path, just_source).context(format!("Failed to build package {:?}", &path))
 }

@@ -1,0 +1,13 @@
+[package]
+name = "libgcc"
+version = "latest"
+archs = ["x86_64"]
+
+[[sources]]
+repo = "https://github.com/osdev0/libgcc-binaries"
+branch = "trunk"
+
+[install]
+script = """
+cp ${SOURCE_DIR}/libgcc-${ARCH}.a ${INSTALL_DIR}/usr/lib/libgcc.a
+"""

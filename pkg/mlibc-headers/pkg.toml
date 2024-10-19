@@ -9,15 +9,15 @@ build = ["host-tools"]
 
 [configure]
 script = """
-meson_configure \
-	-Dheaders_only=true \
-	-Ddisable_libgcc_dependency=true
+meson_configure -Dheaders_only=true
 """
 
 [build]
 script = """
+ninja -j${THREADS}
 """
 
 [install]
 script = """
+DESTDIR="${INSTALL_DIR}" ninja install
 """

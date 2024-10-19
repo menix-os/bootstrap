@@ -15,6 +15,5 @@ host = [
 	"clang",
 	"lld",
 	"nasm",
-	"cargo",
-	"rustc",
+	"pkg-config"
 ]
