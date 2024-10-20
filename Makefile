@@ -3,6 +3,8 @@ INSTALL_DIR?=build/install
 JOBS?=$(shell nproc)
 ARCH?=x86_64
 QEMU_FLAGS?=
+QEMU_BIOS?=/usr/share/qemu/ovmf-x86_64.bin
+IMAGE_NAME=menix
 ifeq ($(DEBUG),1)
 DEBUG_FLAG=--debug
 endif
@@ -10,20 +12,7 @@ endif
 ###################################
 
 .PHONY: all
-all: iso
-
-# Builds an ISO file
-.PHONY: iso
-iso: install
-	@echo "Building an ISO image..."
-	# TODO
-
-# Builds a rootfs
-.PHONY: rootfs
-rootfs: install
-	@echo "Building a rootfs image..."
-	# TODO
-
+all: $(IMAGE_NAME).iso
 
 .PHONY: source
 source:
@@ -72,4 +61,4 @@ qemu: install qemu-$(ARCH)
 
 .PHONY: qemu-x86_64
 qemu-x86_64:
-	@qemu-system-x86_64 -bios /usr/share/qemu/ovmf-x86_64.bin $(QEMU_DEBUG) -m 8G -no-reboot -no-shutdown -machine q35 -cpu max -serial stdio $(QEMU_FLAGS) $(QEMU_FULL)
+	@qemu-system-x86_64 -bios $(QEMU_BIOS) $(QEMU_DEBUG) -m 8G -no-reboot -no-shutdown -machine q35 -cpu max -serial stdio $(QEMU_FLAGS) $(QEMU_FULL)

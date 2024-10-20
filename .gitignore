@@ -7,3 +7,5 @@ build/
 cache/
 *target/
 *Cargo.lock
+menix.iso
+menix.img
