@@ -234,12 +234,9 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     let configure_marker_path = meta_path.join(".configure");
     let build_marker_path = meta_path.join(".build");
 
-	println!("[{}]\tPreparing", &package.package.name);
-
     // Get source files.
     match &package.package.shared_source {
         Some(shared_source) => {
-			println!("[{}]\tShared sources with {:?}", &package.package.name, &shared_source);
 			try_run_make_pkg(args, &args.path.clone().join(shared_source), true)?
 		},
         None => {
@@ -314,8 +311,6 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
                     try_run_make_pkg(args, &args.path.clone().join(runtime_dep), false)?;
                 }
             }
-        } else {
-            println!("[{}]\tAlready up to date", package.package.name);
         }
     }
 
