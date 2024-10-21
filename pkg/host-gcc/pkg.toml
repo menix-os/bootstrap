@@ -11,7 +11,7 @@ patches = ["menix.patch"]
 
 [dependencies]
 host = ["make", "automake", "gcc", "ld", "as", "pkg-config"]
-build = ["host-binutils", "host-mlibc-headers"]
+build = ["host-binutils", "mlibc-headers"]
 
 [configure]
 script = """
@@ -19,17 +19,15 @@ script = """
     CFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
 ${SOURCE_DIR}/configure \
 	--target=${OS_TRIPLET} \
-	--enable-shared \
+	--disable-shared \
 	--enable-languages=c,c++,lto \
 	--with-sysroot="${INSTALL_DIR}" \
-	--prefix="${PREFIX_HOST}" \
-	--disable-nls \
-	--with-linker-hash-style=gnu \
-	--enable-linker-build-id \
-	--enable-default-pie \
-	--enable-default-ssp \
+	--prefix="${PREFIX}" \
 	--disable-multilib \
-	--enable-initfini-array
+	--without-headers \
+	--without-newlib \
+	--disable-hosted-libstdcxx \
+	--disable-wchar_t
 """
 
 [build]

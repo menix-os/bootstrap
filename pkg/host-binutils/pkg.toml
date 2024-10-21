@@ -23,7 +23,7 @@ ${SOURCE_DIR}/configure \
 	--disable-dependency-tracking \
 	--with-pic \
 	--with-sysroot="${INSTALL_DIR}" \
-	--prefix="${PREFIX_HOST}"
+	--prefix="${PREFIX}"
 """
 
 [build]

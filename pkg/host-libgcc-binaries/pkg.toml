@@ -1,7 +1,8 @@
 [package]
-name = "libgcc-binaries"
+name = "host-libgcc-binaries"
 version = "latest"
 archs = ["x86_64"]
+host = true
 
 [[sources]]
 repo = "https://github.com/osdev0/libgcc-binaries"
@@ -9,6 +10,6 @@ branch = "trunk"
 
 [install]
 script = """
-mkdir -p ${INSTALL_DIR}/usr/lib/
-cp ${SOURCE_DIR}/libgcc-${ARCH}.a ${INSTALL_DIR}/usr/lib/libgcc.a
+mkdir -p ${INSTALL_DIR}${LIB_DIR}
+cp ${SOURCE_DIR}/libgcc-${ARCH}.a ${INSTALL_DIR}${LIB_DIR}/libgcc.a
 """

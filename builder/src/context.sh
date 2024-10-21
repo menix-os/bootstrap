@@ -1,5 +1,5 @@
-if [ "${IS_HOST_BUILD}" == "1" ]; then
-	PATH=${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin
+if [ "${IS_HOST_BUILD}" != "1" ]; then
+	PATH=${PATH}:${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin
 fi
 
 OS_TRIPLET="${ARCH}-pc-menix"
