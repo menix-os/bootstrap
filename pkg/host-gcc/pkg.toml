@@ -1,23 +1,28 @@
 [package]
-name = "gcc"
+name = "host-gcc"
 version = "latest"
 archs = ["x86_64"]
-shared_source = "host-gcc"
+host = true
+
+[[sources]]
+repo = "https://gcc.gnu.org/git/gcc.git"
+branch = "master"
+patches = ["menix.patch"]
 
 [dependencies]
-build = ["host-tools", "binutils"]
+host = ["make", "automake", "gcc", "ld", "as", "pkg-config"]
+build = ["host-binutils", "host-mlibc-headers"]
 
 [configure]
 script = """
     CXXFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
     CFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
-autotools_configure \
+${SOURCE_DIR}/configure \
 	--target=${OS_TRIPLET} \
-	--enable-host-shared \
+	--enable-shared \
 	--enable-languages=c,c++,lto \
-	--with-sysroot=/ \
-	--with-build-sysroot="${INSTALL_DIR}" \
-	--prefix="${PREFIX}" \
+	--with-sysroot="${INSTALL_DIR}" \
+	--prefix="${PREFIX_HOST}" \
 	--disable-nls \
 	--with-linker-hash-style=gnu \
 	--enable-linker-build-id \

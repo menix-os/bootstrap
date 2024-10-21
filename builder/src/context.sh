@@ -1,4 +1,6 @@
-PATH=${PATH}:${INSTALL_DIR}/usr/bin:${INSTALL_DIR}/usr/local/bin
+if [ "${IS_HOST_BUILD}" == "1" ]; then
+	PATH=${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin
+fi
 
 OS_TRIPLET="${ARCH}-pc-menix"
 
@@ -60,4 +62,27 @@ meson_configure_noflags() {
 		--buildtype=${MESON_BUILD_TYPE} \
         -Ddefault_library=shared \
 		"$@"
+}
+
+
+autotools_configure() {
+    if [ -z "${CONFIGURE_SCRIPT}" ]; then
+        CONFIGURE_SCRIPT="${SOURCE_DIR}/configure"
+    fi
+        ac_cv_func_malloc_0_nonnull=yes \
+        ac_cv_func_calloc_0_nonnull=yes \
+        ac_cv_func_realloc_0_nonnull=yes \
+    ${CONFIGURE_SCRIPT} \
+        --host=${OS_TRIPLET} \
+        --with-sysroot=${INSTALL_DIR} \
+        --prefix=${PREFIX} \
+        --sysconfdir=${ETC_DIR} \
+        --localstatedir=${VAR_DIR} \
+        --bindir=${BIN_DIR} \
+        --sbindir=${SBIN_DIR} \
+        --libdir=${LIB_DIR} \
+        --disable-static \
+        --enable-shared \
+        --disable-malloc0returnsnull \
+        "$@"
 }

@@ -32,6 +32,14 @@ struct Args {
     #[arg(long, default_value = "build/build")]
     build_path: PathBuf,
 
+    /// Directory where to store host tools.
+    #[arg(long, default_value = "build/host")]
+    host_path: PathBuf,
+
+    /// Directory where to store host tools.
+    #[arg(long, default_value = "build/host-meta")]
+    host_meta_path: PathBuf,
+
     /// Directory where to store downloaded sources.
     #[arg(long, default_value = "build/source")]
     source_path: PathBuf,
@@ -81,7 +89,7 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if let Some(single_package) = &args.pkg {
-        try_run_make_pkg(&args, &args.path.join(single_package), false)?;
+        try_run_make_pkg(&args, &args.path.join(single_package), false, false)?;
     } else {
         copy_dir_all(&args.base, &args.install_path)?;
 
@@ -97,7 +105,7 @@ fn main() -> anyhow::Result<()> {
                 .context("Failed to stat target dir entry")?;
             if file_type.is_dir() {
                 let path = entry.path();
-                try_run_make_pkg(&args, &path, false)?;
+                try_run_make_pkg(&args, &path, false, false)?;
             }
         }
     }
@@ -196,7 +204,7 @@ fn step_install(args: &Args, package: &Package) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
+fn make_pkg(args: &Args, path: &Path, just_source: bool, is_host: bool) -> anyhow::Result<()> {
     let (pkg_base_dir, pkg_file_path) = if path.is_dir() {
         (path.to_owned(), path.join("pkg.toml"))
     } else {
@@ -224,11 +232,21 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     let build_path = args.build_path.join(&package.package.name);
     fs::create_dir_all(&build_path)?;
 
-    let meta_path = args.meta_path.join(&package.package.name);
+    let is_host = match is_host {
+        true => true,
+        false => package.package.host,
+    };
+
+    let meta_path = match is_host {
+        true => args.host_meta_path.join(&package.package.name),
+        false => args.meta_path.join(&package.package.name),
+    };
+
     fs::create_dir_all(&meta_path)?;
 
     // This is redundant most of the time, but in the case it isn't, create the install dir.
     fs::create_dir_all(&args.install_path)?;
+    fs::create_dir_all(&args.host_path)?;
 
     let source_marker_path = meta_path.join(".source");
     let configure_marker_path = meta_path.join(".configure");
@@ -238,7 +256,7 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     // Get source files.
     match &package.package.shared_source {
         Some(shared_source) => {
-            try_run_make_pkg(args, &args.path.clone().join(shared_source), true)?
+            try_run_make_pkg(args, &args.path.clone().join(shared_source), true, is_host)?
         }
         None => {
             if package.sources.len() > 0 {
@@ -269,7 +287,7 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     // Build any build dependencies before configuring.
     if let Some(deps) = &package.dependencies {
         for build_dep in &deps.build {
-            try_run_make_pkg(args, &args.path.clone().join(build_dep), false)
+            try_run_make_pkg(args, &args.path.clone().join(build_dep), false, is_host)
                 .context("Failed to build dependency")?;
         }
     }
@@ -302,25 +320,30 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
                 package.package.name, package.package.version
             );
         }
+    }
 
-        if determine_if_step_needed(&pkg_file_path, &install_marker_path)? {
-            // Install package to build root.
-            println!("[{}]\tInstalling to sysroot", &package.package.name);
-            step_install(args, &package)?;
-            touch(&install_marker_path)
-                .context("Failed to update install marker file (.install)")?;
-        }
+    if determine_if_step_needed(&pkg_file_path, &install_marker_path)? {
+        // Install package to build root.
+        println!("[{}]\tInstalling to sysroot", &package.package.name);
+        step_install(args, &package)?;
+        touch(&install_marker_path).context("Failed to update install marker file (.install)")?;
+    }
 
-        if let Some(deps) = &package.dependencies {
-            for runtime_dep in &deps.runtime {
-                try_run_make_pkg(args, &args.path.clone().join(runtime_dep), false)?;
-            }
+    if let Some(deps) = &package.dependencies {
+        for runtime_dep in &deps.runtime {
+            try_run_make_pkg(args, &args.path.clone().join(runtime_dep), false, is_host)?;
         }
     }
 
     return Ok(());
 }
 
-fn try_run_make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
-    make_pkg(&args, &path, just_source).context(format!("Failed to build package {:?}", &path))
+fn try_run_make_pkg(
+    args: &Args,
+    path: &Path,
+    just_source: bool,
+    is_host: bool,
+) -> anyhow::Result<()> {
+    make_pkg(&args, &path, just_source, is_host)
+        .context(format!("Failed to build package {:?}", &path))
 }

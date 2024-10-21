@@ -1,5 +1,5 @@
 [package]
-name = "libgcc"
+name = "libgcc-binaries"
 version = "latest"
 archs = ["x86_64"]
 
@@ -9,5 +9,6 @@ branch = "trunk"
 
 [install]
 script = """
+mkdir -p ${INSTALL_DIR}/usr/lib/
 cp ${SOURCE_DIR}/libgcc-${ARCH}.a ${INSTALL_DIR}/usr/lib/libgcc.a
 """

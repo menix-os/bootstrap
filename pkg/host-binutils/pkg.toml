@@ -1,17 +1,20 @@
 [package]
-name = "binutils"
+name = "host-binutils"
 version = "latest"
 archs = ["x86_64"]
-shared_source = "host-binutils"
+host = true
+
+[[sources]]
+repo = "https://sourceware.org/git/binutils-gdb.git"
+branch = "master"
+patches = ["menix.patch"]
 
 [dependencies]
-build = ["host-tools"]
+host = ["make", "automake", "gcc", "ld", "as", "pkg-config"]
 
 [configure]
 script = """
-    CXXFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
-    CFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
-autotools_configure \
+${SOURCE_DIR}/configure \
 	--target=${OS_TRIPLET} \
 	--enable-cet \
 	--enable-separate-code \
@@ -19,8 +22,7 @@ autotools_configure \
 	--disable-werror \
 	--disable-dependency-tracking \
 	--with-pic \
-	--with-sysroot=/ \
-	--with-build-sysroot="${INSTALL_DIR}" \
+	--with-sysroot="${INSTALL_DIR}" \
 	--prefix="${PREFIX_HOST}"
 """
 

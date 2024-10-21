@@ -28,6 +28,8 @@ pub struct PackageInfo {
     pub name: String,
     pub version: String,
     pub archs: Vec<String>,
+    #[serde(default)]
+    pub host: bool,
     pub shared_source: Option<PathBuf>,
     pub shared_build: Option<PathBuf>,
 }
@@ -248,7 +250,14 @@ pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyh
         "PACKAGE_DIR",
         &args.path.join(&package.package.name).canonicalize()?,
     );
-    cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
+
+    if package.package.host {
+        cmd.env("INSTALL_DIR", &args.host_path.canonicalize()?);
+        cmd.env("IS_HOST_BUILD", "1");
+    } else {
+        cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
+    }
+    cmd.env("HOST_DIR", &args.host_path.canonicalize()?);
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("ARCH", &args.arch);
     let threads = available_parallelism().unwrap().get();

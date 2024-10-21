@@ -4,7 +4,7 @@ version = "latest"
 archs = ["x86_64"]
 
 [dependencies]
-build = ["host-tools"]
+host = ["cmake", "gcc", "as", "ld"]
 
 [[sources]]
 repo = "https://github.com/menix-os/menix"

@@ -1,19 +1,15 @@
 [package]
 name = "host-tools"
 version = "latest"
-archs = []
+archs = ["x86_64"]
 
 [dependencies]
-host = [
-	"make",
-	"automake",
-	"gcc",
-	"ld",
-	"as",
-	"cmake",
-	"meson",
-	"clang",
-	"lld",
-	"nasm",
-	"pkg-config"
+build = [
+	"host-binutils",
+	"host-gcc",
+	"host-libgcc-binaries",
+	# "host-cmake",
+	# "host-automake",
+	# "host-autoconf",
+	# "host-pkg-config",
 ]

@@ -3,9 +3,10 @@ name = "mlibc-headers"
 version = "latest"
 archs = ["x86_64"]
 shared_source = "mlibc"
+host = true
 
 [dependencies]
-host = ["meson"]
+host = ["meson", "gcc", "as", "ld"]
 
 [configure]
 script = """

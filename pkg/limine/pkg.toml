@@ -8,7 +8,8 @@ repo = "https://github.com/limine-bootloader/limine"
 branch = "v8.1.1"
 
 [dependencies]
-build = ["host-tools"]
+host = ["make", "automake"]
+build = ["host-binutils", "host-gcc"]
 
 [configure]
 script = """
@@ -18,9 +19,10 @@ fi
 
 # Temporary workaround because -O0 seems to break
 export CFLAGS=-O3
-
 ${SOURCE_DIR}/bootstrap
-${SOURCE_DIR}/configure TOOLCHAIN_FOR_TARGET=llvm \
+
+${SOURCE_DIR}/configure \
+	TOOLCHAIN_FOR_TARGET=${OS_TRIPLET} \
     --enable-uefi-${ARCH} \
 	--with-sysroot="${INSTALL_DIR}" \
 	--prefix="${PREFIX}"
