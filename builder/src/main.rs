@@ -233,6 +233,7 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     let source_marker_path = meta_path.join(".source");
     let configure_marker_path = meta_path.join(".configure");
     let build_marker_path = meta_path.join(".build");
+    let install_marker_path = meta_path.join(".install");
 
     // Get source files.
     match &package.package.shared_source {
@@ -294,17 +295,21 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
         if package.package.shared_build.is_none() {
             println!("[{}]\tBuilding package", &package.package.name);
             step_build(args, &package)?;
-            touch(&build_marker_path).context("Failed to update source marker file (.build)")?;
+            touch(&build_marker_path).context("Failed to update build marker file (.build)")?;
+
+            println!(
+                "[{}]\tBuild finished for version \"{}\"",
+                package.package.name, package.package.version
+            );
         }
 
-        // Install package to build root.
-        println!("[{}]\tInstalling to sysroot", &package.package.name);
-        step_install(args, &package)?;
-
-        println!(
-            "[{}]\tBuild finished for version \"{}\"",
-            package.package.name, package.package.version
-        );
+        if determine_if_step_needed(&pkg_file_path, &install_marker_path)? {
+            // Install package to build root.
+            println!("[{}]\tInstalling to sysroot", &package.package.name);
+            step_install(args, &package)?;
+            touch(&install_marker_path)
+                .context("Failed to update install marker file (.install)")?;
+        }
 
         if let Some(deps) = &package.dependencies {
             for runtime_dep in &deps.runtime {
