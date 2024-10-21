@@ -237,8 +237,8 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     // Get source files.
     match &package.package.shared_source {
         Some(shared_source) => {
-			try_run_make_pkg(args, &args.path.clone().join(shared_source), true)?
-		},
+            try_run_make_pkg(args, &args.path.clone().join(shared_source), true)?
+        }
         None => {
             if package.sources.len() > 0 {
                 if !source_marker_path.exists() || args.command == Commands::Source {
@@ -249,30 +249,29 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
                 }
             }
 
-			if just_source {
-				return Ok(());
-			}
+            if just_source {
+                return Ok(());
+            }
         }
     }
 
-	// Make sure all host dependencies exist.
-	if let Some(deps) = &package.dependencies {
-		for host_dep in &deps.host {
-			check_host_program(host_dep).expect(&format!(
-				"Host dependency \"{}\" could not be satisfied.",
-				&host_dep
-			));
-		}
-	}
+    // Make sure all host dependencies exist.
+    if let Some(deps) = &package.dependencies {
+        for host_dep in &deps.host {
+            check_host_program(host_dep).expect(&format!(
+                "Host dependency \"{}\" could not be satisfied.",
+                &host_dep
+            ));
+        }
+    }
 
-	// Build any build dependencies before configuring.
-	if let Some(deps) = &package.dependencies {
-		for build_dep in &deps.build {
-			try_run_make_pkg(args, &args.path.clone().join(build_dep), false)
-				.context("Failed to build dependency")?;
-		}
-	}
-
+    // Build any build dependencies before configuring.
+    if let Some(deps) = &package.dependencies {
+        for build_dep in &deps.build {
+            try_run_make_pkg(args, &args.path.clone().join(build_dep), false)
+                .context("Failed to build dependency")?;
+        }
+    }
 
     // Configure package
     if determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
@@ -287,29 +286,29 @@ fn make_pkg(args: &Args, path: &Path, just_source: bool) -> anyhow::Result<()> {
     }
 
     // Build package.
-    if package.package.shared_build.is_none() {
-        if determine_if_step_needed(&pkg_file_path, &build_marker_path)?
-            || determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
-            || args.command == Commands::Configure
-            || args.command == Commands::Build
-        {
+    if determine_if_step_needed(&pkg_file_path, &build_marker_path)?
+        || determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
+        || args.command == Commands::Configure
+        || args.command == Commands::Build
+    {
+        if package.package.shared_build.is_none() {
             println!("[{}]\tBuilding package", &package.package.name);
             step_build(args, &package)?;
             touch(&build_marker_path).context("Failed to update source marker file (.build)")?;
+        }
 
-            // Install package to build root.
-            println!("[{}]\tInstalling to sysroot", &package.package.name);
-            step_install(args, &package)?;
+        // Install package to build root.
+        println!("[{}]\tInstalling to sysroot", &package.package.name);
+        step_install(args, &package)?;
 
-            println!(
-                "[{}]\tBuild finished for version \"{}\"",
-                package.package.name, package.package.version
-            );
+        println!(
+            "[{}]\tBuild finished for version \"{}\"",
+            package.package.name, package.package.version
+        );
 
-            if let Some(deps) = &package.dependencies {
-                for runtime_dep in &deps.runtime {
-                    try_run_make_pkg(args, &args.path.clone().join(runtime_dep), false)?;
-                }
+        if let Some(deps) = &package.dependencies {
+            for runtime_dep in &deps.runtime {
+                try_run_make_pkg(args, &args.path.clone().join(runtime_dep), false)?;
             }
         }
     }
