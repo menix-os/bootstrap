@@ -5,7 +5,7 @@ archs = ["x86_64"]
 shared_source = "host-binutils"
 
 [dependencies]
-build = ["host-binutils", "host-gcc", "mlibc"]
+build = ["host-binutils", "host-gcc", "gmp", "mlibc"]
 
 [configure]
 script = """

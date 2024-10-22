@@ -29,10 +29,10 @@ ${SOURCE_DIR}/configure \
 
 [build]
 script = """
-make -j${THREADS} all-gcc all-target-libgcc
+make -j${THREADS} all-gcc
 """
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install-gcc install-target-libgcc
+DESTDIR="${INSTALL_DIR}" make install-gcc
 """

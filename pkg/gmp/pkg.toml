@@ -1,0 +1,26 @@
+[package]
+name = "gmp"
+version = "6.3.0"
+archs = ["x86_64"]
+
+[dependencies]
+build = ["host-binutils", "host-gcc"]
+
+[[sources]]
+url = "https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz"
+path = "gmp-6.3.0.tar.xz"
+
+[configure]
+script = """
+autotools_configure --enable-cxx
+"""
+
+[build]
+script = """
+make -j${THREADS}
+"""
+
+[install]
+script = """
+DESTDIR="${INSTALL_DIR}" make install
+"""

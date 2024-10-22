@@ -1,5 +1,4 @@
 use anyhow::Context;
-use decompress::ExtractOptsBuilder;
 use serde::Deserialize;
 use std::{
     env,
@@ -57,6 +56,10 @@ pub struct PackageSource {
 pub enum PackageSourceType {
     Archive {
         archive: PathBuf,
+    },
+    RemoteArchive {
+        url: PathBuf,
+        path: PathBuf,
     },
     Git {
         repo: String,
@@ -152,19 +155,6 @@ pub fn touch(file: &Path) -> anyhow::Result<()> {
         .open(file)
         .context("Failed to open file")
         .map(|_| ())
-}
-
-pub fn decompress_archive(archive: &Path, decompress_to: &Path) -> anyhow::Result<()> {
-    decompress::decompress(
-        &archive,
-        &decompress_to,
-        &ExtractOptsBuilder::default()
-            .build()
-            .expect("Default compress builder should always work"),
-    )
-    .context("Failed to decompress archive")?;
-
-    Ok(())
 }
 
 pub fn do_git_clone(

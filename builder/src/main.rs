@@ -7,8 +7,8 @@ use std::{
     process::Command,
 };
 use util::{
-    add_env_to_cmd, check_host_program, copy_dir_all, decompress_archive, determine_if_step_needed,
-    do_git_clone, resolve_path, run_command, run_command_stdin, touch, Package, PackageSourceType,
+    add_env_to_cmd, check_host_program, copy_dir_all, determine_if_step_needed, do_git_clone,
+    resolve_path, run_command, run_command_stdin, touch, Package, PackageSourceType,
 };
 
 mod util;
@@ -137,15 +137,32 @@ fn step_source(args: &Args, base_dir: &Path, package: &Package) -> anyhow::Resul
             PackageSourceType::Archive {
                 archive: archive_path,
             } => {
-                let archive_path = resolve_path(&archive_path, base_dir);
+                fs::create_dir_all(&source_path).context("Failed to create dir")?;
+                let _archive_path = resolve_path(&archive_path, base_dir);
 
-                decompress_archive(&archive_path, &source_path)
-                    .context(format!("Failed to open archive: {:?}", archive_path))?;
+                // TODO
             }
             PackageSourceType::Local { path: local_path } => {
                 let symlink_path = base_dir.join(local_path).canonicalize()?;
                 symlink(symlink_path, &source_path)
                     .context("Failed to copy local directory to build directory")?;
+            }
+            PackageSourceType::RemoteArchive { url, path } => {
+                fs::create_dir_all(&source_path).context("Failed to create dir")?;
+                let source_path = source_path.canonicalize()?;
+                Command::new("wget")
+                    .arg(url)
+                    .args(["-P", &source_path.to_str().unwrap()])
+                    .spawn()?
+                    .wait()?;
+                Command::new("tar")
+                    .arg("-xvf")
+                    .arg(&source_path.join(path))
+                    .arg("-C")
+                    .arg(source_path)
+                    .arg("--strip-components=1")
+                    .spawn()?
+                    .wait()?;
             }
         }
 
@@ -270,7 +287,7 @@ fn make_pkg(
         )?,
         None => {
             if package.sources.len() > 0 {
-                if !source_marker_path.exists() || args.command == Commands::Source {
+                if !source_marker_path.exists() || (args.command == Commands::Source && !is_dep) {
                     println!("[{}]\tGetting sources", &package.package.name);
                     step_source(args, &pkg_base_dir, &package).context("Failed to get sources")?;
                     touch(&source_marker_path)

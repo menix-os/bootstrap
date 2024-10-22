@@ -61,7 +61,6 @@ meson_configure_noflags() {
 		"$@"
 }
 
-
 autotools_configure() {
     if [ -z "${CONFIGURE_SCRIPT}" ]; then
         CONFIGURE_SCRIPT="${SOURCE_DIR}/configure"
@@ -71,15 +70,13 @@ autotools_configure() {
         ac_cv_func_realloc_0_nonnull=yes \
     ${CONFIGURE_SCRIPT} \
         --host=${OS_TRIPLET} \
-        --with-sysroot=${INSTALL_DIR} \
+        --with-sysroot=${SYSROOT_DIR} \
         --prefix=${PREFIX} \
         --sysconfdir=${ETC_DIR} \
         --localstatedir=${VAR_DIR} \
         --bindir=${BIN_DIR} \
         --sbindir=${SBIN_DIR} \
         --libdir=${LIB_DIR} \
-        --disable-static \
         --enable-shared \
-        --disable-malloc0returnsnull \
         "$@"
 }

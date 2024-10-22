@@ -1,0 +1,21 @@
+[package]
+name = "host-gcc"
+version = "latest"
+archs = ["x86_64"]
+host = true
+shared_source = ["host-gcc"]
+shared_build = ["host-gcc"]
+
+[dependencies]
+host = ["make", "automake", "gcc", "ld", "as", "pkg-config"]
+build = ["host-binutils", "host-gcc", "mlibc"]
+
+[build]
+script = """
+make -j${THREADS} all-target-libgcc
+"""
+
+[install]
+script = """
+DESTDIR="${INSTALL_DIR}" make install-target-libgcc
+"""
