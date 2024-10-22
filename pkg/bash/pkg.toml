@@ -1,0 +1,27 @@
+[package]
+name = "bash"
+version = "5.1"
+archs = ["x86_64"]
+
+[[sources]]
+url = "https://ftp.gnu.org/gnu/bash/bash-5.1.tar.gz"
+path = "bash-5.1.tar.gz"
+patches = ["menix.patch"]
+
+[dependencies]
+build = ["host-gcc", "host-binutils", "readline"]
+
+[configure]
+script = """
+autotools_configure --without-bash-malloc
+"""
+
+[build]
+script = """
+make -j${THREADS}
+"""
+
+[install]
+script = """
+DESTDIR="${INSTALL_DIR}" make install
+"""
