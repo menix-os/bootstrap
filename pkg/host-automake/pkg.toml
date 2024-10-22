@@ -1,0 +1,29 @@
+[package]
+name = "host-automake"
+version = "1.15.1"
+archs = ["x86_64"]
+host = true
+
+[[sources]]
+url = "https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz"
+path = "automake-1.15.1.tar.gz"
+patches = ["menix.patch"]
+
+[dependencies]
+host = ["autoconf"]
+build = ["host-gcc"]
+
+[configure]
+script = """
+${SOURCE_DIR}/configure --prefix="${PREFIX}"
+"""
+
+[build]
+script = """
+make -j${THREADS}
+"""
+
+[install]
+script = """
+DESTDIR="${INSTALL_DIR}" make install
+"""

@@ -1,4 +1,4 @@
-PATH=${PATH}:${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin
+PATH=${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin:${PATH}
 
 OS_TRIPLET="${ARCH}-pc-menix"
 
