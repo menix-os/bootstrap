@@ -58,7 +58,7 @@ new file mode 100644
 index 00000000000..4fa721644fd
 --- /dev/null
 +++ b/gcc/config/menix.h
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,24 @@
 +#undef TARGET_MENIX
 +#define TARGET_MENIX 1
 +
@@ -73,10 +73,6 @@ index 00000000000..4fa721644fd
 +
 +#undef ENDFILE_SPEC
 +#define ENDFILE_SPEC "%{shared:crtendS.o%s;:crtend.o%s} crtn.o%s"
-+
-+#define GNU_USER_LINK_EMULATION32 "elf_i386"
-+#define GNU_USER_LINK_EMULATION64 "elf_x86_64"
-+#define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
 +
 +#undef TARGET_OS_CPP_BUILTINS
 +#define TARGET_OS_CPP_BUILTINS()         \
