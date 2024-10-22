@@ -15,27 +15,24 @@ build = ["host-binutils", "mlibc-headers"]
 
 [configure]
 script = """
-    CXXFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
-    CFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
 ${SOURCE_DIR}/configure \
 	--target=${OS_TRIPLET} \
-	--disable-shared \
 	--enable-languages=c,c++,lto \
-	--with-sysroot="${INSTALL_DIR}" \
+	--with-sysroot="${SYSROOT_DIR}" \
 	--prefix="${PREFIX}" \
+	--enable-threads=posix \
 	--disable-multilib \
-	--without-headers \
-	--without-newlib \
-	--disable-hosted-libstdcxx \
-	--disable-wchar_t
+	--enable-shared \
+	--enable-host-shared \
+	--with-pic
 """
 
 [build]
 script = """
-make -j${THREADS} all-gcc
+make -j${THREADS} all-gcc all-target-libgcc
 """
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install-gcc
+DESTDIR="${INSTALL_DIR}" make install-gcc install-target-libgcc
 """

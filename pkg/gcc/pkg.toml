@@ -13,26 +13,18 @@ script = """
     CFLAGS_FOR_TARGET="${TARGET_CFLAGS}" \
 autotools_configure \
 	--target=${OS_TRIPLET} \
-	--enable-host-shared \
 	--enable-languages=c,c++,lto \
 	--with-sysroot=/ \
-	--with-build-sysroot="${INSTALL_DIR}" \
-	--prefix="${PREFIX}" \
-	--disable-nls \
-	--with-linker-hash-style=gnu \
-	--enable-linker-build-id \
-	--enable-default-pie \
-	--enable-default-ssp \
-	--disable-multilib \
-	--enable-initfini-array
+	--with-build-sysroot="${SYSROOT_DIR}" \
+	--prefix="${PREFIX}"
 """
 
 [build]
 script = """
-make -j${THREADS} all-gcc
+make -j${THREADS} all-gcc all-target-libgcc all-target-libstdc++-v3
 """
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install-gcc
+DESTDIR="${INSTALL_DIR}" make install-gcc install-target-libgcc install-target-libstdc++-v3
 """

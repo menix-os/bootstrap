@@ -20,7 +20,7 @@ autotools_configure \
 	--disable-dependency-tracking \
 	--with-pic \
 	--with-sysroot=/ \
-	--with-build-sysroot="${INSTALL_DIR}" \
+	--with-build-sysroot="${SYSROOT_DIR}" \
 	--prefix="${PREFIX_HOST}"
 """
 

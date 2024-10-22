@@ -1,6 +1,4 @@
-if [ "${IS_HOST_BUILD}" != "1" ]; then
-	PATH=${PATH}:${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin
-fi
+PATH=${PATH}:${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin
 
 OS_TRIPLET="${ARCH}-pc-menix"
 
@@ -60,7 +58,6 @@ meson_configure_noflags() {
 		--libdir=${LIB_DIR} \
 		--sbindir=${SBIN_DIR} \
 		--buildtype=${MESON_BUILD_TYPE} \
-        -Ddefault_library=shared \
 		"$@"
 }
 

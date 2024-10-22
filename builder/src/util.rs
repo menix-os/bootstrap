@@ -257,6 +257,8 @@ pub fn add_env_to_cmd(cmd: &mut Command, package: &Package, args: &Args) -> anyh
     } else {
         cmd.env("INSTALL_DIR", &args.install_path.canonicalize()?);
     }
+
+    cmd.env("SYSROOT_DIR", &args.install_path.canonicalize()?);
     cmd.env("HOST_DIR", &args.host_path.canonicalize()?);
     cmd.env("IS_DEBUG", if args.debug { "1" } else { "0" });
     cmd.env("ARCH", &args.arch);

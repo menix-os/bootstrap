@@ -9,11 +9,11 @@ branch = "add-menix"
 path = "../../../mlibc"
 
 [dependencies]
-build = ["host-binutils", "host-gcc", "host-libgcc-binaries"]
+build = ["host-binutils", "host-gcc"]
 
 [configure]
 script = """
-meson_configure
+meson_configure -Ddefault_library=static
 """
 
 [build]

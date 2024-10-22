@@ -16,13 +16,9 @@ host = ["make", "automake", "gcc", "ld", "as", "pkg-config"]
 script = """
 ${SOURCE_DIR}/configure \
 	--target=${OS_TRIPLET} \
-	--enable-cet \
-	--enable-separate-code \
-	--disable-nls \
 	--disable-werror \
-	--disable-dependency-tracking \
 	--with-pic \
-	--with-sysroot="${INSTALL_DIR}" \
+	--with-sysroot="${SYSROOT_DIR}" \
 	--prefix="${PREFIX}"
 """
 
