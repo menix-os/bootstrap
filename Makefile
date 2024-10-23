@@ -61,4 +61,4 @@ qemu: install qemu-$(ARCH)
 
 .PHONY: qemu-x86_64
 qemu-x86_64:
-	@qemu-system-x86_64 -bios $(QEMU_BIOS) $(QEMU_DEBUG) -m 8G -no-reboot -no-shutdown -machine q35 -cpu max -serial stdio $(QEMU_FLAGS) $(QEMU_FULL)
+	qemu-system-x86_64 -bios $(QEMU_BIOS) $(QEMU_DEBUG) -m 8G -no-reboot -no-shutdown -machine q35 -cpu max -serial stdio $(QEMU_FLAGS) $(QEMU_FULL)
