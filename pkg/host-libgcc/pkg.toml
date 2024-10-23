@@ -3,12 +3,25 @@ name = "host-gcc"
 version = "latest"
 archs = ["x86_64"]
 host = true
-shared_source = ["host-gcc"]
-shared_build = ["host-gcc"]
+shared_source = "host-gcc"
 
 [dependencies]
 host = ["make", "automake", "gcc", "ld", "as", "pkg-config"]
-build = ["host-binutils", "host-gcc", "mlibc"]
+build = ["host-binutils"]
+
+[configure]
+script = """
+${SOURCE_DIR}/configure \
+	--target=${OS_TRIPLET} \
+	--enable-languages=c,c++,lto \
+	--with-sysroot="${SYSROOT_DIR}" \
+	--prefix="${PREFIX}" \
+	--enable-threads=posix \
+	--disable-multilib \
+	--enable-shared \
+	--enable-host-shared \
+	--with-pic
+"""
 
 [build]
 script = """

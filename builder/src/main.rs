@@ -246,7 +246,7 @@ fn make_pkg(
 
     // Check if the package is architecture dependent. If yes, check if we're targeting this architecture.
     if !package.package.archs.is_empty() && !package.package.archs.contains(&args.arch) {
-        anyhow::bail!("Arch not targeted");
+        anyhow::bail!("Architecture not targeted");
     }
 
     let source_path = args.source_path.join(&package.package.name);
@@ -329,12 +329,14 @@ fn make_pkg(
     if determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
         || ((args.command == Commands::Configure || args.command == Commands::Source) && !is_dep)
     {
-        println!("[{}]\tConfiguring package", &package.package.name);
-        fs::remove_dir_all(&build_path).context("Failed to remove existing dir")?;
-        fs::create_dir_all(&build_path)?;
-        step_configure(args, &package).context("Failed to configure package")?;
-        touch(&configure_marker_path)
-            .context("Failed to update configure marker file (.configure)")?;
+        if package.package.shared_build.is_none() {
+            println!("[{}]\tConfiguring package", &package.package.name);
+            fs::remove_dir_all(&build_path).context("Failed to remove existing dir")?;
+            fs::create_dir_all(&build_path)?;
+            step_configure(args, &package).context("Failed to configure package")?;
+            touch(&configure_marker_path)
+                .context("Failed to update configure marker file (.configure)")?;
+        }
     }
 
     // Build package.
@@ -342,16 +344,14 @@ fn make_pkg(
         || determine_if_step_needed(&pkg_file_path, &configure_marker_path)?
         || ((args.command == Commands::Configure || args.command == Commands::Build) && !is_dep)
     {
-        if package.package.shared_build.is_none() {
-            println!("[{}]\tBuilding package", &package.package.name);
-            step_build(args, &package)?;
-            touch(&build_marker_path).context("Failed to update build marker file (.build)")?;
+        println!("[{}]\tBuilding package", &package.package.name);
+        step_build(args, &package)?;
+        touch(&build_marker_path).context("Failed to update build marker file (.build)")?;
 
-            println!(
-                "[{}]\tBuild finished for version \"{}\"",
-                package.package.name, package.package.version
-            );
-        }
+        println!(
+            "[{}]\tBuild finished for version \"{}\"",
+            package.package.name, package.package.version
+        );
     }
 
     if determine_if_step_needed(&pkg_file_path, &install_marker_path)?

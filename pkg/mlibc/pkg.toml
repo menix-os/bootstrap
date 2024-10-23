@@ -13,7 +13,7 @@ build = ["host-binutils", "host-gcc", "host-libgcc"]
 
 [configure]
 script = """
-meson_configure -Ddefault_library=static
+meson_configure -Ddefault_library=static -Dlibgcc_dependency=false
 """
 
 [build]
