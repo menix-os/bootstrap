@@ -163,7 +163,7 @@ pub fn do_git_clone(
     source_path: &PathBuf,
 ) -> anyhow::Result<()> {
     let mut clone_cmd = Command::new("git");
-    clone_cmd.arg("clone");
+    clone_cmd.arg("clone").args(["--depth", "1"]);
 
     if let Some(branch_name) = branch {
         clone_cmd.args(vec!["--branch", branch_name]);

@@ -4,7 +4,7 @@ version = "6.3.0"
 archs = ["x86_64"]
 
 [dependencies]
-build = ["host-binutils", "host-gcc"]
+build = ["host-binutils", "host-gcc", "host-autoconf", "host-automake"]
 
 [[sources]]
 url = "https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz"

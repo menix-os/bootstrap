@@ -10,7 +10,7 @@ branch = "master"
 patches = ["menix.patch"]
 
 [dependencies]
-host = ["make", "automake", "gcc", "ld", "as", "pkg-config"]
+host = ["automake", "autoconf", "gcc", "ld", "as", "pkg-config"]
 build = ["host-binutils", "mlibc-headers"]
 
 [configure]
@@ -22,17 +22,19 @@ ${SOURCE_DIR}/configure \
 	--prefix="${PREFIX}" \
 	--enable-threads=posix \
 	--disable-multilib \
-	--enable-shared \
-	--enable-host-shared \
-	--with-pic
+	--enable-initfini-array \
+	--disable-shared \
+	--disable-nls
 """
 
 [build]
 script = """
-make -j${THREADS} all-gcc
+make -j${THREADS} inhibit_libc=true all-gcc
+make -j${THREADS} inhibit_libc=true all-target-libgcc
 """
 
 [install]
 script = """
 DESTDIR="${INSTALL_DIR}" make install-gcc
+DESTDIR="${INSTALL_DIR}" make install-target-libgcc
 """

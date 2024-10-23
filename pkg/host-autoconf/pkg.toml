@@ -1,17 +1,16 @@
 [package]
-name = "host-automake"
-version = "1.15.1"
+name = "host-autoconf"
+version = "2.69"
 archs = ["x86_64"]
 host = true
 
 [[sources]]
-url = "https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz"
-path = "automake-1.15.1.tar.gz"
-patches = ["menix.patch"]
+url = "https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz"
+path = "autoconf-2.69.tar.xz"
 
 [dependencies]
 host = ["autoconf"]
-build = ["host-gcc", "host-autoconf"]
+build = ["host-gcc"]
 
 [configure]
 script = """
