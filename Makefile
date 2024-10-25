@@ -48,7 +48,7 @@ QEMU_FULL=-smp 8 -m 4G \
 	-drive file=fat:rw:$(INSTALL_DIR),if=none,id=fatfs \
 	-device pcie-pci-bridge,id=bridge1 \
 	-device virtio-gpu,bus=bridge1 \
-	-device nvme,serial=deadbeef,drive=fatfs,bus=bridge1 \
+	-device nvme,serial=deadbeef,drive=fatfs \
 	-device qemu-xhci,id=xhci,bus=bridge1 \
 	-device usb-kbd,bus=xhci.0 \
 	-device usb-mouse,bus=xhci.0
