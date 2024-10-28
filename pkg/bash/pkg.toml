@@ -9,7 +9,7 @@ path = "bash-5.1.tar.gz"
 patches = ["menix.patch"]
 
 [dependencies]
-build = ["host-gcc", "host-binutils", "readline", "host-automake"]
+build = ["host-automake", "host-gcc", "host-binutils"]
 
 [configure]
 script = """

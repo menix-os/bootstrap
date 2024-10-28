@@ -1,27 +1,13 @@
-diff --git a/lib/config.guess b/lib/config.guess
-index f6d217a49..b2480c113 100755
---- a/lib/config.guess
-+++ b/lib/config.guess
-@@ -978,6 +978,9 @@ EOF
-     *:[Mm]anagarm:*:*)
- 	GUESS="$UNAME_MACHINE-unknown-managarm-mlibc"
- 	;;
-+    *:[Mm]enix:*:*)
-+	GUESS="$UNAME_MACHINE-pc-menix"
-+	;;
-     *:Minix:*:*)
- 	GUESS=$UNAME_MACHINE-unknown-minix
- 	;;
-diff --git a/lib/config.sub b/lib/config.sub
-index 2c6a07ab3..4076b842e 100755
---- a/lib/config.sub
-+++ b/lib/config.sub
-@@ -1768,7 +1768,7 @@ case $os in
+Index: host-automake/lib/config.sub
+===================================================================
+--- host-automake.orig/lib/config.sub
++++ host-automake/lib/config.sub
+@@ -1748,7 +1748,7 @@ case $os in
+ 	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
  	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
  	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
- 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
--	     | fiwix* | mlibc* | cos* | mbr* | ironclad* )
-+	     | fiwix* | mlibc* | cos* | mbr* | ironclad* | menix* )
+-	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr*)
++	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* | menix*)
  		;;
  	# This one is extra strict with allowed versions
  	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)

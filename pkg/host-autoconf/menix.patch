@@ -1,0 +1,13 @@
+Index: host-autoconf/build-aux/config.sub
+===================================================================
+--- host-autoconf.orig/build-aux/config.sub
++++ host-autoconf/build-aux/config.sub
+@@ -1766,7 +1766,7 @@ case $os in
+ 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
+ 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
+ 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
+-	     | fiwix* | mlibc* | cos* | mbr* )
++	     | fiwix* | mlibc* | cos* | mbr* | menix* )
+ 		;;
+ 	# This one is extra strict with allowed versions
+ 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)

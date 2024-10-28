@@ -1,21 +1,21 @@
 [package]
 name = "host-automake"
-version = "1.15.1"
+version = "1.16.5"
 archs = ["x86_64"]
 host = true
 
 [[sources]]
-url = "https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz"
-path = "automake-1.15.1.tar.gz"
+url = "https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz"
+path = "automake-1.16.5.tar.gz"
 patches = ["menix.patch"]
 
 [dependencies]
 host = ["autoconf"]
-build = ["host-gcc", "host-autoconf"]
+build = ["host-autoconf"]
 
 [configure]
 script = """
-${SOURCE_DIR}/configure --host="${OS_TRIPLET}" --prefix="${PREFIX_HOST}" --with-sysroot="${SYSROOT_DIR}"
+${SOURCE_DIR}/configure --host="${OS_TRIPLET}" --prefix="${PREFIX_HOST}"
 """
 
 [build]

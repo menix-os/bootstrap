@@ -1,12 +1,13 @@
 [package]
 name = "host-autoconf"
-version = "2.69"
+version = "2.72"
 archs = ["x86_64"]
 host = true
 
 [[sources]]
-url = "https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz"
-path = "autoconf-2.69.tar.xz"
+url = "https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz"
+path = "autoconf-2.72.tar.xz"
+patches = ["menix.patch"]
 
 [dependencies]
 host = ["autoconf"]
@@ -14,7 +15,7 @@ build = ["host-gcc"]
 
 [configure]
 script = """
-${SOURCE_DIR}/configure --host="${OS_TRIPLET}" --prefix="${PREFIX_HOST}" --with-sysroot="${SYSROOT_DIR}"
+${SOURCE_DIR}/configure --host="${OS_TRIPLET}" --prefix="${PREFIX_HOST}"
 """
 
 [build]
