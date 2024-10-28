@@ -12,7 +12,7 @@ endif
 ###################################
 
 .PHONY: all
-all: $(IMAGE_NAME).iso
+all: install
 
 .PHONY: source
 source:
@@ -44,8 +44,8 @@ ifeq ($(DEBUG),1)
 QEMU_DEBUG=-d cpu_reset,int -s -S
 endif
 ifeq ($(FULL),1)
-QEMU_FULL=-smp 8 -m 4G \
-	-drive file=fat:rw:$(INSTALL_DIR),if=none,id=fatfs \
+QEMU_FULL=-smp 8,sockets=1,cores=4,threads=2,maxcpus=8 \
+	-drive format=raw,file=fat:rw:$(INSTALL_DIR),if=none,id=fatfs \
 	-device pcie-pci-bridge,id=bridge1 \
 	-device virtio-gpu,bus=bridge1 \
 	-device nvme,serial=deadbeef,drive=fatfs \

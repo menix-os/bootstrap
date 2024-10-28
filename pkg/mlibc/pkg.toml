@@ -23,5 +23,5 @@ ninja -j${THREADS}
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" ninja install
+ninja install
 """

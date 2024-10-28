@@ -35,6 +35,6 @@ make -j${THREADS} inhibit_libc=true all-target-libgcc
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install-gcc
-DESTDIR="${INSTALL_DIR}" make install-target-libgcc
+make install-gcc
+make install-target-libgcc
 """

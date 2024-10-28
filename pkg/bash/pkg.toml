@@ -9,7 +9,7 @@ path = "bash-5.1.tar.gz"
 patches = ["menix.patch"]
 
 [dependencies]
-build = ["host-automake", "host-gcc", "host-binutils"]
+build = ["host-automake", "host-gcc", "host-binutils", "readline"]
 
 [configure]
 script = """
@@ -18,10 +18,10 @@ autotools_configure --without-bash-malloc
 
 [build]
 script = """
-make -j${THREADS}
+make -j1
 """
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install
+make install
 """

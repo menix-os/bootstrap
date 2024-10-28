@@ -26,5 +26,5 @@ make -j${THREADS} all-gcc all-target-libgcc all-target-libstdc++-v3
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install-gcc install-target-libgcc install-target-libstdc++-v3
+make install-gcc install-target-libgcc install-target-libstdc++-v3
 """

@@ -21,7 +21,7 @@ autotools_configure \
 	--with-pic \
 	--with-sysroot=/ \
 	--with-build-sysroot="${SYSROOT_DIR}" \
-	--prefix="${PREFIX_HOST}"
+	--prefix="${PREFIX}"
 """
 
 [build]
@@ -31,5 +31,5 @@ make -j${THREADS}
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install
+make install
 """

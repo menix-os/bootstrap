@@ -1,0 +1,27 @@
+[package]
+name = "readline"
+version = "8.2"
+archs = ["x86_64"]
+
+[[sources]]
+url = "https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz"
+path = "readline-8.2.tar.gz"
+patches = ["menix.patch"]
+
+[dependencies]
+build = ["host-automake", "host-gcc", "host-binutils"]
+
+[configure]
+script = """
+autotools_configure --enable-multibyte
+"""
+
+[build]
+script = """
+make -j${THREADS}
+"""
+
+[install]
+script = """
+make install
+"""

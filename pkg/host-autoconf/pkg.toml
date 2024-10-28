@@ -14,7 +14,7 @@ host = ["autoconf"]
 
 [configure]
 script = """
-${SOURCE_DIR}/configure --host="${OS_TRIPLET}" --prefix="${HOST_DIR}/${PREFIX_HOST}"
+${SOURCE_DIR}/configure --host="${OS_TRIPLET}" --prefix="${PREFIX_HOST}"
 """
 
 [build]

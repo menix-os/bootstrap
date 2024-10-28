@@ -1,7 +1,7 @@
-PREFIX="/usr"
-PREFIX_HOST="/usr/local"
+PREFIX="${INSTALL_DIR}/usr"
+PREFIX_HOST="${HOST_DIR}/usr/local"
 
-PATH="${HOST_DIR}/${PREFIX_HOST}/bin":${PATH}
+PATH="${PREFIX_HOST}/bin":${PATH}
 
 OS_TRIPLET="${ARCH}-pc-menix"
 

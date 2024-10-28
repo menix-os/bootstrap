@@ -29,5 +29,5 @@ make -j${THREADS}
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install
+make install
 """

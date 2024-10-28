@@ -1,7 +1,7 @@
-diff --git a/support/config.sub b/support/config.sub
-index c874b7a..783dd47 100755
---- a/support/config.sub
-+++ b/support/config.sub
+Index: bash/support/config.sub
+===================================================================
+--- bash.orig/support/config.sub
++++ bash/support/config.sub
 @@ -1720,7 +1720,7 @@ case $os in
  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
  	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
@@ -11,18 +11,3 @@ index c874b7a..783dd47 100755
  		;;
  	# This one is extra strict with allowed versions
  	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
-diff --git a/support/shobj-conf b/support/shobj-conf
-index b46be65..030c87a 100755
---- a/support/shobj-conf
-+++ b/support/shobj-conf
-@@ -87,6 +87,10 @@ sunos4*-*gcc*)
- 	SHLIB_LIBVERSION='$(SHLIB_LIBSUFF).$(SHLIB_MAJOR)$(SHLIB_MINOR)'
- 	;;
- 
-+menix*-*gcc*)
-+	SHOBJ_CFLAGS=-fpic
-+	;;
-+
- sunos4*)
- 	SHOBJ_CFLAGS=-pic
- 	SHOBJ_LD=/usr/bin/ld
