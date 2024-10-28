@@ -19,7 +19,7 @@ ${SOURCE_DIR}/configure \
 	--disable-werror \
 	--with-pic \
 	--with-sysroot="${SYSROOT_DIR}" \
-	--prefix="${PREFIX}"
+	--prefix="${PREFIX_HOST}"
 """
 
 [build]

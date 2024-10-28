@@ -19,7 +19,7 @@ ${SOURCE_DIR}/configure \
 	--target=${OS_TRIPLET} \
 	--enable-languages=c,c++,lto \
 	--with-sysroot="${SYSROOT_DIR}" \
-	--prefix="${PREFIX}" \
+	--prefix="${PREFIX_HOST}" \
 	--enable-threads=posix \
 	--disable-multilib \
 	--enable-initfini-array \

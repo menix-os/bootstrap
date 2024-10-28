@@ -1,9 +1,9 @@
-PATH=${HOST_DIR}/usr/bin:${HOST_DIR}/usr/local/bin:${PATH}
-
-OS_TRIPLET="${ARCH}-pc-menix"
-
 PREFIX="/usr"
 PREFIX_HOST="/usr/local"
+
+PATH="${HOST_DIR}/${PREFIX_HOST}/bin":${PATH}
+
+OS_TRIPLET="${ARCH}-pc-menix"
 
 BIN_DIR="${PREFIX}/bin"
 SBIN_DIR="${PREFIX}/sbin"
