@@ -35,7 +35,7 @@ make -j${THREADS}
 
 [install]
 script = """
-DESTDIR="${INSTALL_DIR}" make install
+make install
 mkdir -p ${INSTALL_DIR}/boot
 cp ${PACKAGE_DIR}/limine.conf ${INSTALL_DIR}/boot/
 mkdir -p ${INSTALL_DIR}/EFI/BOOT
