@@ -1,9 +1,9 @@
-PREFIX="${INSTALL_DIR}/usr"
-PREFIX_HOST="${HOST_DIR}/usr/local"
+export PREFIX="${INSTALL_DIR}/usr"
+export PREFIX_HOST="${HOST_DIR}/usr/local"
 
 PATH="${PREFIX_HOST}/bin":${PATH}
 
-OS_TRIPLET="${ARCH}-pc-menix"
+export OS_TRIPLET="${ARCH}-pc-menix"
 
 BIN_DIR="${PREFIX}/bin"
 SBIN_DIR="${PREFIX}/sbin"
