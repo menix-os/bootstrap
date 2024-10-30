@@ -1,11 +1,11 @@
 [package]
 name = "limine"
-version = "8.1.1"
+version = "8.3.1"
 archs = ["x86_64"]
 
 [[sources]]
 repo = "https://github.com/limine-bootloader/limine"
-branch = "v8.1.1"
+branch = "v8.3.1"
 
 [dependencies]
 host = ["make", "automake"]
@@ -17,15 +17,11 @@ if [ ${ARCH} = "x86_64" ]; then
 	export ARCH=x86-64
 fi
 
-# Temporary workaround because -O0 seems to break
-export CFLAGS=-O3
 ${SOURCE_DIR}/bootstrap
 
-${SOURCE_DIR}/configure \
+autotools_configure \
 	TOOLCHAIN_FOR_TARGET=${OS_TRIPLET} \
-    --enable-uefi-${ARCH} \
-	--with-sysroot="${INSTALL_DIR}" \
-	--prefix="${PREFIX}"
+    --enable-uefi-${ARCH}
 """
 
 [build]
@@ -36,6 +32,7 @@ make -j${THREADS}
 [install]
 script = """
 make install
+
 mkdir -p ${INSTALL_DIR}/boot
 cp ${PACKAGE_DIR}/limine.conf ${INSTALL_DIR}/boot/
 mkdir -p ${INSTALL_DIR}/EFI/BOOT
