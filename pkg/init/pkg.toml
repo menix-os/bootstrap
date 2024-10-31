@@ -4,9 +4,7 @@ version = "latest"
 archs = ["x86_64"]
 
 [dependencies]
-host = ["cmake", "gcc", "as", "ld"]
-build = ["host-gcc", "host-binutils"]
-runtime = ["initrd"]
+build = ["base", "host-gcc", "host-binutils"]
 
 [[sources]]
 repo = "https://github.com/menix-os/init"
@@ -19,7 +17,7 @@ script = """
 
 [build]
 script = """
-${OS_TRIPLET}-gcc ${SOURCE_DIR}/main.c -o init -ffreestanding -nostdlib
+${OS_TRIPLET}-gcc ${SOURCE_DIR}/main.c -o init
 """
 
 [install]
