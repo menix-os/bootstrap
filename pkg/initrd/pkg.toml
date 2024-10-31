@@ -9,6 +9,7 @@ shared_build = "kernel"
 script = """
 rm -rf ${BUILD_DIR}/initrd_build/boot/
 mkdir -p ${BUILD_DIR}/initrd_build/boot/
+cp -r ${INSTALL_DIR}/usr ${BUILD_DIR}/initrd_build/usr
 cp -r ${BUILD_DIR}/bin/mod ${BUILD_DIR}/initrd_build/boot/modules
 cd ${BUILD_DIR}/initrd_build
 
