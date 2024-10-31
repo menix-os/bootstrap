@@ -1,0 +1,7 @@
+[package]
+name = "base"
+version = "latest"
+archs = []
+
+[dependencies]
+build = ["host-automake", "host-binutils", "host-gcc", "mlibc", "mlibc-headers"]

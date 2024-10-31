@@ -8,8 +8,8 @@ repo = "https://github.com/limine-bootloader/limine"
 branch = "v8.3.1"
 
 [dependencies]
-host = ["make", "automake"]
-build = ["host-binutils", "host-gcc"]
+host = ["make"]
+build = ["base", "host-automake", "host-binutils", "host-gcc"]
 
 [configure]
 script = """
