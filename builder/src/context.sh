@@ -11,7 +11,7 @@ LIB_DIR="${PREFIX}/lib"
 ETC_DIR="/etc"
 VAR_DIR="/var"
 
-if [ "${DEBUG}" == "1" ]; then
+if [ "${IS_DEBUG}" == "1" ]; then
 	HOST_CFLAGS="-O0 -g -pipe -fstack-clash-protection"
 	HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
 	HOST_LDFLAGS="-Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now"
@@ -44,7 +44,7 @@ meson_configure() {
 }
 
 meson_configure_noflags() {
-	if [ "${DEBUG}" == "1" ]; then
+	if [ "${IS_DEBUG}" = "1" ]; then
 		MESON_BUILD_TYPE="debug"
 	else
 		MESON_BUILD_TYPE="release"
