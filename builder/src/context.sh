@@ -61,6 +61,19 @@ meson_configure_noflags() {
 		"$@"
 }
 
+cmake_configure() {
+	if [ "${IS_DEBUG}" = "1" ]; then
+		CMAKE_BUILD_TYPE="Debug"
+	else
+		CMAKE_BUILD_TYPE="Release"
+	fi
+
+	cmake -S ${SOURCE_DIR} -B ${BUILD_DIR} \
+		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+		-DCMAKE_C_COMPILER="${OS_TRIPLET}-gcc" \
+		"$@"
+}
+
 autotools_configure() {
     if [ -z "${CONFIGURE_SCRIPT}" ]; then
         CONFIGURE_SCRIPT="${SOURCE_DIR}/configure"
