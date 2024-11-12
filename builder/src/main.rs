@@ -188,7 +188,10 @@ fn step_source(args: &Args, base_dir: &Path, package: &Package) -> anyhow::Resul
 /// Configures a package.
 fn step_configure(args: &Args, package: &Package) -> anyhow::Result<()> {
     let mut cfg_cmd = Command::new("bash");
-    cfg_cmd.current_dir(args.build_path.join(&package.package.name));
+    match &package.package.shared_build {
+        Some(x) => cfg_cmd.current_dir(args.build_path.join(x)),
+        None => cfg_cmd.current_dir(args.build_path.join(&package.package.name)),
+    };
     add_env_to_cmd(&mut cfg_cmd, package, args)?;
 
     if let Some(configure) = &package.configure {
@@ -200,7 +203,10 @@ fn step_configure(args: &Args, package: &Package) -> anyhow::Result<()> {
 /// Builds a package from the source directory to the build dir.
 fn step_build(args: &Args, package: &Package) -> anyhow::Result<()> {
     let mut build_cmd = Command::new("bash");
-    build_cmd.current_dir(args.build_path.join(&package.package.name));
+    match &package.package.shared_build {
+        Some(x) => build_cmd.current_dir(args.build_path.join(x)),
+        None => build_cmd.current_dir(args.build_path.join(&package.package.name)),
+    };
     add_env_to_cmd(&mut build_cmd, package, args)?;
 
     if let Some(build) = &package.build {
@@ -212,7 +218,10 @@ fn step_build(args: &Args, package: &Package) -> anyhow::Result<()> {
 /// Installs a package from the build directory to the install dir.
 fn step_install(args: &Args, package: &Package) -> anyhow::Result<()> {
     let mut install_cmd = Command::new("bash");
-    install_cmd.current_dir(args.build_path.join(&package.package.name));
+    match &package.package.shared_build {
+        Some(x) => install_cmd.current_dir(args.build_path.join(x)),
+        None => install_cmd.current_dir(args.build_path.join(&package.package.name)),
+    };
     add_env_to_cmd(&mut install_cmd, package, args)?;
 
     if let Some(install) = &package.install {

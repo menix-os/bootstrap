@@ -74,6 +74,10 @@ cmake_configure() {
 		"$@"
 }
 
+cmake_build() {
+	cmake --build ${BUILD_DIR} -j ${THREADS}
+}
+
 autotools_configure() {
     if [ -z "${CONFIGURE_SCRIPT}" ]; then
         CONFIGURE_SCRIPT="${SOURCE_DIR}/configure"

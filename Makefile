@@ -9,8 +9,6 @@ ifeq ($(DEBUG),1)
 DEBUG_FLAG=--debug
 endif
 
-###################################
-
 .PHONY: all
 all: install
 
@@ -30,35 +28,41 @@ configure:
 install:
 	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) install
 
-# Removes all output files
 .PHONY: clean
 clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "Cleaned output files"
 
-########
-# QEMU #
-########
-
 ifeq ($(DEBUG),1)
 QEMU_DEBUG=-d cpu_reset,int -s -S
 endif
-ifeq ($(FULL),1)
-QEMU_FULL=-smp 8,sockets=1,cores=4,threads=2,maxcpus=8 \
-	-drive format=raw,file=fat:rw:$(INSTALL_DIR),if=none,id=fatfs \
-	-device pcie-pci-bridge,id=bridge1 \
-	-device virtio-gpu,bus=bridge1 \
-	-device nvme,serial=deadbeef,drive=fatfs \
-	-device qemu-xhci,id=xhci,bus=bridge1 \
-	-device usb-kbd,bus=xhci.0 \
-	-device usb-mouse,bus=xhci.0
-else
-QEMU_FULL=-drive file=fat:rw:$(INSTALL_DIR)
-endif
 
-.PHONY: qemu
+QEMU_COMMON=-name "menix $(ARCH)" \
+	-serial stdio \
+	-no-reboot -no-shutdown \
+	-m 8G \
+	-smp $(JOBS) \
+	-drive format=raw,file=fat:rw:$(INSTALL_DIR),if=none,id=fatfs \
+	-device virtio-gpu \
+	-netdev user,id=net0 \
+	-device virtio-net,disable-modern=on,netdev=net0 \
+	-device nvme,serial=deadbeef,drive=fatfs \
+	-device qemu-xhci,id=xhci \
+	-device usb-kbd,bus=xhci.0 \
+	-device usb-mouse,bus=xhci.0 \
+	$(QEMU_DEBUG)
+
+.PHONY: qemu qemu-x86_64 qemu-aarch64 qemu-riscv64 qemu-loongarch64
 qemu: install qemu-$(ARCH)
 
-.PHONY: qemu-x86_64
 qemu-x86_64:
-	qemu-system-x86_64 -bios $(QEMU_BIOS) $(QEMU_DEBUG) -m 8G -no-reboot -no-shutdown -machine q35 -cpu max -serial stdio $(QEMU_FLAGS) $(QEMU_FULL)
+	qemu-system-x86_64 -bios $(QEMU_BIOS) -machine q35 -cpu max -enable-kvm $(QEMU_COMMON) $(QEMU_FLAGS)
+
+qemu-aarch64:
+	qemu-system-aarch64 -bios $(QEMU_BIOS) -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
+
+qemu-riscv64:
+	qemu-system-riscv64 -bios $(QEMU_BIOS) -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
+
+qemu-loongarch64:
+	qemu-system-loongarch64 -bios $(QEMU_BIOS) -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)

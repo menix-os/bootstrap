@@ -1,5 +1,5 @@
 diff --git a/bfd/config.bfd b/bfd/config.bfd
-index 6553aac1e99..020ddabc6a4 100644
+index 6553aac1..020ddabc 100644
 --- a/bfd/config.bfd
 +++ b/bfd/config.bfd
 @@ -665,6 +665,11 @@ case "${targ}" in
@@ -27,7 +27,7 @@ index 6553aac1e99..020ddabc6a4 100644
    i[3-7]86-*-lynxos*)
      targ_defvec=i386_elf32_vec
 diff --git a/config.sub b/config.sub
-index 2c6a07ab3c3..4076b842e31 100755
+index 2c6a07ab..4076b842 100755
 --- a/config.sub
 +++ b/config.sub
 @@ -1768,7 +1768,7 @@ case $os in
@@ -40,7 +40,7 @@ index 2c6a07ab3c3..4076b842e31 100755
  	# This one is extra strict with allowed versions
  	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
 diff --git a/gas/configure.tgt b/gas/configure.tgt
-index d58f21873a3..b4a5a7725e6 100644
+index d58f2187..638cb1ab 100644
 --- a/gas/configure.tgt
 +++ b/gas/configure.tgt
 @@ -6,12 +6,12 @@
@@ -75,20 +75,21 @@ index d58f21873a3..b4a5a7725e6 100644
    mt-*-elf)				fmt=elf bfd_gas=yes ;;
  
    msp430-*-*)				fmt=elf ;;
-@@ -428,7 +429,7 @@ case ${generic_target} in
-   wasm32-*-*)                           fmt=elf ;;
- 
-   xstormy16-*-*)			fmt=elf ;;
--  
-+
-   xgate-*-*)    			fmt=elf ;;
- 
-   xtensa*-*-*)				fmt=elf ;;
 diff --git a/ld/configure.tgt b/ld/configure.tgt
-index 74ddac49863..48b81ac780f 100644
+index 74ddac49..93e724f0 100644
 --- a/ld/configure.tgt
 +++ b/ld/configure.tgt
-@@ -381,6 +381,9 @@ i[3-7]86-*-linux-*)	targ_emul=elf_i386
+@@ -98,6 +98,9 @@ aarch64-*-freebsd*)	targ_emul=aarch64fbsd
+ aarch64-*-fuchsia*)	targ_emul=aarch64elf
+ 			targ_extra_emuls="aarch64elfb armelf armelfb"
+ 			;;
++aarch64-*-menix*)	targ_emul=aarch64elf
++			targ_extra_emuls="aarch64elfb armelf armelfb"
++			;;
+ aarch64_be-*-linux-gnu_ilp32)
+ 			targ_emul=aarch64linux32b
+ 			targ_extra_libpath="aarch64linuxb aarch64linux aarch64linux32 armelfb_linux_eabi armelf_linux_eabi"
+@@ -381,6 +384,9 @@ i[3-7]86-*-linux-*)	targ_emul=elf_i386
  			targ64_extra_emuls="elf_x86_64 elf32_x86_64"
  			targ64_extra_libpath="elf_x86_64 elf32_x86_64"
  			;;
@@ -98,7 +99,7 @@ index 74ddac49863..48b81ac780f 100644
  i[3-7]86-*-redox*)	targ_emul=elf_i386
  			targ_extra_emuls=elf_x86_64
  			;;
-@@ -1020,6 +1023,9 @@ x86_64-*-linux-*)	targ_emul=elf_x86_64
+@@ -1020,6 +1026,9 @@ x86_64-*-linux-*)	targ_emul=elf_x86_64
  			targ_extra_libpath="elf_i386 elf32_x86_64"
  			tdir_elf_i386=`echo ${targ_alias} | sed -e 's/x86_64/i386/'`
  			;;
