@@ -2,11 +2,17 @@ BUILD_DIR?=build
 INSTALL_DIR?=build/install
 JOBS?=$(shell nproc)
 ARCH?=x86_64
+PKG?=all
 QEMU_FLAGS?=
 QEMU_BIOS?=/usr/share/qemu/ovmf-x86_64.bin
 IMAGE_NAME=menix
+
 ifeq ($(DEBUG),1)
 DEBUG_FLAG=--debug
+endif
+
+ifneq ($(PKG),all)
+PKG_FLAG=-p $(PKG)
 endif
 
 .PHONY: all
@@ -14,19 +20,19 @@ all: install
 
 .PHONY: source
 source:
-	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) source
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) $(PKG_FLAG) source
 
 .PHONY: build
 build:
-	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) build
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) $(PKG_FLAG) build
 
 .PHONY: configure
 configure:
-	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) configure
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) $(PKG_FLAG) configure
 
 .PHONY: install
 install:
-	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) install
+	@cargo run --manifest-path=builder/Cargo.toml -- $(DEBUG_FLAG) -j $(JOBS) --arch $(ARCH) $(PKG_FLAG) install
 
 .PHONY: clean
 clean:
@@ -40,23 +46,20 @@ endif
 QEMU_COMMON=-name "menix $(ARCH)" \
 	-serial stdio \
 	-no-reboot -no-shutdown \
-	-m 8G \
+	-m 2G \
 	-smp $(JOBS) \
 	-drive format=raw,file=fat:rw:$(INSTALL_DIR),if=none,id=fatfs \
 	-device virtio-gpu \
 	-netdev user,id=net0 \
 	-device virtio-net,disable-modern=on,netdev=net0 \
 	-device nvme,serial=deadbeef,drive=fatfs \
-	-device qemu-xhci,id=xhci \
-	-device usb-kbd,bus=xhci.0 \
-	-device usb-mouse,bus=xhci.0 \
 	$(QEMU_DEBUG)
 
 .PHONY: qemu qemu-x86_64 qemu-aarch64 qemu-riscv64 qemu-loongarch64
 qemu: install qemu-$(ARCH)
 
 qemu-x86_64:
-	qemu-system-x86_64 -bios $(QEMU_BIOS) -machine q35 -cpu max -enable-kvm $(QEMU_COMMON) $(QEMU_FLAGS)
+	qemu-system-x86_64 -bios $(QEMU_BIOS) -machine q35 -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
 
 qemu-aarch64:
 	qemu-system-aarch64 -bios $(QEMU_BIOS) -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
