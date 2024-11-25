@@ -15,7 +15,7 @@ path = "../../../menix"
 [configure]
 script = """
 if [ ${IS_DEBUG} == "1" ]; then {
-	export CMAKE_BUILD_TYPE=Debug
+	export CMAKE_BUILD_TYPE=RelWithDebInfo
 } else {
 	export CMAKE_BUILD_TYPE=Release
 } fi
