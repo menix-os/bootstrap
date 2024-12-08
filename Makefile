@@ -4,7 +4,7 @@ JOBS?=$(shell nproc)
 ARCH?=x86_64
 PKG?=all
 QEMU_FLAGS?=
-QEMU_BIOS?=/usr/share/qemu/ovmf-x86_64.bin
+QEMU_BIOS?=/usr/share/ovmf/x64/OVMF.4m.fd
 IMAGE_NAME=menix
 
 ifeq ($(DEBUG),1)
