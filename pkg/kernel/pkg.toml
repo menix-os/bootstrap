@@ -11,29 +11,24 @@ repo = "https://github.com/menix-os/menix"
 branch = "rust_test"
 path = "../../../menix"
 
+[configure]
+script = """
+if [ ${IS_DEBUG} == "1" ]; then {
+	export CMAKE_BUILD_TYPE=Debug
+} else {
+	export CMAKE_BUILD_TYPE=Release
+} fi
+
+cmake -B ${BUILD_DIR} -S ${SOURCE_DIR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+"""
+
 [build]
 script = """
-if [ "${IS_DEBUG}" == "0" ]; then
-	export BUILD_MODE="--release"
-fi
-
-cd ${SOURCE_DIR}
-export RUSTUP_TOOLCHAIN=""
-cargo build \
-	${BUILD_MODE} \
-	--lib \
-	--target "${SOURCE_DIR}/toolchain/${ARCH}.json" \
-	--target-dir "${BUILD_DIR}"
+cmake --build ${BUILD_DIR} -j${THREADS}
 """
 
 [install]
 script = """
-if [ "${IS_DEBUG}" == "0" ]; then
-	export CARGO_DIR="release"
-else
-	export CARGO_DIR="debug"
-fi
-
 mkdir -p ${INSTALL_DIR}/boot/
-cp -r "${BUILD_DIR}/${ARCH}/${CARGO_DIR}/libmenix.so" ${INSTALL_DIR}/boot/menix
+cp -r ${BUILD_DIR}/bin/menix ${INSTALL_DIR}/boot/
 """
