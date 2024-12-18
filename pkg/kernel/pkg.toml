@@ -8,7 +8,7 @@ build = ["base"]
 
 [[sources]]
 repo = "https://github.com/menix-os/menix"
-branch = "rust_test"
+branch = "main"
 path = "../../../menix"
 
 [configure]
