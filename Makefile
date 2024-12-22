@@ -4,7 +4,6 @@ JOBS?=$(shell nproc)
 ARCH?=x86_64
 PKG?=all
 QEMU_FLAGS?=
-QEMU_BIOS?=/usr/share/ovmf/x64/OVMF.4m.fd
 IMAGE_NAME=menix
 
 ifeq ($(DEBUG),1)
@@ -59,13 +58,13 @@ QEMU_COMMON=-name "menix $(ARCH)" \
 qemu: install qemu-$(ARCH)
 
 qemu-x86_64:
-	qemu-system-x86_64 -bios $(QEMU_BIOS) -machine q35 -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
+	qemu-system-x86_64 -machine q35,smm=off -cpu host $(QEMU_COMMON) $(QEMU_FLAGS)
 
 qemu-aarch64:
-	qemu-system-aarch64 -bios $(QEMU_BIOS) -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
+	qemu-system-aarch64 -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
 
 qemu-riscv64:
-	qemu-system-riscv64 -bios $(QEMU_BIOS) -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
+	qemu-system-riscv64 -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
 
 qemu-loongarch64:
-	qemu-system-loongarch64 -bios $(QEMU_BIOS) -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
+	qemu-system-loongarch64 -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
