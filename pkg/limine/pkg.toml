@@ -1,11 +1,11 @@
 [package]
 name = "limine"
-version = "8.6.0"
+version = "8.6.1"
 archs = ["x86_64"]
 
 [[sources]]
 repo = "https://github.com/limine-bootloader/limine"
-branch = "v8.6.0"
+branch = "v8.6.1"
 
 [dependencies]
 host = ["make", "nasm"]

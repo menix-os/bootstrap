@@ -9,7 +9,7 @@ branch = "add-menix"
 path = "../../../mlibc"
 
 [dependencies]
-build = ["host-binutils", "host-gcc"]
+build = ["host-binutils", "host-gcc-freestanding"]
 
 [configure]
 script = """

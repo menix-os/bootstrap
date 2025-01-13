@@ -1,17 +1,13 @@
 [package]
-name = "host-gcc"
+name = "host-gcc-freestanding"
 version = "latest"
 archs = ["x86_64"]
 host = true
-
-[[sources]]
-repo = "https://gcc.gnu.org/git/gcc.git"
-branch = "master"
-patches = ["menix.patch"]
+shared_source = "host-gcc"
 
 [dependencies]
 host = ["automake", "autoconf", "gcc", "ld", "as", "pkg-config"]
-build = ["host-binutils", "host-gcc-freestanding", "mlibc-headers", "mlibc"]
+build = ["host-binutils", "mlibc-headers"]
 
 [configure]
 script = """
@@ -23,13 +19,14 @@ ${SOURCE_DIR}/configure \
 	--enable-threads=posix \
 	--disable-multilib \
 	--enable-initfini-array \
+	--disable-shared \
 	--disable-nls
 """
 
 [build]
 script = """
-make -j${THREADS} all-gcc
-make -j${THREADS} all-target-libgcc
+make -j${THREADS} inhibit_libc=true all-gcc
+make -j${THREADS} inhibit_libc=true all-target-libgcc
 """
 
 [install]

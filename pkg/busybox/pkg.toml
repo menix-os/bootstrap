@@ -9,7 +9,7 @@ path = "busybox-1.37.0.tar.bz2"
 patches = ["menix.patch"]
 
 [dependencies]
-build = ["base", "host-gcc", "host-binutils"]
+build = ["base"]
 
 [configure]
 script = """
