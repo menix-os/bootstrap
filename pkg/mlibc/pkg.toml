@@ -9,6 +9,7 @@ branch = "add-menix"
 path = "../../../mlibc"
 
 [dependencies]
+host = ["meson", "ninja"]
 build = ["host-binutils", "host-gcc-freestanding"]
 
 [configure]
