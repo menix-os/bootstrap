@@ -14,7 +14,7 @@ build = ["host-binutils", "host-gcc-freestanding"]
 
 [configure]
 script = """
-meson_configure
+meson_configure -Ddefault_library=both
 """
 
 [build]

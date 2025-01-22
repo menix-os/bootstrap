@@ -58,7 +58,7 @@ QEMU_COMMON=-name "menix $(ARCH)" \
 qemu: install qemu-$(ARCH)
 
 qemu-x86_64:
-	qemu-system-x86_64 -machine q35,smm=off -cpu host -accel kvm $(QEMU_COMMON) $(QEMU_FLAGS)
+	qemu-system-x86_64 -machine q35,smm=off -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
 
 qemu-aarch64:
 	qemu-system-aarch64 -machine virt -cpu max $(QEMU_COMMON) $(QEMU_FLAGS)
