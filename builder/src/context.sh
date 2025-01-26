@@ -3,7 +3,7 @@ export PREFIX_HOST="${HOST_DIR}/usr/local"
 
 PATH="${PREFIX_HOST}/bin":${PATH}
 
-export OS_TRIPLET="${ARCH}-pc-menix"
+export OS_TRIPLET="${ARCH}-unknown-menix"
 
 BIN_DIR="${PREFIX}/bin"
 SBIN_DIR="${PREFIX}/sbin"

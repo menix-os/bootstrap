@@ -1,8 +1,8 @@
 [binaries]
-c = 'x86_64-pc-menix-gcc'
-cpp = 'x86_64-pc-menix-g++'
-ar = 'x86_64-pc-menix-ar'
-strip = 'x86_64-pc-menix-strip'
+c = 'x86_64-unknown-menix-gcc'
+cpp = 'x86_64-unknown-menix-g++'
+ar = 'x86_64-unknown-menix-ar'
+strip = 'x86_64-unknown-menix-strip'
 
 [host_machine]
 system = 'menix'

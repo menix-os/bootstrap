@@ -27,37 +27,21 @@ index 6553aac1..020ddabc 100644
    i[3-7]86-*-lynxos*)
      targ_defvec=i386_elf32_vec
 diff --git a/config.sub b/config.sub
-index 2c6a07ab..4076b842 100755
+index 4aaae46f..b68584dd 100755
 --- a/config.sub
 +++ b/config.sub
-@@ -1768,7 +1768,7 @@ case $os in
- 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
- 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
- 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
--	     | fiwix* | mlibc* | cos* | mbr* | ironclad* )
-+	     | fiwix* | mlibc* | cos* | mbr* | ironclad* | menix* )
- 		;;
- 	# This one is extra strict with allowed versions
- 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
+@@ -2035,6 +2035,7 @@ case $os in
+        | macos* \
+        | magic* \
+        | mbr* \
++       | menix* \
+        | midipix* \
+        | midnightbsd* \
+        | mingw32* \
 diff --git a/gas/configure.tgt b/gas/configure.tgt
 index d58f2187..638cb1ab 100644
 --- a/gas/configure.tgt
 +++ b/gas/configure.tgt
-@@ -6,12 +6,12 @@
- # it under the terms of the GNU General Public License as published by
- # the Free Software Foundation; either version 3 of the License, or
- # (at your option) any later version.
--# 
-+#
- # This program is distributed in the hope that it will be useful,
- # but WITHOUT ANY WARRANTY; without even the implied warranty of
- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- # GNU General Public License for more details.
--# 
-+#
- # You should have received a copy of the GNU General Public License
- # along with this program; see the file COPYING3.  If not see
- # <http://www.gnu.org/licenses/>.
 @@ -243,6 +243,7 @@ case ${generic_target} in
      esac ;;
    i386-*-lynxos*)			fmt=elf em=lynx ;;
@@ -66,15 +50,6 @@ index d58f2187..638cb1ab 100644
    i386-*-solaris*)			fmt=elf em=solaris ;;
    i386-*-freebsd* \
    | i386-*-kfreebsd*-gnu)		fmt=elf em=freebsd ;;
-@@ -339,7 +340,7 @@ case ${generic_target} in
-   moxie-*-uclinux)			fmt=elf em=linux ;;
-   moxie-*-moxiebox*)                    fmt=elf endian=little ;;
-   moxie-*-*)				fmt=elf ;;
--    
-+
-   mt-*-elf)				fmt=elf bfd_gas=yes ;;
- 
-   msp430-*-*)				fmt=elf ;;
 diff --git a/ld/configure.tgt b/ld/configure.tgt
 index 74ddac49..93e724f0 100644
 --- a/ld/configure.tgt
