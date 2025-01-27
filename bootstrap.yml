@@ -1,0 +1,28 @@
+imports:
+- file: packages/bootstrap.yml
+- file: packages/languages.yml
+
+general:
+  patch_author: The menix Project
+  patch_email: info@menix-os.org
+  everything_by_default: false
+  mandate_hashes_for_archives: true
+  enable_network_isolation: true
+
+repositories:
+  tool_archives:
+    x86_64: 'https://build.menix-os.org/repos/tools/x86_64/latest/'
+    aarch64: 'https://build.menix-os.org/repos/tools/aarch64/latest/'
+    riscv64: 'https://build.menix-os.org/repos/tools/riscv64/latest/'
+  xbps:
+    x86_64: 'https://build.menix-os.org/repos/packages/x86_64/latest/'
+    aarch64: 'https://build.menix-os.org/repos/packages/aarch64/latest/'
+    riscv64: 'https://build.menix-os.org/repos/packages/riscv64/latest/'
+
+declare_options:
+- name: arch
+  default: x86_64
+- name: mount-using
+  default: guestfs
+- name: image-size
+  default: 4G
