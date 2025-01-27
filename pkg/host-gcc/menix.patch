@@ -92,7 +92,7 @@ index 06fae1545b1..9596617e23c 100644
    extra_parts="crtbegin.o crtend.o"
    ;;
 +*-*-menix*)
-+  extra_parts="$extra_parts crti.o crtbegin.o crtbeginS.o crtend.o crtendS.o crtn.o"
++  extra_parts="$extra_parts crtbegin.o crtbeginS.o crtend.o crtendS.o"
 +  tmake_file="$tmake_file t-crtstuff-pic t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-libgcc-pic"
 +  ;;
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)

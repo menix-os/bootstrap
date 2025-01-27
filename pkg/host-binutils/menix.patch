@@ -31,13 +31,13 @@ index 4aaae46f..b68584dd 100755
 --- a/config.sub
 +++ b/config.sub
 @@ -2035,6 +2035,7 @@ case $os in
-        | macos* \
-        | magic* \
-        | mbr* \
-+       | menix* \
-        | midipix* \
-        | midnightbsd* \
-        | mingw32* \
+ 	| macos* \
+ 	| magic* \
+ 	| mbr* \
++	| menix* \
+ 	| midipix* \
+ 	| midnightbsd* \
+ 	| mingw32* \
 diff --git a/gas/configure.tgt b/gas/configure.tgt
 index d58f2187..638cb1ab 100644
 --- a/gas/configure.tgt
