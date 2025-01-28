@@ -1,0 +1,68 @@
+sources:
+- name: gcc
+  subdir: 'ports'
+  git: 'https://gcc.gnu.org/git/gcc.git'
+  # TODO: Wait until the next gcc release tag instead of master
+  branch: 'master'
+  version: '@ROLLING_ID@'
+
+tools:
+- name: host-gcc
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: gcc
+  revision: 1
+  tools_required:
+  - tool: host-binutils
+    recursive: true
+  configure:
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--target=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=@PREFIX@'
+    - '--with-bugurl=@OPTION:issue-url@'
+    - '--with-sysroot=@SYSROOT_DIR@'
+    - '--enable-languages=c,c++,lto'
+    - '--enable-threads=posix'
+    - '--disable-multilib'
+    - '--enable-initfini-array'
+    - '--disable-nls'
+  stages:
+  # First build GCC so we can build mlibc.
+  - name: bootstrap
+    pkgs_required:
+    - mlibc-headers
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'inhibit_libc=true', 'all-gcc' ]
+    install:
+    - args: [ 'make', 'install-gcc' ]
+  # After mlibc builds, build without inhibit_libc.
+  - name: compiler
+    tools_required:
+    - tool: host-gcc
+      stage_dependencies: [ bootstrap ]
+    pkgs_required:
+    - mlibc
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-gcc' ]
+    install:
+    - args: [ 'make', 'install-gcc' ]
+  # Then, build the rest.
+  - name: libgcc
+    tools_required:
+    - tool: host-gcc
+      stage_dependencies: [ compiler ]
+    pkgs_required:
+    - mlibc
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-target-libgcc' ]
+    install:
+    - args: [ 'make', 'install-target-libgcc' ]
+  - name: libstdc++
+    tools_required:
+    - tool: host-gcc
+      stage_dependencies: [ libgcc ]
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-target-libstdc++-v3' ]
+    install:
+    - args: [ 'make', 'install-target-libstdc++-v3' ]

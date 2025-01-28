@@ -1,5 +1,20 @@
+From e97d89e397e7cf6ea58ce00a28b845af51efe023 Mon Sep 17 00:00:00 2001
+From: Marvin Friedrich <contact@marvinf.com>
+Date: Tue, 28 Jan 2025 01:40:54 +0100
+Subject: [PATCH] Add Menix support
+
+---
+ config.sub                  |  2 +-
+ fixincludes/mkfixinc.sh     |  1 +
+ gcc/config.gcc              | 12 ++++++++++++
+ gcc/config/menix.h          | 24 ++++++++++++++++++++++++
+ libgcc/config.host          |  8 ++++++++
+ libstdc++-v3/crossconfig.m4 |  6 ++++++
+ 6 files changed, 52 insertions(+), 1 deletion(-)
+ create mode 100644 gcc/config/menix.h
+
 diff --git a/config.sub b/config.sub
-index 38f3d037a78..4df4631ccef 100755
+index 38f3d037a..4df4631cc 100755
 --- a/config.sub
 +++ b/config.sub
 @@ -1749,7 +1749,7 @@ case $os in
@@ -12,7 +27,7 @@ index 38f3d037a78..4df4631ccef 100755
  	# This one is extra strict with allowed versions
  	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
 diff --git a/fixincludes/mkfixinc.sh b/fixincludes/mkfixinc.sh
-index 7112f4dcd64..af608998e80 100755
+index 7112f4dcd..af608998e 100755
 --- a/fixincludes/mkfixinc.sh
 +++ b/fixincludes/mkfixinc.sh
 @@ -12,6 +12,7 @@ target=fixinc.sh
@@ -24,10 +39,10 @@ index 7112f4dcd64..af608998e80 100755
      powerpc-*-eabisim* | \
      powerpc-*-eabi*    | \
 diff --git a/gcc/config.gcc b/gcc/config.gcc
-index fd848228722..15a6294e1b5 100644
+index 9e167f7f0..855a0eec5 100644
 --- a/gcc/config.gcc
 +++ b/gcc/config.gcc
-@@ -889,6 +889,15 @@ case ${target} in
+@@ -886,6 +886,15 @@ case ${target} in
    rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
    ;;
@@ -43,7 +58,7 @@ index fd848228722..15a6294e1b5 100644
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    extra_options="$extra_options gnu-user.opt"
    gas=yes
-@@ -2323,6 +2332,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
+@@ -2321,6 +2330,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
  			;;
  	esac
  	;;
@@ -55,7 +70,7 @@ index fd848228722..15a6294e1b5 100644
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
 diff --git a/gcc/config/menix.h b/gcc/config/menix.h
 new file mode 100644
-index 00000000000..0226b37223d
+index 000000000..0226b3722
 --- /dev/null
 +++ b/gcc/config/menix.h
 @@ -0,0 +1,24 @@
@@ -84,10 +99,10 @@ index 00000000000..0226b37223d
 +    builtin_assert ("system=posix");     \
 +  } while (0);
 diff --git a/libgcc/config.host b/libgcc/config.host
-index 06fae1545b1..9596617e23c 100644
+index 893008106..6352b5c85 100644
 --- a/libgcc/config.host
 +++ b/libgcc/config.host
-@@ -313,6 +313,10 @@ case ${host} in
+@@ -310,6 +310,10 @@ case ${host} in
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
    ;;
@@ -98,7 +113,7 @@ index 06fae1545b1..9596617e23c 100644
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-@@ -958,6 +962,10 @@ x86_64-*-mingw*)
+@@ -956,6 +960,10 @@ x86_64-*-mingw*)
  		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
  	fi
  	;;
@@ -110,7 +125,7 @@ index 06fae1545b1..9596617e23c 100644
  	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
  	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat"
 diff --git a/libstdc++-v3/crossconfig.m4 b/libstdc++-v3/crossconfig.m4
-index b3269cb88e0..22e8a1414d0 100644
+index b3269cb88..22e8a1414 100644
 --- a/libstdc++-v3/crossconfig.m4
 +++ b/libstdc++-v3/crossconfig.m4
 @@ -190,6 +190,12 @@ case "${host}" in
@@ -126,3 +141,6 @@ index b3269cb88e0..22e8a1414d0 100644
    *-mingw32*)
      GLIBCXX_CHECK_LINKER_FEATURES
      GLIBCXX_CHECK_MATH_SUPPORT
+--
+2.48.1
+

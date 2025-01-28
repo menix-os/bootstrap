@@ -4,6 +4,7 @@ define_options:
 labels:
   match:
   - aarch64
+  - any
   ban:
   - local-only
 

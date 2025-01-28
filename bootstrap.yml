@@ -1,9 +1,8 @@
 imports:
-- file: packages/bootstrap.yml
-- file: packages/languages.yml
+- file: packages/tools.yml
 
 general:
-  patch_author: The menix Project
+  patch_author: The Menix Project
   patch_email: info@menix-os.org
   everything_by_default: false
   mandate_hashes_for_archives: true
@@ -22,7 +21,11 @@ repositories:
 declare_options:
 - name: arch
   default: x86_64
+- name: triple
+  default: pc-menix
 - name: mount-using
   default: guestfs
 - name: image-size
   default: 4G
+- name: issue-url
+  default: https://github.com/menix-os/bootstrap/issues

@@ -4,6 +4,7 @@ define_options:
 labels:
   match:
   - riscv64
+  - any
   ban:
   - local-only
 

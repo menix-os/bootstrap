@@ -4,6 +4,7 @@ define_options:
 labels:
   match:
   - x86_64
+  - any
   ban:
   - local-only
 
