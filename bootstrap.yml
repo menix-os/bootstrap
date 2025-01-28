@@ -1,4 +1,6 @@
 imports:
+- file: packages/boot.yml
+- file: packages/system.yml
 - file: packages/tools.yml
 
 general:

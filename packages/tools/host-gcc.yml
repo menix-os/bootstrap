@@ -4,7 +4,7 @@ sources:
   git: 'https://gcc.gnu.org/git/gcc.git'
   # TODO: Wait until the next gcc release tag instead of master
   branch: 'master'
-  version: '@ROLLING_ID@'
+  version: '15.0.0'
 
 tools:
 - name: host-gcc

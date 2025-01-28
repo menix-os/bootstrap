@@ -1,0 +1,37 @@
+sources:
+- name: limine
+  subdir: 'ports'
+  git: 'https://github.com/limine-bootloader/limine.git'
+  tag: 'v8.7.0'
+  version: '8.7.0'
+  regenerate:
+  - args: [ './bootstrap' ]
+    isolate_network: false
+
+packages:
+- name: limine
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  from_source: limine
+  tools_required:
+  - host-gcc
+  pkgs_required:
+  - mlibc
+  configure:
+  # Rename x86_64 to x86-64 because that's what it's called in Limine.
+  - args: |
+      export ARCH=@OPTION:arch@
+      if [ @OPTION:arch@ = "x86_64" ]; then
+        export ARCH=x86-64
+      fi
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--host=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=/usr'
+    - '--enable-uefi-${ARCH}'
+  build:
+  - args: [ 'make', '-j@PARALLELISM@' ]
+  - args: [ 'make', 'install' ]
+  - args: [ 'cp', '@SOURCE_ROOT@/limine/limine.conf', '@THIS_COLLECT_DIR@/boot/limine.conf' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'

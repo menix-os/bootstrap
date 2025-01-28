@@ -12,10 +12,8 @@ pkg_management:
   format: xbps
 
 container:
-  runtime: cbuildrt
-  rootfs: /var/lib/cbuildrt/menix-buildenv
-  uid: 1000
-  gid: 1000
-  src_mount: /var/lib/menix-buildenv/src
-  build_mount: /var/lib/menix-buildenv/build-aarch64
+  runtime: docker
+  image: menix-buildenv
+  src_mount: /var/bootstrap-menix/src
+  build_mount: /var/bootstrap-menix/build
   allow_containerless: true

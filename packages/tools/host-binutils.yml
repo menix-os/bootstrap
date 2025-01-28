@@ -4,7 +4,7 @@ sources:
   git: 'https://sourceware.org/git/binutils-gdb.git'
   # TODO: Wait until the next binutils release tag instead of master
   branch: 'master'
-  version: '@ROLLING_ID@'
+  version: '2.43.1'
 
 tools:
 - name: host-binutils
