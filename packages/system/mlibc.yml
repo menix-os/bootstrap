@@ -33,8 +33,7 @@ packages:
   from_source: mlibc
   revision: 1
   tools_required:
-  - tool: host-gcc
-    stage_dependencies: [ bootstrap ]
+  - host-gcc-bootstrap
   pkgs_required:
   - mlibc-headers
   configure:

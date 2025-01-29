@@ -3,6 +3,6 @@
 .idea/
 
 # xbstrap
-.xbstrap
-ports
-build
+.xbstrap/
+ports/
+build*/

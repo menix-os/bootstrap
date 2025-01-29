@@ -7,7 +7,8 @@ sources:
   version: '15.0.0'
 
 tools:
-- name: host-gcc
+# This GCC only exists so we can build mlibc to build a GCC with .so support.
+- name: host-gcc-bootstrap
   labels: [ x86_64 ]
   architecture: '@OPTION:arch@'
   from_source: gcc
@@ -20,40 +21,61 @@ tools:
     - '@THIS_SOURCE_DIR@/configure'
     - '--target=@OPTION:arch@-@OPTION:triple@'
     - '--prefix=@PREFIX@'
-    - '--with-bugurl=@OPTION:issue-url@'
     - '--with-sysroot=@SYSROOT_DIR@'
     - '--enable-languages=c,c++,lto'
     - '--enable-threads=posix'
-    - '--disable-multilib'
     - '--enable-initfini-array'
+    - '--disable-multilib'
     - '--disable-nls'
+    - '--disable-shared'
   stages:
-  # First build GCC so we can build mlibc.
-  - name: bootstrap
+  - name: compiler
     pkgs_required:
     - mlibc-headers
     compile:
     - args: [ 'make', '-j@PARALLELISM@', 'inhibit_libc=true', 'all-gcc' ]
     install:
     - args: [ 'make', 'install-gcc' ]
-  # After mlibc builds, build without inhibit_libc.
-  - name: compiler
+  - name: libgcc
     tools_required:
-    - tool: host-gcc
-      stage_dependencies: [ bootstrap ]
+    - tool: host-gcc-bootstrap
+      stage_dependencies: [ compiler ]
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'inhibit_libc=true', 'all-target-libgcc' ]
+    install:
+    - args: [ 'make', 'install-target-libgcc' ]
+
+- name: host-gcc
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: gcc
+  revision: 1
+  tools_required:
+  - host-binutils
+  - host-gcc-bootstrap
+  configure:
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--target=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=@PREFIX@'
+    - '--with-sysroot=@SYSROOT_DIR@'
+    - '--with-pic'
+    - '--enable-languages=c,c++,lto'
+    - '--enable-threads=posix'
+    - '--enable-initfini-array'
+    - '--disable-werror'
+  stages:
+  - name: compiler
     pkgs_required:
     - mlibc
     compile:
     - args: [ 'make', '-j@PARALLELISM@', 'all-gcc' ]
     install:
     - args: [ 'make', 'install-gcc' ]
-  # Then, build the rest.
   - name: libgcc
     tools_required:
     - tool: host-gcc
       stage_dependencies: [ compiler ]
-    pkgs_required:
-    - mlibc
     compile:
     - args: [ 'make', '-j@PARALLELISM@', 'all-target-libgcc' ]
     install:
@@ -61,7 +83,7 @@ tools:
   - name: libstdc++
     tools_required:
     - tool: host-gcc
-      stage_dependencies: [ libgcc ]
+      stage_dependencies: [ compiler ]
     compile:
     - args: [ 'make', '-j@PARALLELISM@', 'all-target-libstdc++-v3' ]
     install:

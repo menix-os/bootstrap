@@ -24,7 +24,7 @@ declare_options:
 - name: arch
   default: x86_64
 - name: triple
-  default: pc-menix
+  default: unknown-menix
 - name: mount-using
   default: guestfs
 - name: image-size
