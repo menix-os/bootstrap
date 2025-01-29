@@ -5,4 +5,5 @@
 # xbstrap
 .xbstrap/
 ports/
+sources/
 build*/

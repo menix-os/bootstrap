@@ -1,10 +1,9 @@
 sources:
 - name: mlibc
-  subdir: 'ports'
+  subdir: 'sources'
   git: 'https://github.com/menix-os/mlibc.git'
   branch: 'add-menix'
-  rolling_version: true
-  version: '0.0pl@ROLLING_ID@'
+  version: '0.0.0'
 
 packages:
 - name: mlibc-headers

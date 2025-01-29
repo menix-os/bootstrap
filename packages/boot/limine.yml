@@ -14,24 +14,31 @@ packages:
   architecture: '@OPTION:arch@'
   from_source: limine
   tools_required:
+  - host-binutils
   - host-gcc
-  pkgs_required:
-  - mlibc
   configure:
   # Rename x86_64 to x86-64 because that's what it's called in Limine.
   - args: |
-      export ARCH=@OPTION:arch@
-      if [ @OPTION:arch@ = "x86_64" ]; then
-        export ARCH=x86-64
-      fi
-  - args:
-    - '@THIS_SOURCE_DIR@/configure'
-    - '--host=@OPTION:arch@-@OPTION:triple@'
-    - '--prefix=/usr'
-    - '--enable-uefi-${ARCH}'
+      do_config () {
+        '@THIS_SOURCE_DIR@/configure' '--prefix=/usr' "$@"
+      }
+      case '@OPTION:arch@' in
+      x86_64) do_config --enable-uefi-x86-64 ;;
+      *)      do_config --enable-uefi-@OPTION:arch@ ;;
+      esac
+    environ:
+      TOOLCHAIN_FOR_TARGET: gnu
+      AR_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-gcc-ar'
+      CC_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-gcc'
+      LD_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-ld'
+      OBJCOPY_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-objcopy'
+      OBJDUMP_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-objdump'
+      READELF_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-readelf'
   build:
   - args: [ 'make', '-j@PARALLELISM@' ]
   - args: [ 'make', 'install' ]
-  - args: [ 'cp', '@SOURCE_ROOT@/limine/limine.conf', '@THIS_COLLECT_DIR@/boot/limine.conf' ]
     environ:
       DESTDIR: '@THIS_COLLECT_DIR@'
+  # Copy the configuration
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/' ]
+  - args: [ 'cp', '@SOURCE_ROOT@/extras/limine/limine.conf', '@THIS_COLLECT_DIR@/boot/limine.conf' ]
