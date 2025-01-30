@@ -1,6 +1,6 @@
 sources:
 - name: binutils
-  subdir: 'ports'
+  subdir: ports
   git: 'https://sourceware.org/git/binutils-gdb.git'
   # TODO: Wait until the next binutils release tag instead of master
   branch: 'master'
@@ -25,4 +25,4 @@ tools:
   compile:
   - args: [ 'make', '-j@PARALLELISM@', 'all-binutils', 'all-gas', 'all-ld' ]
   install:
-  - args: [ 'make', 'install-binutils', 'install-gas', 'install-ld' ]
+  - args: [ 'make', '-j@PARALLELISM@', 'install-binutils', 'install-gas', 'install-ld' ]

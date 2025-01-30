@@ -1,3 +1,7 @@
 imports:
+- file: tools/host-autoconf.yml
+- file: tools/host-automake.yml
 - file: tools/host-binutils.yml
 - file: tools/host-gcc.yml
+- file: tools/host-libtool.yml
+- file: tools/host-pkgconf.yml

@@ -4,7 +4,7 @@ define_options:
 labels:
   match:
   - x86_64
-  - any
+  - noarch
   ban:
   - local-only
 

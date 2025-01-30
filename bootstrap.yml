@@ -6,7 +6,7 @@ imports:
 general:
   patch_author: The Menix Project
   patch_email: info@menix-os.org
-  everything_by_default: false
+  everything_by_default: true
   mandate_hashes_for_archives: true
   enable_network_isolation: true
 

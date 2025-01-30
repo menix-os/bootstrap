@@ -1,6 +1,6 @@
 sources:
 - name: mlibc
-  subdir: 'sources'
+  subdir: sources
   git: 'https://github.com/menix-os/mlibc.git'
   branch: 'add-menix'
   version: '0.0.0'

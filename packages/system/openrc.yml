@@ -1,0 +1,33 @@
+sources:
+- name: openrc
+  subdir: ports
+  git: 'https://github.com/OpenRC/openrc.git'
+  tag: '0.56'
+  version: '0.56'
+
+packages:
+- name: openrc
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: openrc
+  revision: 1
+  tools_required:
+  - host-gcc
+  - host-binutils
+  - host-pkgconf
+  configure:
+  - args:
+    - 'meson'
+    - 'setup'
+    - '--cross-file'
+    - '@SOURCE_ROOT@/support/meson-@OPTION:arch@.cross-file'
+    - '--prefix=/usr'
+    - '--bindir=bin'
+    - '--libdir=lib'
+    - '--sbindir=sbin'
+    - '@THIS_SOURCE_DIR@'
+  build:
+  - args: [ 'ninja' ]
+  - args: [ 'ninja', 'install' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'

@@ -1,6 +1,6 @@
 sources:
 - name: gcc
-  subdir: 'ports'
+  subdir: ports
   git: 'https://gcc.gnu.org/git/gcc.git'
   # TODO: Wait until the next gcc release tag instead of master
   branch: 'master'
@@ -48,7 +48,7 @@ tools:
     compile:
     - args: [ 'make', '-j@PARALLELISM@', 'inhibit_libc=true', 'all-target-libgcc' ]
     install:
-    - args: [ 'make', 'install-target-libgcc' ]
+    - args: [ 'make', '-j@PARALLELISM@', 'install-target-libgcc' ]
 
 - name: host-gcc
   labels: [ x86_64 ]
@@ -87,7 +87,7 @@ tools:
     compile:
     - args: [ 'make', '-j@PARALLELISM@', 'all-target-libgcc' ]
     install:
-    - args: [ 'make', 'install-target-libgcc' ]
+    - args: [ 'make', '-j@PARALLELISM@', 'install-target-libgcc' ]
   # - name: libstdc++
   #   tools_required:
   #   - tool: host-gcc
@@ -95,4 +95,4 @@ tools:
   #   compile:
   #   - args: [ 'make', '-j@PARALLELISM@', 'all-target-libstdc++-v3' ]
   #   install:
-  #   - args: [ 'make', 'install-target-libstdc++-v3' ]
+  #   - args: [ 'make', '-j@PARALLELISM@', 'install-target-libstdc++-v3' ]

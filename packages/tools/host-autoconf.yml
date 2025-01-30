@@ -1,0 +1,37 @@
+sources:
+- name: autoconf
+  subdir: ports
+  url: 'https://ftpmirror.gnu.org/autoconf/autoconf-2.72.tar.xz'
+  checksum: 'blake2b:01caeced9e53d8bd39fb0cf4929322f0d463971b0a96368aa55892026897a9e98c2ca84a77db1b3c6c4483aea54b96da16a7bc00b7ac15e23c6b0471438012db'
+  format: 'tar.xz'
+  extract_path: 'autoconf-2.72'
+  version: '2.72'
+- name: autoconf-2.69
+  subdir: ports
+  url: 'https://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.xz'
+  checksum: 'blake2b:71d33d72a06e9a05fbed0eda73bc9d8a3805c7c90bf082959862f93f3c5f01192114176e84d84ecb58fa99512eafbc0ab21ad1407be18c8c63bb3dc1117c482d'
+  format: 'tar.xz'
+  extract_path: 'autoconf-2.69'
+  version: '2.69'
+
+tools:
+- name: host-autoconf
+  labels: [ noarch ]
+  architecture: noarch
+  from_source: autoconf
+  configure:
+  - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@' ]
+  compile:
+  - args: [ 'make', '-j@PARALLELISM@' ]
+  install:
+  - args: [ 'make', '-j@PARALLELISM@', 'install' ]
+- name: host-autoconf-2.69
+  labels: [ noarch ]
+  architecture: noarch
+  from_source: autoconf-2.69
+  configure:
+  - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@' ]
+  compile:
+  - args: [ 'make', '-j@PARALLELISM@' ]
+  install:
+  - args: [ 'make', '-j@PARALLELISM@', 'install' ]

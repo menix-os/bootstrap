@@ -6,6 +6,7 @@ It also includes several ports of popular apps and tools.
 
 ## Prerequisites
 - xbstrap (via pip or from [source](https://github.com/managarm/xbstrap))
+- xbps
 - docker
 
 ## Build instructions
@@ -25,7 +26,7 @@ define_options:
 labels:
   match:
   - <arch>
-  - any
+  - noarch
 
 pkg_management:
   format: xbps
@@ -37,11 +38,15 @@ container:
   build_mount: /var/bootstrap-menix/build
   allow_containerless: true
 ```
-- Build the Docker container with:
+- Build the Docker container
 ```
 docker build -t menix-buildenv --build-arg=USER=$(id -u) <source>/support
 ```
-- Finally, run:
+- Initialize the build directory
 ```
 xbstrap init <source>
+```
+- Finally, run
+```
+xbstrap build --all
 ```
