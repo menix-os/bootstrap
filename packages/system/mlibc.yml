@@ -3,7 +3,8 @@ sources:
   subdir: sources
   git: 'https://github.com/menix-os/mlibc.git'
   branch: 'add-menix'
-  version: '0.0.0'
+  rolling_version: true
+  version: '0.0pl@ROLLING_ID@'
 
 packages:
 - name: mlibc-headers
