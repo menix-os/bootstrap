@@ -1,0 +1,43 @@
+sources:
+- name: gcc
+  subdir: ports
+  git: 'https://gcc.gnu.org/git/gcc.git'
+  branch: 'master'
+  version: '15.0.0'
+  tools_required:
+  - host-autoconf-2.69
+  - host-automake
+  - host-libtool
+  regenerate:
+  # TODO
+  - args: [ 'autoreconf', '-fvi' ]
+
+packages:
+- name: gcc
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: gcc
+  revision: 1
+  tools_required:
+  - host-binutils
+  - host-gcc
+  pkgs_required:
+  - mlibc
+  - gmp
+  configure:
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--target=@OPTION:arch@-@OPTION:triple@'
+    - '--host=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=/usr'
+    - '--with-sysroot=@SYSROOT_DIR@'
+    - '--with-pic'
+    - '--enable-languages=c,c++,lto'
+    - '--enable-threads=posix'
+    - '--enable-initfini-array'
+    - '--disable-werror'
+  build:
+  - args: [ 'make', '-j@PARALLELISM@', 'all-gcc', 'all-target-libgcc' ]
+  - args: [ 'make', '-j@PARALLELISM@', 'install-gcc', 'install-target-libgcc' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'

@@ -4,28 +4,14 @@ Date: Tue, 28 Jan 2025 01:40:54 +0100
 Subject: [PATCH] Add Menix support
 
 ---
- config.sub                  |  2 +-
  fixincludes/mkfixinc.sh     |  1 +
  gcc/config.gcc              | 12 ++++++++++++
  gcc/config/menix.h          | 24 ++++++++++++++++++++++++
  libgcc/config.host          |  8 ++++++++
  libstdc++-v3/crossconfig.m4 |  6 ++++++
- 6 files changed, 52 insertions(+), 1 deletion(-)
+ 5 files changed, 51 insertions(+)
  create mode 100644 gcc/config/menix.h
 
-diff --git a/config.sub b/config.sub
-index 38f3d037a..4df4631cc 100755
---- a/config.sub
-+++ b/config.sub
-@@ -1749,7 +1749,7 @@ case $os in
- 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
- 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
- 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
--	     | fiwix* )
-+	     | fiwix* | menix* )
- 		;;
- 	# This one is extra strict with allowed versions
- 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
 diff --git a/fixincludes/mkfixinc.sh b/fixincludes/mkfixinc.sh
 index 7112f4dcd..af608998e 100755
 --- a/fixincludes/mkfixinc.sh

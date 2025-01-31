@@ -12,12 +12,14 @@ packages:
   architecture: '@OPTION:arch@'
   from_source: mlibc
   revision: 1
+  tools_required:
+  - host-meson
   configure:
   - args:
     - 'meson'
     - 'setup'
     - '--cross-file'
-    - '@SOURCE_ROOT@/support/meson-@OPTION:arch@.cross-file'
+    - '@BUILD_ROOT@/tools/host-meson/cross.txt'
     - '--prefix=/usr'
     - '-Dheaders_only=true'
     - '@THIS_SOURCE_DIR@'
@@ -41,7 +43,7 @@ packages:
     - 'meson'
     - 'setup'
     - '--cross-file'
-    - '@SOURCE_ROOT@/support/meson-@OPTION:arch@.cross-file'
+    - '@BUILD_ROOT@/tools/host-meson/cross.txt'
     - '--prefix=/usr'
     - '--libdir=lib'
     - '-Dno_headers=true'

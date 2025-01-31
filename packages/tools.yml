@@ -4,4 +4,6 @@ imports:
 - file: tools/host-binutils.yml
 - file: tools/host-gcc.yml
 - file: tools/host-libtool.yml
+- file: tools/host-meson.yml
 - file: tools/host-pkgconf.yml
+- file: tools/host-python.yml

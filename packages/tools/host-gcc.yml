@@ -1,13 +1,4 @@
-sources:
-- name: gcc
-  subdir: ports
-  git: 'https://gcc.gnu.org/git/gcc.git'
-  # TODO: Wait until the next gcc release tag instead of master
-  branch: 'master'
-  version: '15.0.0'
-
 tools:
-# This GCC only exists so we can build mlibc to build a GCC with .so support.
 - name: host-gcc-bootstrap
   labels: [ x86_64 ]
   architecture: '@OPTION:arch@'
@@ -88,11 +79,11 @@ tools:
     - args: [ 'make', '-j@PARALLELISM@', 'all-target-libgcc' ]
     install:
     - args: [ 'make', '-j@PARALLELISM@', 'install-target-libgcc' ]
-  # - name: libstdc++
-  #   tools_required:
-  #   - tool: host-gcc
-  #     stage_dependencies: [ compiler ]
-  #   compile:
-  #   - args: [ 'make', '-j@PARALLELISM@', 'all-target-libstdc++-v3' ]
-  #   install:
-  #   - args: [ 'make', '-j@PARALLELISM@', 'install-target-libstdc++-v3' ]
+  - name: libstdc++
+    tools_required:
+    - tool: host-gcc
+      stage_dependencies: [ compiler ]
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-target-libstdc++-v3' ]
+    install:
+    - args: [ 'make', '-j@PARALLELISM@', 'install-target-libstdc++-v3' ]
