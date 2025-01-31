@@ -11,21 +11,23 @@ It also includes several ports of popular apps and tools.
 
 ## Build instructions
 
-Name       | Description
-----       | ---
-`<arch>`   | The CPU architecture you're building for, e.g. `x86_64`.
-`<source>` | The path to the directory where this README is stored.
+Name      | Description
+----      | ---
+`$arch`   | The CPU architecture you're building for, e.g. `x86_64`.
+`$source` | The path to the directory where this README is stored.
 
 - Create a new directory, e.g. `build` and change your working directory to it.
+
 - Create a file named `bootstrap-site.yml`
-- Fill the file with the following content, where `<arch>` is the CPU architecture you're building for:
+
+- Fill the file with the following content:
 ```yaml
 define_options:
-  arch: <arch>
+  arch: $arch
 
 labels:
   match:
-  - <arch>
+  - $arch
   - noarch
 
 pkg_management:
@@ -38,15 +40,18 @@ container:
   build_mount: /var/bootstrap-menix/build
   allow_containerless: true
 ```
+
 - Build the Docker container
+```sh
+docker build -t menix-buildenv --build-arg=USER=$(id -u) $source/support
 ```
-docker build -t menix-buildenv --build-arg=USER=$(id -u) <source>/support
-```
+
 - Initialize the build directory
+```sh
+xbstrap init $source
 ```
-xbstrap init <source>
-```
+
 - Finally, run
-```
+```sh
 xbstrap build --all
 ```
