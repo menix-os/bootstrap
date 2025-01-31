@@ -1,0 +1,56 @@
+From 33ca7bbfb98d4655f488becd2f4631d90289d90e Mon Sep 17 00:00:00 2001
+From: Marvin Friedrich <contact@marvinf.com>
+Date: Thu, 30 Jan 2025 23:34:33 +0100
+Subject: [PATCH] Add Menix support
+
+---
+ include/platform.h | 5 +++++
+ libbb/Kbuild.src   | 2 +-
+ libbb/appletlib.c  | 2 +-
+ 3 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/include/platform.h b/include/platform.h
+index ea0512f..0e50c63 100644
+--- a/include/platform.h
++++ b/include/platform.h
+@@ -462,6 +462,11 @@ typedef unsigned smalluint;
+ # undef HAVE_NET_ETHERNET_H
+ #endif
+ 
++#if defined(__menix__)
++# undef HAVE_SYS_STATFS_H
++# undef HAVE_MNTENT_H
++#endif
++
+ #if defined(__CYGWIN__)
+ # undef HAVE_CLEARENV
+ # undef HAVE_FDPRINTF
+diff --git a/libbb/Kbuild.src b/libbb/Kbuild.src
+index cb8d2c2..fe2d57b 100644
+--- a/libbb/Kbuild.src
++++ b/libbb/Kbuild.src
+@@ -10,7 +10,7 @@ lib-y:=
+ 
+ INSERT
+ 
+-lib-y += alloc_affinity.o
++# lib-y += alloc_affinity.o
+ lib-y += appletlib.o
+ lib-y += ask_confirmation.o
+ lib-y += bb_askpass.o
+diff --git a/libbb/appletlib.c b/libbb/appletlib.c
+index d9cc484..83232bd 100644
+--- a/libbb/appletlib.c
++++ b/libbb/appletlib.c
+@@ -33,7 +33,7 @@ static inline int *get_perrno(void) { return &errno; }
+ #include "busybox.h"
+ 
+ #if !(defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) \
+-    || defined(__APPLE__) \
++    || defined(__APPLE__) || defined(__menix__) \
+     )
+ # include <malloc.h> /* for mallopt */
+ #endif
+-- 
+2.48.1
+

@@ -1,0 +1,28 @@
+sources:
+- name: busybox
+  subdir: ports
+  git: 'https://git.busybox.net/busybox'
+  tag: '1_37_0'
+  version: '1.37.0'
+
+packages:
+- name: busybox
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: busybox
+  revision: 1
+  tools_required:
+  - host-gcc
+  - host-binutils
+  configure:
+  - args: [ 'cp', '@SOURCE_ROOT@/extras/busybox/.config', '@THIS_BUILD_DIR@/.config.in' ]
+  - args: |
+      envsubst < "@THIS_BUILD_DIR@/.config.in" > "@THIS_BUILD_DIR@/.config"
+    environ:
+      OS_TRIPLET: '@OPTION:arch@-@OPTION:triple@'
+      SYSROOT_DIR: '@SYSROOT_DIR@'
+      PREFIX_DIR: '@THIS_COLLECT_DIR@/usr'
+  - args: [ 'make', 'KBUILD_SRC=@THIS_SOURCE_DIR@', '-f', '@THIS_SOURCE_DIR@/Makefile', 'oldconfig' ]
+  build:
+  - args: [ 'make', '-j@PARALLELISM@' ]
+  - args: [ 'make', '-j@PARALLELISM@', 'install' ]
