@@ -1,24 +1,24 @@
 sources:
-- name: automake
+- name: automake-1.15
   subdir: ports
   git: 'https://git.savannah.gnu.org/git/automake.git'
-  tag: 'v1.17'
-  version: '1.17'
+  tag: 'v1.15.1'
+  version: '1.15.1'
   tools_required:
-  - host-autoconf
+  - host-autoconf-2.69
   regenerate:
   - args: [ './bootstrap' ]
 
 tools:
-- name: host-automake
+- name: host-automake-1.15
   labels: [ noarch ]
   architecture: noarch
-  from_source: automake
+  from_source: automake-1.15
   tools_required:
-  - host-autoconf
+  - host-autoconf-2.69
   configure:
-  - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@' ]
+  - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@', 'MAKEINFO=true' ]
   compile:
-  - args: [ 'make', '-j@PARALLELISM@', 'MAKEINFO=true' ]
+  - args: [ 'make', '-j@PARALLELISM@' ]
   install:
-  - args: [ 'make', '-j@PARALLELISM@', 'MAKEINFO=true', 'install' ]
+  - args: [ 'make', '-j@PARALLELISM@', 'install' ]

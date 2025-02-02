@@ -36,6 +36,7 @@ packages:
   revision: 1
   tools_required:
   - host-gcc-bootstrap
+  - host-pkgconf
   pkgs_required:
   - mlibc-headers
   configure:

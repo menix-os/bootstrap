@@ -3,7 +3,7 @@ tools:
   labels: [ noarch ]
   architecture: noarch
   source:
-    subdir: sources
+    subdir: ports
     version: '0.0.0'
   install:
   - args: [ 'mkdir', '-p', '@PREFIX@' ]
@@ -11,5 +11,5 @@ tools:
       envsubst < @SOURCE_ROOT@/support/meson.cross-file > @PREFIX@/cross.txt
     environ:
       ARCH: '@OPTION:arch@'
-      TRIPLE: '@OPTION:triple'
+      TRIPLE: '@OPTION:triple@'
       SYSROOT_DIR: '@SYSROOT_DIR@'

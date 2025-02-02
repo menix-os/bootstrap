@@ -1,18 +1,19 @@
 sources:
 - name: libtool
   subdir: ports
-  url: 'https://ftpmirror.gnu.org/libtool/libtool-2.5.4.tar.xz'
-  checksum: 'blake2b:47de3c49a690d44d7ddd5e3b5e4090c91dc5fbb9c40fc4a3963e150fb7329326ee3e21b8c149974726171c4b0380028e0efc7a369c4f04357eea46f69852e1cc'
-  format: 'tar.xz'
-  extract_path: 'libtool-2.5.4'
+  git: 'https://git.savannah.gnu.org/git/libtool.git'
+  tag: 'v2.5.4'
   version: '2.5.4'
   tools_required:
-  - host-autoconf
-  - host-automake
+  - host-autoconf-2.69
+  - host-automake-1.15
   regenerate:
-  - args: [ 'autoreconf', '-fvi' ]
-    environ:
-      LIBTOOLIZE: 'true'
+  # libtool's ./bootstrap does a shallow clone with insufficient depth.
+  - args: [ 'git', 'submodule', 'update', '--init' ]
+    isolate_network: false
+  - args: [ './bootstrap' ]
+  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake-1.15/share/automake-1.15/config.sub', '@THIS_SOURCE_DIR@/build-aux/' ]
+  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake-1.15/share/automake-1.15/config.guess', '@THIS_SOURCE_DIR@/build-aux/' ]
 
 tools:
 - name: host-libtool
@@ -21,8 +22,8 @@ tools:
   exports_aclocal: true
   from_source: libtool
   tools_required:
-  - host-autoconf
-  - host-automake
+  - host-autoconf-2.69
+  - host-automake-1.15
   configure:
   - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@' ]
   compile:

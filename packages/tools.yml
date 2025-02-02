@@ -6,4 +6,3 @@ imports:
 - file: tools/host-libtool.yml
 - file: tools/host-meson.yml
 - file: tools/host-pkgconf.yml
-- file: tools/host-python.yml

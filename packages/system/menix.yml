@@ -25,7 +25,7 @@ packages:
     - '@THIS_SOURCE_DIR@'
   build:
   - args: [ 'ninja' ]
-  # TODO: Add install command
+  # TODO: Add install command in CMake
   # - args: [ 'ninja', 'install' ]
   #   environ:
   #     DESTDIR: '@THIS_COLLECT_DIR@'
