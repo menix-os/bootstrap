@@ -20,6 +20,7 @@ packages:
     - 'cmake'
     - '-DMENIX_ARCH=@OPTION:arch@'
     - '-DCMAKE_C_COMPILER=@OPTION:arch@-@OPTION:triple@-gcc'
+    - '-DCMAKE_BUILD_TYPE=Release'
     - '-GNinja'
     - '-S'
     - '@THIS_SOURCE_DIR@'

@@ -1,9 +1,10 @@
 imports:
+- file: packages/apps.yml
 - file: packages/boot.yml
 - file: packages/languages.yml
 - file: packages/libraries.yml
-- file: packages/system.yml
 - file: packages/tools.yml
+- file: tasks/tasks.yml
 
 general:
   patch_author: The Menix Project
@@ -26,10 +27,6 @@ declare_options:
 - name: arch
   default: x86_64
 - name: triple
-  default: unknown-menix
-- name: mount-using
-  default: guestfs
-- name: image-size
-  default: 4G
+  default: pc-menix
 - name: issue-url
   default: https://github.com/menix-os/bootstrap/issues

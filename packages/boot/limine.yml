@@ -43,5 +43,5 @@ packages:
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/' ]
   - args: [ 'cp', '@SOURCE_ROOT@/extras/limine/limine.conf', '@THIS_COLLECT_DIR@/boot/limine.conf' ]
   # Copy the EFI binaries
-  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/EFI/BOOT/' ]
-  - args: [ 'cp', '-r', '@THIS_COLLECT_DIR@/usr/share/limine/.', '@THIS_COLLECT_DIR@/EFI/BOOT/' ]
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/EFI/BOOT/' ]
+  - args: [ 'cp', '-r', '@THIS_COLLECT_DIR@/usr/share/limine/.', '@THIS_COLLECT_DIR@/boot/EFI/BOOT/' ]

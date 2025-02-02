@@ -1,0 +1,9 @@
+tasks:
+- name: empty-image
+  args:
+  - '@SOURCE_ROOT@/tasks/empty-image.sh'
+  - '@BUILD_ROOT@/menix.img'
+  - '2G'
+  - '128MiB'
+  workdir: '@BUILD_ROOT@'
+  containerless: true

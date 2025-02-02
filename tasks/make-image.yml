@@ -1,0 +1,11 @@
+tasks:
+- name: make-image
+  tasks_required:
+  - task: empty-image
+    order_only: true
+  args:
+  - '@SOURCE_ROOT@/tasks/make-image.sh'
+  - '@SYSROOT_DIR@'
+  - '@BUILD_ROOT@/menix.img'
+  workdir: '@BUILD_ROOT@'
+  containerless: true

@@ -1,2 +1,3 @@
 imports:
 - file: boot/limine.yml
+- file: boot/menix.yml

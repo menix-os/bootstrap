@@ -1,30 +1,12 @@
 tasks:
 - name: qemu
+  tasks_required:
+  - task: make-image
+    order_only: true
   args:
-  - 'qemu-system-@OPTION:arch@'
-  - '-name'
-  - 'menix @OPTION:arch@'
-  - '-serial'
-  - 'stdio'
-  - '-no-reboot'
-  - '-no-shutdown'
-  - '-m'
-  - '2G'
-  - '-smp'
+  - '@SOURCE_ROOT@/tasks/qemu.sh'
+  - '@OPTION:arch@'
+  - '@BUILD_ROOT@'
   - '@PARALLELISM@'
-  - '-drive'
-  - 'format=raw,file=fat:rw:@SYSROOT_DIR@,if=none,id=fatfs'
-  - '-netdev'
-  - 'user,id=net0'
-  - '-device'
-  - 'virtio-net,disable-modern=on,netdev=net0'
-  - '-device'
-  - 'nvme,serial=deadbeef,drive=fatfs'
-  - '-machine'
-  - 'q35,smm=off'
-  - '-cpu'
-  - 'max'
-  - '-bios'
-  - '/usr/share/ovmf/x64/OVMF.4m.fd'
-  workdir: '@SYSROOT_DIR@'
+  workdir: '@BUILD_ROOT@'
   containerless: true
