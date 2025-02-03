@@ -10,10 +10,6 @@ LOOPDEV=$(sudo losetup --find --show --partscan "$OUTPUT_IMAGE")
 ESP_PART="${LOOPDEV}p1"
 ROOT_PART="${LOOPDEV}p2"
 
-# Format partitions
-sudo mkfs.vfat -F 32 "$ESP_PART"
-sudo mkfs.ext4 "$ROOT_PART"
-
 # Create temporary directories
 tmpdir=$(sudo mktemp -d)
 sudo mkdir -p "$tmpdir/root"
@@ -25,7 +21,7 @@ sudo mkdir -p "$tmpdir/root/boot"
 sudo mount -o uid=1000,gid=1000 "$ESP_PART" "$tmpdir/root/boot"
 
 # Copy system root
-sudo cp -aT "$SYSTEM_ROOT" "$tmpdir/root"
+sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
 # Unmount and detach
 sudo umount "$tmpdir/root/boot"

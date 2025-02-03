@@ -14,3 +14,15 @@ parted -s "$OUTPUT_IMAGE" mklabel gpt
 parted -s "$OUTPUT_IMAGE" mkpart ESP fat32 1MiB ${ESP_SIZE}
 parted -s "$OUTPUT_IMAGE" set 1 esp on
 parted -s "$OUTPUT_IMAGE" mkpart ROOT ext4 ${ESP_SIZE} 100%
+
+# Setup loop device
+LOOPDEV=$(sudo losetup --find --show --partscan "$OUTPUT_IMAGE")
+ESP_PART="${LOOPDEV}p1"
+ROOT_PART="${LOOPDEV}p2"
+
+# Format partitions
+sudo mkfs.vfat -F 32 "$ESP_PART"
+sudo mkfs.ext4 "$ROOT_PART"
+
+# Detach
+sudo losetup -d "$LOOPDEV"
