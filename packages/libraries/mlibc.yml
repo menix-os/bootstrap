@@ -48,6 +48,7 @@ packages:
     - '--prefix=/usr'
     - '--libdir=lib'
     - '-Dno_headers=true'
+    - '-Ddefault_library=both'
     - '@THIS_SOURCE_DIR@'
   build:
   - args: [ 'ninja' ]
