@@ -17,7 +17,7 @@ It also includes several ports of popular apps and tools.
 
 - Fill the file with the following content and replace the `$variables` with the respective values.
 
-Name      | Description
+Name      | Description
 ----      | ---
 `$arch`   | The CPU architecture you're building for, e.g. `x86_64`.
 `$source` | The (relative or absolute) path to the directory where this README is stored.
