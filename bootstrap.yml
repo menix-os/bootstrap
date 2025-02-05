@@ -1,0 +1,32 @@
+imports:
+- file: packages/apps.yml
+- file: packages/boot.yml
+- file: packages/languages.yml
+- file: packages/libraries.yml
+- file: packages/tools.yml
+- file: tasks/tasks.yml
+
+general:
+  patch_author: The Menix Project
+  patch_email: info@menix-os.org
+  everything_by_default: true
+  mandate_hashes_for_archives: true
+  enable_network_isolation: true
+
+repositories:
+  tool_archives:
+    x86_64: 'https://build.menix-os.org/repos/tools/x86_64/latest/'
+    aarch64: 'https://build.menix-os.org/repos/tools/aarch64/latest/'
+    riscv64: 'https://build.menix-os.org/repos/tools/riscv64/latest/'
+  xbps:
+    x86_64: 'https://build.menix-os.org/repos/packages/x86_64/latest/'
+    aarch64: 'https://build.menix-os.org/repos/packages/aarch64/latest/'
+    riscv64: 'https://build.menix-os.org/repos/packages/riscv64/latest/'
+
+declare_options:
+- name: arch
+  default: x86_64
+- name: triple
+  default: pc-menix
+- name: issue-url
+  default: https://github.com/menix-os/bootstrap/issues

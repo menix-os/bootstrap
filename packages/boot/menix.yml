@@ -1,0 +1,34 @@
+sources:
+- name: menix
+  subdir: sources
+  git: 'https://github.com/menix-os/menix.git'
+  branch: main
+  submodules: true
+  rolling_version: true
+  version: '0.0pl@ROLLING_ID@'
+
+packages:
+- name: menix
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  from_source: menix
+  revision: 1
+  tools_required:
+  - host-gcc
+  configure:
+  - args:
+    - 'cmake'
+    - '-DMENIX_ARCH=@OPTION:arch@'
+    - '-DCMAKE_C_COMPILER=@OPTION:arch@-@OPTION:triple@-gcc'
+    - '-DCMAKE_BUILD_TYPE=Release'
+    - '-GNinja'
+    - '-S'
+    - '@THIS_SOURCE_DIR@'
+  build:
+  - args: [ 'ninja' ]
+  # TODO: Add install command in CMake
+  # - args: [ 'ninja', 'install' ]
+  #   environ:
+  #     DESTDIR: '@THIS_COLLECT_DIR@'
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/bin/.', '@THIS_COLLECT_DIR@/boot' ]

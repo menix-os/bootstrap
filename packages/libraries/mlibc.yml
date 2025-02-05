@@ -1,0 +1,58 @@
+sources:
+- name: mlibc
+  subdir: sources
+  git: 'https://github.com/menix-os/mlibc.git'
+  branch: 'add-menix'
+  rolling_version: true
+  version: '0.0pl@ROLLING_ID@'
+
+packages:
+- name: mlibc-headers
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: mlibc
+  revision: 1
+  tools_required:
+  - host-meson
+  configure:
+  - args:
+    - 'meson'
+    - 'setup'
+    - '--cross-file'
+    - '@BUILD_ROOT@/tools/host-meson/cross.txt'
+    - '--prefix=/usr'
+    - '-Dheaders_only=true'
+    - '@THIS_SOURCE_DIR@'
+  build:
+  - args: [ 'ninja' ]
+  - args: [ 'ninja', 'install' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'
+
+- name: mlibc
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: mlibc
+  revision: 1
+  tools_required:
+  - host-gcc-bootstrap
+  - host-pkgconf
+  pkgs_required:
+  - mlibc-headers
+  configure:
+  - args:
+    - 'meson'
+    - 'setup'
+    - '--cross-file'
+    - '@BUILD_ROOT@/tools/host-meson/cross.txt'
+    - '--prefix=/usr'
+    - '--libdir=lib'
+    - '-Dno_headers=true'
+    - '-Ddefault_library=both'
+    - '@THIS_SOURCE_DIR@'
+  build:
+  - args: [ 'ninja' ]
+  - args: [ 'ninja', 'install' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'
+  - args: [ 'ln', '-sf', 'crt0.o', '@THIS_COLLECT_DIR@/usr/lib/crt1.o' ]

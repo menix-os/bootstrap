@@ -1,0 +1,25 @@
+From b1b470954c42767a3cde1c81766ac03c66f6bd1c Mon Sep 17 00:00:00 2001
+From: Marvin Friedrich <contact@marvinf.com>
+Date: Thu, 30 Jan 2025 16:49:16 +0100
+Subject: [PATCH] Add Menix support
+
+---
+ lib/config.sub | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/config.sub b/lib/config.sub
+index 2c6a07ab3..4076b842e 100755
+--- a/lib/config.sub
++++ b/lib/config.sub
+@@ -1768,7 +1768,7 @@ case $os in
+ 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
+ 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
+ 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
+-	     | fiwix* | mlibc* | cos* | mbr* | ironclad* )
++	     | fiwix* | mlibc* | cos* | mbr* | ironclad* | menix* )
+ 		;;
+ 	# This one is extra strict with allowed versions
+ 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
+-- 
+2.48.1
+

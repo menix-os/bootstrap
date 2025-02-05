@@ -1,0 +1,98 @@
+tools:
+- name: host-gcc-bootstrap
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: gcc
+  revision: 1
+  tools_required:
+  - tool: host-binutils
+    recursive: true
+  configure:
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--target=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=@PREFIX@'
+    - '--with-sysroot=@SYSROOT_DIR@'
+    - '--enable-languages=c,c++,lto'
+    - '--enable-threads=posix'
+    - '--enable-initfini-array'
+    - '--without-headers'
+    - '--without-newlib'
+    - '--enable-languages=c,c++,lto'
+    - '--disable-shared'
+    - '--disable-hosted-libstdcxx'
+    - '--disable-wchar_t'
+    - '--disable-libssp'
+    - '--disable-libsanitizer'
+    - '--disable-libquadmath'
+  stages:
+  - name: early-compiler
+    pkgs_required:
+    - mlibc-headers
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-gcc' ]
+    install:
+    - args: [ 'make', 'install-gcc' ]
+    # GCC expects cross-binutils to be available in this specific location.
+    # xbstrap stores tools in seperate locations, so it's not visible to GCC.
+    - args: [ 'mkdir', '-p', '@PREFIX@/@OPTION:arch@-@OPTION:triple@/bin' ]
+    - args: [ 'ln', '-sf', '../../../host-binutils/@OPTION:arch@-@OPTION:triple@/bin/as', '@PREFIX@/@OPTION:arch@-@OPTION:triple@/bin/as' ]
+    - args: [ 'ln', '-sf', '../../../host-binutils/@OPTION:arch@-@OPTION:triple@/bin/ld', '@PREFIX@/@OPTION:arch@-@OPTION:triple@/bin/ld' ]
+  - name: early-libgcc
+    tools_required:
+    - tool: host-gcc-bootstrap
+      stage_dependencies: [ early-compiler ]
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-target-libgcc' ]
+    install:
+    - args: [ 'make', '-j@PARALLELISM@', 'install-target-libgcc' ]
+
+- name: host-gcc
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: gcc
+  revision: 1
+  tools_required:
+  - tool: host-binutils
+    recursive: true
+  - host-gcc-bootstrap
+  configure:
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--target=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=@PREFIX@'
+    - '--with-sysroot=@SYSROOT_DIR@'
+    - '--enable-languages=c,c++,lto'
+    - '--enable-threads=posix'
+    - '--enable-initfini-array'
+  stages:
+  - name: compiler
+    tools_required:
+    - host-gcc-bootstrap
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-gcc' ]
+    install:
+    - args: [ 'make', '-j@PARALLELISM@', 'install-gcc' ]
+    # GCC expects cross-binutils to be available in this specific location.
+    # xbstrap stores tools in seperate locations, so it's not visible to GCC.
+    - args: [ 'mkdir', '-p', '@PREFIX@/@OPTION:arch@-@OPTION:triple@/bin' ]
+    - args: [ 'ln', '-sf', '../../../host-binutils/@OPTION:arch@-@OPTION:triple@/bin/as', '@PREFIX@/@OPTION:arch@-@OPTION:triple@/bin/as' ]
+    - args: [ 'ln', '-sf', '../../../host-binutils/@OPTION:arch@-@OPTION:triple@/bin/ld', '@PREFIX@/@OPTION:arch@-@OPTION:triple@/bin/ld' ]
+  - name: libgcc
+    tools_required:
+    - tool: host-gcc
+      stage_dependencies: [ compiler ]
+    pkgs_required:
+    - mlibc
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-target-libgcc' ]
+    install:
+    - args: [ 'make', '-j@PARALLELISM@', 'install-target-libgcc' ]
+  - name: libstdc++
+    tools_required:
+    - tool: host-gcc
+      stage_dependencies: [ compiler, libgcc ]
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-target-libstdc++-v3' ]
+    install:
+    - args: [ 'make', '-j@PARALLELISM@', 'install-target-libstdc++-v3' ]

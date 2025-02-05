@@ -1,0 +1,47 @@
+sources:
+- name: limine
+  subdir: 'ports'
+  git: 'https://github.com/limine-bootloader/limine.git'
+  tag: 'v8.7.0'
+  version: '8.7.0'
+  regenerate:
+  - args: [ './bootstrap' ]
+    isolate_network: false
+
+packages:
+- name: limine
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  from_source: limine
+  tools_required:
+  - host-binutils
+  - host-gcc
+  configure:
+  # Rename x86_64 to x86-64 because that's what it's called in Limine.
+  - args: |
+      do_config () {
+        '@THIS_SOURCE_DIR@/configure' '--prefix=/usr' "$@"
+      }
+      case '@OPTION:arch@' in
+      x86_64) do_config --enable-uefi-x86-64 ;;
+      *)      do_config --enable-uefi-@OPTION:arch@ ;;
+      esac
+    environ:
+      TOOLCHAIN_FOR_TARGET: gnu
+      AR_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-gcc-ar'
+      CC_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-gcc'
+      LD_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-ld'
+      OBJCOPY_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-objcopy'
+      OBJDUMP_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-objdump'
+      READELF_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@-readelf'
+  build:
+  - args: [ 'make', '-j@PARALLELISM@' ]
+  - args: [ 'make', 'install' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'
+  # Copy the configuration
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/' ]
+  - args: [ 'cp', '@SOURCE_ROOT@/extras/limine/limine.conf', '@THIS_COLLECT_DIR@/boot/limine.conf' ]
+  # Copy the EFI binaries
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/EFI/BOOT/' ]
+  - args: [ 'cp', '-r', '@THIS_COLLECT_DIR@/usr/share/limine/.', '@THIS_COLLECT_DIR@/boot/EFI/BOOT/' ]

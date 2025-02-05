@@ -1,0 +1,19 @@
+define_options:
+  arch: riscv64
+
+labels:
+  match:
+  - riscv64
+  - noarch
+  ban:
+  - local-only
+
+pkg_management:
+  format: xbps
+
+container:
+  runtime: docker
+  image: menix-buildenv
+  src_mount: /var/bootstrap-menix/src
+  build_mount: /var/bootstrap-menix/build
+  allow_containerless: true

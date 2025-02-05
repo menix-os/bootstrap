@@ -1,0 +1,12 @@
+tasks:
+- name: qemu
+  tasks_required:
+  - task: make-image
+    order_only: true
+  args:
+  - '@SOURCE_ROOT@/tasks/qemu.sh'
+  - '@OPTION:arch@'
+  - '@BUILD_ROOT@'
+  - '@PARALLELISM@'
+  workdir: '@BUILD_ROOT@'
+  containerless: true

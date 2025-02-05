@@ -1,0 +1,22 @@
+[binaries]
+ar = '${ARCH}-${TRIPLE}-gcc-ar'
+c = '${ARCH}-${TRIPLE}-gcc'
+cpp = '${ARCH}-${TRIPLE}-g++'
+nm = '${ARCH}-${TRIPLE}-gcc-nm'
+objcopy = '${ARCH}-${TRIPLE}-objcopy'
+ranlib = '${ARCH}-${TRIPLE}-gcc-ranlib'
+strip = '${ARCH}-${TRIPLE}-strip'
+pkg-config = 'pkgconf'
+
+[host_machine]
+system = 'menix'
+cpu_family = '${ARCH}'
+cpu = '${ARCH}'
+endian = 'little'
+
+[built-in options]
+libdir = 'lib'
+
+[properties]
+sys_root = '${SYSROOT_DIR}'
+pkg_config_libdir = '${SYSROOT_DIR}/usr/lib/pkgconfig'

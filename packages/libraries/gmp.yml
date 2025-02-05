@@ -1,0 +1,34 @@
+packages:
+- name: gmp
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  source:
+    subdir: 'ports'
+    url: 'https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz'
+    format: 'tar.xz'
+    checksum: 'blake2b:a865129e2b3f634ec5bad7f97ed89532e43f5662ac47a7d8ab7f0df8c9f8d0886bd984651422e2573c2163bca69c0547c248147ec90880accbd53db97dc0ddee'
+    extract_path: 'gmp-6.3.0'
+    version: '6.3.0'
+    tools_required:
+    - host-autoconf-2.69
+    - host-automake-1.15
+    - host-libtool
+    regenerate:
+    - args: [ 'autoreconf', '-fvi' ]
+    - args: [ 'cp', '@THIS_SOURCE_DIR@/configfsf.guess', '@THIS_SOURCE_DIR@/config.guess' ]
+  revision: 1
+  tools_required:
+  - host-gcc
+  pkgs_required:
+  - mlibc
+  configure:
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--host=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=/usr'
+    - '--enable-cxx'
+  build:
+  - args: [ 'make', '-j@PARALLELISM@' ]
+  - args: [ 'make', 'install' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'

@@ -2,10 +2,8 @@
 .vscode/
 .idea/
 
-# Output files
-build/
-cache/
-*target/
-*Cargo.lock
-menix.iso
-menix.img
+# xbstrap
+.xbstrap/
+ports/
+sources/
+build*/

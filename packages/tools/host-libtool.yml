@@ -1,0 +1,32 @@
+sources:
+- name: libtool
+  subdir: ports
+  git: 'https://git.savannah.gnu.org/git/libtool.git'
+  tag: 'v2.5.4'
+  version: '2.5.4'
+  tools_required:
+  - host-autoconf-2.69
+  - host-automake-1.15
+  regenerate:
+  # libtool's ./bootstrap does a shallow clone with insufficient depth.
+  - args: [ 'git', 'submodule', 'update', '--init' ]
+    isolate_network: false
+  - args: [ './bootstrap' ]
+  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake-1.15/share/automake-1.15/config.sub', '@THIS_SOURCE_DIR@/build-aux/' ]
+  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake-1.15/share/automake-1.15/config.guess', '@THIS_SOURCE_DIR@/build-aux/' ]
+
+tools:
+- name: host-libtool
+  labels: [ noarch ]
+  architecture: noarch
+  exports_aclocal: true
+  from_source: libtool
+  tools_required:
+  - host-autoconf-2.69
+  - host-automake-1.15
+  configure:
+  - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@' ]
+  compile:
+  - args: [ 'make', '-j@PARALLELISM@' ]
+  install:
+  - args: [ 'make', '-j@PARALLELISM@', 'install' ]

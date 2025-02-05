@@ -1,0 +1,28 @@
+sources:
+- name: binutils
+  subdir: ports
+  git: 'https://sourceware.org/git/binutils-gdb.git'
+  # TODO: Wait until the next binutils release tag instead of master
+  branch: 'master'
+  version: '2.43.1'
+
+tools:
+- name: host-binutils
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  from_source: binutils
+  revision: 1
+  configure:
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--target=@OPTION:arch@-@OPTION:triple@'
+    - '--prefix=@PREFIX@'
+    - '--with-pic'
+    - '--with-bugurl=@OPTION:issue-url@'
+    - '--with-sysroot=@SYSROOT_DIR@'
+    - '--disable-werror'
+    - '--disable-gdb'
+  compile:
+  - args: [ 'make', '-j@PARALLELISM@', 'all-binutils', 'all-gas', 'all-ld' ]
+  install:
+  - args: [ 'make', '-j@PARALLELISM@', 'install-binutils', 'install-gas', 'install-ld' ]
