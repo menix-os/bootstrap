@@ -1,2 +1,4 @@
 imports:
 - file: apps/busybox.yml
+
+# - file: apps/fastfetch.yml
