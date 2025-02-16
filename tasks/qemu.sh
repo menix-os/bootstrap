@@ -12,9 +12,10 @@ QEMU_COMMON_FLAGS="-serial stdio \
 	-m 2G \
 	-smp $PARALLELISM \
 	-drive format=raw,file=$BUILD_ROOT/menix.img,if=none,id=disk \
+	-device nvme,serial=FAKE_SERIAL_ID,drive=disk \
 	-netdev user,id=net0 \
 	-device virtio-net,disable-modern=on,netdev=net0 \
-	-device nvme,serial=deadbeef,drive=disk"
+	"
 
 case $ARCH in
 x86_64) QEMU_COMMON_FLAGS="$QEMU_COMMON_FLAGS -cpu host -accel kvm -machine q35,smm=off -bios /usr/share/ovmf/x64/OVMF.4m.fd" ;;

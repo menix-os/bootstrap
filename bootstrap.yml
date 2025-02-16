@@ -3,6 +3,7 @@ imports:
 - file: packages/boot.yml
 - file: packages/languages.yml
 - file: packages/libraries.yml
+- file: packages/meta.yml
 - file: packages/tools.yml
 - file: tasks/tasks.yml
 
