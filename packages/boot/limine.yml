@@ -2,8 +2,8 @@ sources:
 - name: limine
   subdir: 'ports'
   git: 'https://github.com/limine-bootloader/limine.git'
-  tag: 'v8.7.0'
-  version: '8.7.0'
+  tag: 'v9.0.0'
+  version: '9.0.0'
   regenerate:
   - args: [ './bootstrap' ]
     isolate_network: false
