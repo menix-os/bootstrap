@@ -18,10 +18,10 @@ QEMU_COMMON_FLAGS="-serial stdio \
 	"
 
 case $ARCH in
-x86_64) QEMU_COMMON_FLAGS="$QEMU_COMMON_FLAGS -cpu host -accel kvm -machine q35,smm=off -bios /usr/share/ovmf/x64/OVMF.4m.fd" ;;
-*)      QEMU_COMMON_FLAGS="$QEMU_COMMON_FLAGS -cpu max" ;;
+x86_64) QEMU_FLAGS="-cpu host -accel kvm -machine q35,smm=off -bios /usr/share/ovmf/x64/OVMF.4m.fd" ;;
+*)      QEMU_FLAGS="-cpu max" ;;
 esac
 
-echo qemu-system-$ARCH $QEMU_COMMON_FLAGS
+echo qemu-system-$ARCH $QEMU_COMMON_FLAGS $QEMU_FLAGS
 
-qemu-system-$ARCH $QEMU_COMMON_FLAGS
+qemu-system-$ARCH $QEMU_COMMON_FLAGS $QEMU_FLAGS
