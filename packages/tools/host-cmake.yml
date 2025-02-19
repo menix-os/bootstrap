@@ -19,4 +19,4 @@ tools:
   - args: [ 'make', '-j@PARALLELISM@' ]
   install:
   - args: [ 'make', 'install' ]
-  - args: [ 'ln', '-sf', '@SOURCE_ROOT@/support/Menix.cmake', '@PREFIX@/share/cmake-3.29/Modules/Platform/Menix.cmake' ]
+  - args: [ 'ln', '-sf', '@SOURCE_ROOT@/support/Menix.cmake', '@PREFIX@/share/cmake-3.31/Modules/Platform/Menix.cmake' ]
