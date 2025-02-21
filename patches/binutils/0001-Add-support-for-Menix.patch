@@ -5,10 +5,9 @@ Subject: [PATCH] Add support for Menix
 
 ---
  bfd/config.bfd    | 15 +++++++++++++++
- config.sub        |  1 +
  gas/configure.tgt |  2 ++
  ld/configure.tgt  |  9 +++++++++
- 4 files changed, 27 insertions(+)
+ 3 files changed, 26 insertions(+)
 
 diff --git a/bfd/config.bfd b/bfd/config.bfd
 index 0d790117503..48d7baf4e0e 100644
@@ -50,18 +49,6 @@ index 0d790117503..48d7baf4e0e 100644
  #endif
    i[3-7]86-*-lynxos*)
      targ_defvec=i386_elf32_vec
-diff --git a/config.sub b/config.sub
-index 4aaae46f6f7..b68584ddb26 100755
---- a/config.sub
-+++ b/config.sub
-@@ -2035,6 +2035,7 @@ case $os in
- 	| macos* \
- 	| magic* \
- 	| mbr* \
-+	| menix* \
- 	| midipix* \
- 	| midnightbsd* \
- 	| mingw32* \
 diff --git a/gas/configure.tgt b/gas/configure.tgt
 index 7c81bffa16b..c0f88546bd5 100644
 --- a/gas/configure.tgt
@@ -116,6 +103,6 @@ index ea01ccf9a1b..5ff7d22dbc4 100644
  x86_64-*-redox*)	targ_emul=elf_x86_64
  			targ_extra_emuls=elf_i386
  			;;
--- 
+--
 2.48.1
 

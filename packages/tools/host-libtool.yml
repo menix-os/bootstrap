@@ -5,15 +5,15 @@ sources:
   tag: 'v2.5.4'
   version: '2.5.4'
   tools_required:
-  - host-autoconf-2.69
-  - host-automake-1.15
+  - host-autoconf
+  - host-automake
   regenerate:
   # libtool's ./bootstrap does a shallow clone with insufficient depth.
   - args: [ 'git', 'submodule', 'update', '--init' ]
     isolate_network: false
   - args: [ './bootstrap' ]
-  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake-1.15/share/automake-1.15/config.sub', '@THIS_SOURCE_DIR@/build-aux/' ]
-  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake-1.15/share/automake-1.15/config.guess', '@THIS_SOURCE_DIR@/build-aux/' ]
+  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake/share/automake-1.17/config.sub', '@THIS_SOURCE_DIR@/build-aux/' ]
+  - args: [ 'cp', '@BUILD_ROOT@/tools/host-automake/share/automake-1.17/config.guess', '@THIS_SOURCE_DIR@/build-aux/' ]
 
 tools:
 - name: host-libtool
@@ -22,11 +22,13 @@ tools:
   exports_aclocal: true
   from_source: libtool
   tools_required:
-  - host-autoconf-2.69
-  - host-automake-1.15
+  - host-autoconf
+  - host-automake
   configure:
   - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@' ]
   compile:
   - args: [ 'make', '-j@PARALLELISM@' ]
   install:
   - args: [ 'make', '-j@PARALLELISM@', 'install' ]
+  - args: [ 'cp', '-pv', '@BUILD_ROOT@/tools/host-autoconf/share/autoconf/build-aux/config.sub', '@PREFIX@/share/libtool/build-aux/']
+  - args: [ 'cp', '-pv', '@BUILD_ROOT@/tools/host-autoconf/share/autoconf/build-aux/config.guess', '@PREFIX@/share/libtool/build-aux/']

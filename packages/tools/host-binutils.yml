@@ -2,9 +2,19 @@ sources:
 - name: binutils
   subdir: ports
   git: 'https://sourceware.org/git/binutils-gdb.git'
-  # TODO: Wait until the next binutils release tag instead of master
-  branch: 'master'
+  tag: 'binutils-2_43_1'
   version: '2.43.1'
+  tools_required:
+  - host-autoconf-2.69
+  - host-automake
+  - host-libtool
+  regenerate:
+  - args: [ 'autoreconf', '-fvi', '-Iconfig' ]
+  - args: [ 'cp', '-pv', '@BUILD_ROOT@/tools/host-libtool/share/libtool/build-aux/config.sub', '.']
+  - args: [ 'cp', '-pv', '@BUILD_ROOT@/tools/host-libtool/share/libtool/build-aux/config.guess', '.']
+  - args: [ 'cp', '-pv', '@BUILD_ROOT@/tools/host-libtool/share/libtool/build-aux/config.sub', 'libiberty/']
+  - args: [ 'cp', '-pv', '@BUILD_ROOT@/tools/host-libtool/share/libtool/build-aux/config.guess', 'libiberty/']
+  - args: [ 'cp', '-pv', '@BUILD_ROOT@/tools/host-libtool/share/libtool/build-aux/install-sh', 'libiberty/']
 
 tools:
 - name: host-binutils
@@ -12,6 +22,10 @@ tools:
   architecture: '@OPTION:arch@'
   from_source: binutils
   revision: 1
+  tools_required:
+  - host-autoconf-2.69
+  - host-automake
+  - host-libtool
   configure:
   - args:
     - '@THIS_SOURCE_DIR@/configure'

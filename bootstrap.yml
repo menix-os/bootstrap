@@ -28,6 +28,6 @@ declare_options:
 - name: arch
   default: x86_64
 - name: triple
-  default: pc-menix
+  default: menix-mlibc
 - name: issue-url
   default: https://github.com/menix-os/bootstrap/issues

@@ -10,9 +10,9 @@ packages:
     extract_path: 'mpfr-4.1.0'
     version: '4.1.0'
     tools_required:
-    - host-autoconf-2.69
+    - host-autoconf
     - host-autoconf-archive
-    - host-automake-1.15
+    - host-automake
     - host-libtool
     regenerate:
     - args: [ 'autoreconf', '-fvi' ]

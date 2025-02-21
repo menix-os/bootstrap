@@ -10,8 +10,8 @@ packages:
     extract_path: 'gmp-6.3.0'
     version: '6.3.0'
     tools_required:
-    - host-autoconf-2.69
-    - host-automake-1.15
+    - host-autoconf
+    - host-automake
     - host-libtool
     regenerate:
     - args: [ 'autoreconf', '-fvi' ]

@@ -46,6 +46,15 @@ tools:
     - args: [ 'make', '-j@PARALLELISM@', 'all-target-libgcc' ]
     install:
     - args: [ 'make', '-j@PARALLELISM@', 'install-target-libgcc' ]
+  - name: early-libstdc++
+    tools_required:
+    - tool: host-gcc-bootstrap
+      stage_dependencies: [ early-compiler, early-libgcc ]
+    compile:
+    - args: [ 'make', '-j@PARALLELISM@', 'all-target-libstdc++-v3' ]
+    install:
+    - args: [ 'make', '-j@PARALLELISM@', 'install-target-libstdc++-v3' ]
+
 
 - name: host-gcc
   labels: [ x86_64 ]

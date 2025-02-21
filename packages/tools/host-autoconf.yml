@@ -1,11 +1,12 @@
 sources:
-- name: autoconf-2.72
+- name: autoconf
   subdir: ports
-  url: 'https://ftpmirror.gnu.org/autoconf/autoconf-2.72.tar.xz'
-  checksum: 'blake2b:01caeced9e53d8bd39fb0cf4929322f0d463971b0a96368aa55892026897a9e98c2ca84a77db1b3c6c4483aea54b96da16a7bc00b7ac15e23c6b0471438012db'
-  format: 'tar.xz'
-  extract_path: 'autoconf-2.72'
+  git: 'https://git.savannah.gnu.org/git/autoconf.git'
+  tag: 'v2.72'
   version: '2.72'
+  regenerate:
+  - args: [ './bootstrap' ]
+
 - name: autoconf-2.69
   subdir: ports
   url: 'https://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.xz'
@@ -13,6 +14,7 @@ sources:
   format: 'tar.xz'
   extract_path: 'autoconf-2.69'
   version: '2.69'
+
 - name: autoconf-archive
   subdir: ports
   url: 'https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-2022.09.03.tar.xz'
@@ -22,16 +24,17 @@ sources:
   version: '2022.09.03'
 
 tools:
-- name: host-autoconf-2.72
+- name: host-autoconf
   labels: [ noarch ]
   architecture: noarch
-  from_source: autoconf-2.72
+  from_source: autoconf
   configure:
   - args: [ '@THIS_SOURCE_DIR@/configure', '--prefix=@PREFIX@' ]
   compile:
   - args: [ 'make', '-j@PARALLELISM@' ]
   install:
   - args: [ 'make', '-j@PARALLELISM@', 'install' ]
+
 - name: host-autoconf-2.69
   labels: [ noarch ]
   architecture: noarch
@@ -42,6 +45,7 @@ tools:
   - args: [ 'make', '-j@PARALLELISM@' ]
   install:
   - args: [ 'make', '-j@PARALLELISM@', 'install' ]
+
 - name: host-autoconf-archive
   labels: [ noarch ]
   architecture: noarch
