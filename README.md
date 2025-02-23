@@ -53,7 +53,9 @@ xbstrap init $source
 xbstrap build --all
 # Create an empty image
 xbstrap run empty-image
-# Fill the image with files
+# Create an initrd from the built packages
+xbstrap run initrd
+# Copy everything into the image
 xbstrap run make-image
 ```
 

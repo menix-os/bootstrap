@@ -3,7 +3,7 @@ tasks:
   args:
   - '@SOURCE_ROOT@/tasks/empty-image.sh'
   - '@BUILD_ROOT@/menix.img'
-  - '2G'
-  - '128MiB'
+  - '4G'
+  - '512MiB'
   workdir: '@BUILD_ROOT@'
   containerless: true

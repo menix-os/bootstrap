@@ -44,6 +44,9 @@ packages:
     - '--disable-nls'
     - '--disable-multilib'
     - '--disable-werror'
+    # -g blows up GCC's binary size.
+    - 'CFLAGS=-O2'
+    - 'CXXFLAGS=-O2'
   build:
   - args: [ 'make', '-j@PARALLELISM@', 'all-gcc' ]
   - args: [ 'make', '-j@PARALLELISM@', 'install-gcc' ]

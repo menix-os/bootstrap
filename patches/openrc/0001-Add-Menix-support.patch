@@ -1,0 +1,206 @@
+From 0c64e1bd460d5c134496d83bc6e719f6170a4051 Mon Sep 17 00:00:00 2001
+From: Marvin Friedrich <contact@marvinf.com>
+Date: Sun, 23 Feb 2025 19:08:16 +0100
+Subject: [PATCH] Add Menix support
+
+---
+ meson.build                 |  8 ++++++--
+ meson_options.txt           |  2 +-
+ src/einfo/einfo.c           | 23 +++++++++++++++++++++++
+ src/libeinfo/libeinfo.c     |  4 ++++
+ src/librc/librc-daemon.c    |  6 ++++++
+ src/meson.build             |  4 ++++
+ src/openrc-run/openrc-run.c |  5 +++++
+ src/openrc/rc-logger.c      |  5 +++++
+ src/shared/misc.c           |  2 +-
+ 9 files changed, 55 insertions(+), 4 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index f0d35ef8..bdf72dbf 100644
+--- a/meson.build
++++ b/meson.build
+@@ -48,7 +48,11 @@ endif
+ 
+ if os != 'Linux'
+   cap_dep = []
+-  kvm_dep = cc.find_library('kvm')
++  if os == 'Menix'
++    kvm_dep = []
++  else
++    kvm_dep = cc.find_library('kvm')
++  endif
+ else
+   cap_dep = dependency('libcap', version: '>=2.33')
+   kvm_dep = []
+@@ -122,7 +126,7 @@ else
+   cc_debug_flags = []
+ endif
+ 
+-if os == 'Linux' or os == 'GNU-kFreeBSD'
++if os == 'Linux' or os == 'GNU-kFreeBSD' or os == 'Menix'
+   cc_os_flags = ['-D_DEFAULT_SOURCE']
+ elif os == 'FreeBSD'
+   cc_os_flags = ['-D_BSD_SOURCE']
+diff --git a/meson_options.txt b/meson_options.txt
+index 30a7dcfd..1072e210 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -10,7 +10,7 @@ option('newnet', type : 'boolean',
+   description : 'build and install our networking scripts')
+ option('os', type : 'combo',
+   choices :
+-    [ '', 'DragonFly', 'FreeBSD', 'GNU', 'GNU-kFreeBSD', 'Linux', 'NetBSD' ],
++    [ '', 'DragonFly', 'FreeBSD', 'GNU', 'GNU-kFreeBSD', 'Linux', 'NetBSD', 'Menix' ],
+   description : 'Operating System (autodetected if not specified)')
+ option('pam', type : 'boolean',
+   description : 'enable PAM support')
+diff --git a/src/einfo/einfo.c b/src/einfo/einfo.c
+index a80e12aa..c0ce3b35 100644
+--- a/src/einfo/einfo.c
++++ b/src/einfo/einfo.c
+@@ -32,6 +32,29 @@
+ 
+ const char *applet = NULL;
+ 
++#ifdef __menix__
++typedef struct _code {
++	const char *c_name;
++	int	c_val;
++} CODE;
++
++CODE prioritynames[] =
++  {
++    { "alert", LOG_ALERT },
++    { "crit", LOG_CRIT },
++    { "debug", LOG_DEBUG },
++    { "emerg", LOG_EMERG },
++    { "err", LOG_ERR },
++    { "error", LOG_ERR },		/* DEPRECATED */
++    { "info", LOG_INFO },
++    { "notice", LOG_NOTICE },
++    { "panic", LOG_EMERG },		/* DEPRECATED */
++    { "warn", LOG_WARNING },		/* DEPRECATED */
++    { "warning", LOG_WARNING },
++    { NULL, -1 }
++  };
++#endif
++
+ static int syslog_decode(char *name, const CODE *codetab)
+ {
+ 	const CODE *c;
+diff --git a/src/libeinfo/libeinfo.c b/src/libeinfo/libeinfo.c
+index 0d883507..e58ed99c 100644
+--- a/src/libeinfo/libeinfo.c
++++ b/src/libeinfo/libeinfo.c
+@@ -15,6 +15,10 @@
+  *    except according to the terms contained in the LICENSE file.
+  */
+ 
++#ifdef __menix__
++#include <termios.h>
++#endif
++
+ #include <sys/ioctl.h>
+ #include <errno.h>
+ #include <inttypes.h>
+diff --git a/src/librc/librc-daemon.c b/src/librc/librc-daemon.c
+index c70963e5..35d6c30f 100644
+--- a/src/librc/librc-daemon.c
++++ b/src/librc/librc-daemon.c
+@@ -324,6 +324,12 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
+ 	return pids;
+ }
+ 
++#elif defined(__menix__)
++RC_PIDLIST *
++rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
++{
++	return NULL;
++}
+ #else
+ #  error "Platform not supported!"
+ #endif
+diff --git a/src/meson.build b/src/meson.build
+index 76f6d8a1..6e7fe662 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -6,13 +6,17 @@ subdir('libeinfo')
+ subdir('librc')
+ subdir('checkpath')
+ subdir('einfo')
++if os != 'Menix'
+ subdir('fstabinfo')
++endif
+ subdir('halt')
+ subdir('is_newer_than')
+ subdir('is_older_than')
+ subdir('kill_all')
+ subdir('mark_service')
++if os != 'Menix'
+ subdir('mountinfo')
++endif
+ subdir('on_ac_power')
+ subdir('openrc')
+ subdir('openrc-init')
+diff --git a/src/openrc-run/openrc-run.c b/src/openrc-run/openrc-run.c
+index 748e1d8f..98578128 100644
+--- a/src/openrc-run/openrc-run.c
++++ b/src/openrc-run/openrc-run.c
+@@ -41,6 +41,8 @@
+ #  include <pty.h>
+ #elif defined(__NetBSD__) || defined(__OpenBSD__)
+ #  include <util.h>
++#elif defined(__menix__)
++
+ #else
+ #  include <libutil.h>
+ #endif
+@@ -102,6 +104,9 @@ static RC_STRINGLIST *deptypes_nwua;	/* need+want+use+after deps */
+ static RC_STRINGLIST *deptypes_m;	/* needed deps for stopping */
+ static RC_STRINGLIST *deptypes_mwua;	/* need+want+use+after deps for stopping */
+ 
++int openpty(int *__amaster, int *__aslave, char *__name,
++	const struct termios *__termp, const struct winsize *__winp) {return 0;}
++
+ static void
+ handle_signal(int sig)
+ {
+diff --git a/src/openrc/rc-logger.c b/src/openrc/rc-logger.c
+index 2dce6693..4c073090 100644
+--- a/src/openrc/rc-logger.c
++++ b/src/openrc/rc-logger.c
+@@ -36,6 +36,8 @@
+ #  include <pty.h>
+ #elif defined(__NetBSD__) || defined(__OpenBSD__)
+ #  include <util.h>
++#elif defined(__menix__)
++
+ #else
+ #  include <libutil.h>
+ #endif
+@@ -131,6 +133,9 @@ rc_logger_close(void)
+ 		dup2(fd_stderr, STDERR_FILENO);
+ }
+ 
++int openpty(int *__amaster, int *__aslave, char *__name,
++	const struct termios *__termp, const struct winsize *__winp) {return 0;}
++
+ void
+ rc_logger_open(const char *level)
+ {
+diff --git a/src/shared/misc.c b/src/shared/misc.c
+index c5d38756..e131c5f6 100644
+--- a/src/shared/misc.c
++++ b/src/shared/misc.c
+@@ -543,7 +543,7 @@ cloexec_fds_from(int first)
+ {
+ 	int i;
+ 	if (close_range(first, UINT_MAX, CLOSE_RANGE_CLOEXEC) < 0) {
+-		for (i = getdtablesize() - 1; i >= first; --i)
++		for (i = OPEN_MAX - 1; i >= first; --i)
+ 			fcntl(i, F_SETFD, FD_CLOEXEC);
+ 	}
+ }
+-- 
+2.48.1
+
