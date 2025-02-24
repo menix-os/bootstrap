@@ -5,13 +5,13 @@ sources:
   tag: 'v9.0.0'
   version: '9.0.0'
   tools_required:
-  - host-autoconf-2.69
+  - host-autoconf
   - host-automake
   - host-libtool
   regenerate:
+  - args: [ '@SOURCE_ROOT@/support/autoreconf.sh', '-I@THIS_SOURCE_DIR@/config' ]
   - args: [ './bootstrap' ]
     isolate_network: false
-  - args: [ '@SOURCE_ROOT@/support/autoreconf.sh', '-I@THIS_SOURCE_DIR@/config' ]
 
 packages:
 - name: limine
