@@ -1,0 +1,28 @@
+packages:
+- name: linux-headers
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  source:
+    subdir: 'ports'
+    url: 'https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.8.tar.xz'
+    checksum: 'blake2b:62a3f435bbe7d24bea361f2545ba50f8b36030a98bd28d0979b86052d8af34dc7a4c27f7ca2890daba5e5bb51f5848e6b21cd5df4dbbd19919867bf67d38790d'
+    extract_path: 'linux-6.12.8'
+    format: 'tar.xz'
+    version: '6.12.8'
+  revision: 1
+  configure:
+  - args: [ 'cp', '-Tr', '@THIS_SOURCE_DIR@', '.' ]
+  build:
+  - args: |
+      case "@OPTION:arch@" in
+        "x86_64") LINUX_ARCH="x86" ;;
+        "aarch64") LINUX_ARCH="arm64" ;;
+        "riscv64") LINUX_ARCH="riscv" ;;
+      esac
+      make ARCH="$LINUX_ARCH" headers_install
+  - args: [ 'find', 'usr/include', '-type', 'f', '!', '-name', '*.h', '-delete' ]
+  - args: [ 'rm', '-rf', '@THIS_COLLECT_DIR@/usr/src/linux-headers' ]
+  - args: [ 'rm', '-rf', '@THIS_COLLECT_DIR@/usr/include' ]
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/usr/src' ]
+  - args: [ 'cp', '-Tr', 'usr/include', '@THIS_COLLECT_DIR@/usr/include' ]
+  - args: [ 'cp', '-Tr', 'usr/include', '@THIS_COLLECT_DIR@/usr/src/linux-headers' ]

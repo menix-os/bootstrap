@@ -14,6 +14,8 @@ packages:
   revision: 1
   tools_required:
   - host-meson
+  pkgs_required:
+  - linux-headers
   configure:
   - args:
     - 'meson'
@@ -22,6 +24,7 @@ packages:
     - '@BUILD_ROOT@/tools/host-meson/cross.txt'
     - '--prefix=/usr'
     - '-Dheaders_only=true'
+    - '-Dlinux_kernel_headers=@BUILD_ROOT@/packages/linux-headers/usr/include'
     - '@THIS_SOURCE_DIR@'
   build:
   - args: [ 'ninja' ]
@@ -39,6 +42,7 @@ packages:
   - host-pkgconf
   pkgs_required:
   - mlibc-headers
+  - linux-headers
   configure:
   - args:
     - 'meson'
@@ -48,6 +52,7 @@ packages:
     - '--prefix=/usr'
     - '--libdir=lib'
     - '-Dno_headers=true'
+    - '-Dlinux_kernel_headers=@BUILD_ROOT@/packages/linux-headers/usr/include'
     - '-Ddefault_library=both'
     - '@THIS_SOURCE_DIR@'
   build:
