@@ -171,6 +171,9 @@ RUN cd /root && \
 	tar xf mdbook.tar.gz && \
 	install -D mdbook /usr/local/bin/mdbook
 
+# Install Cargo + Rust.
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain nightly -y
+
 #----------------------------------------------------------------------------------------
 # "user" stage that also adds a user account.
 #----------------------------------------------------------------------------------------
