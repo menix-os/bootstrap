@@ -5,6 +5,7 @@ set -e
 ARCH="$1"
 BUILD_ROOT="$2"
 PARALLELISM="$3"
+OVMF="$4"
 
 QEMU_COMMON_FLAGS="-serial stdio \
 	-no-reboot \
@@ -18,7 +19,7 @@ QEMU_COMMON_FLAGS="-serial stdio \
 	"
 
 case $ARCH in
-x86_64) QEMU_FLAGS="-cpu host -accel kvm -machine q35,smm=off -bios /usr/share/ovmf/x64/OVMF.4m.fd" ;;
+x86_64) QEMU_FLAGS="-cpu host -accel kvm -machine q35,smm=off -bios $OVMF" ;;
 *)      QEMU_FLAGS="-cpu max" ;;
 esac
 

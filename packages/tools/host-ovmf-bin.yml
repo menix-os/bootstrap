@@ -1,0 +1,34 @@
+sources:
+- name: ovmf-bin-x86_64
+  subdir: 'ports'
+  checksum: blake2b:830d29f483e67774e15d23cad31644fdb6aa6360d6e2bb9588dd89e549485dd60a3fc0de68a5e5e175e341b67d5da429520db42116bd5722b8718eca539edf4a
+  url: https://github.com/osdev0/edk2-ovmf-nightly/releases/download/nightly-2025-03-03/ovmf-code-x86_64.fd
+  filename: ovmf-code-x86_64.fd
+  format: raw
+
+- name: ovmf-bin-aarch64
+  subdir: 'ports'
+  checksum: blake2b:3958582fbe5f2c992f74099448a508a070360b742a59d3905e47d4532dd77725f6b6eb27505554adfb1c38dd52a750cc45f078fb0104c60a6a6fd2a230efc763
+  url: https://github.com/osdev0/edk2-ovmf-nightly/releases/download/nightly-2025-03-03/ovmf-code-aarch64.fd
+  filename: ovmf-code-aarch64.fd
+  format: raw
+
+- name: ovmf-bin-riscv64
+  subdir: 'ports'
+  checksum: blake2b:05607a40ca5826fa0c645f7f1d56aeecc26392b5641f1a73bd55a54240c7fd3874169b2d5f8ab8ef712db8aa6631aa7cef588fe35776ae098048c2070f100fce
+  url: https://github.com/osdev0/edk2-ovmf-nightly/releases/download/nightly-2025-03-03/ovmf-code-riscv64.fd
+  filename: ovmf-code-riscv64.fd
+  format: raw
+
+tools:
+- name: host-ovmf-bin
+  containerless: true
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  from_source: ovmf-bin-x86_64
+  sources_required:
+  - ovmf-bin-x86_64
+  - ovmf-bin-aarch64
+  - ovmf-bin-riscv64
+  install:
+  - args: [ 'cp', '@THIS_SOURCE_DIR@/ovmf-code-@OPTION:arch@.fd', '@PREFIX@/' ]

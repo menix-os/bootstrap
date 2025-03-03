@@ -3,10 +3,13 @@ tasks:
   tasks_required:
   - task: make-image
     order_only: true
+  tools_required:
+  - host-ovmf-bin
   args:
   - '@SOURCE_ROOT@/tasks/qemu.sh'
   - '@OPTION:arch@'
   - '@BUILD_ROOT@'
   - '@PARALLELISM@'
+  - '@BUILD_ROOT@/tools/host-ovmf-bin/ovmf-code-@OPTION:arch@.fd'
   workdir: '@BUILD_ROOT@'
   containerless: true
