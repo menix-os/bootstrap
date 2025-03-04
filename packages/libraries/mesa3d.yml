@@ -1,0 +1,33 @@
+packages:
+- name: mesa3d
+  labels: [ broken, x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  source:
+    subdir: 'ports'
+    git: 'https://gitlab.freedesktop.org/mesa/mesa.git'
+    tag: 'mesa-25.0.0'
+    version: '25.0.0'
+  tools_required:
+  - host-gcc
+  - host-meson
+  configure:
+  - args:
+    - 'meson'
+    - 'setup'
+    - '--cross-file'
+    - '@BUILD_ROOT@/tools/host-meson/cross.txt'
+    - '--prefix=/usr'
+    - '-Dplatforms=x11'
+    - '-Dglx=xlib'
+    - '-Dgallium-drivers=swrast'
+    - '-Dvulkan-drivers='
+    - '-Dllvm=enabled'
+    - '-Dllvmpipe=enabled'
+    - '-Dvalgrind=disabled'
+    - '-Dlibunwind=disabled'
+    - '@THIS_SOURCE_DIR@'
+  build:
+  - args: [ 'ninja' ]
+  - args: [ 'ninja', 'install' ]
+    environ:
+      DESTDIR: '@THIS_COLLECT_DIR@'
