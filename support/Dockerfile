@@ -14,6 +14,7 @@ RUN zypper --non-interactive install \
 	libopenssl-3-devel \
 	makeinfo \
 	mdbook \
+	patch \
 	python313 \
 	python313-pip \
 	rsync \
