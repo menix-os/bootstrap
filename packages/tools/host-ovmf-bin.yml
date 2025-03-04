@@ -23,7 +23,7 @@ sources:
 tools:
 - name: host-ovmf-bin
   containerless: true
-  labels: [ x86_64, aarch64, riscv64 ]
+  labels: [ local-only, x86_64, aarch64, riscv64 ]
   architecture: '@OPTION:arch@'
   from_source: ovmf-bin-x86_64
   sources_required:
