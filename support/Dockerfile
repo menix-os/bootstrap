@@ -11,6 +11,7 @@ RUN zypper --non-interactive install \
 	envsubst \
 	git \
 	help2man \
+	libopenssl-3-devel \
 	makeinfo \
 	mdbook \
 	python313 \
