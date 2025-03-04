@@ -30,6 +30,8 @@ labels:
   match:
   - $arch
   - noarch
+  ban:
+  - broken
 
 pkg_management:
   format: xbps
