@@ -1,0 +1,439 @@
+From 64f08787db938d68946d2e794f68be1e9a9d6f74 Mon Sep 17 00:00:00 2001
+From: Marvin Friedrich <contact@marvinf.com>
+Date: Tue, 4 Mar 2025 16:38:15 +0100
+Subject: [PATCH] Add Menix support
+
+---
+ clang/lib/Basic/Targets.cpp             |   7 +
+ clang/lib/Basic/Targets/OSTargets.h     |  35 +++++
+ clang/lib/Driver/CMakeLists.txt         |   1 +
+ clang/lib/Driver/ToolChains/Menix.cpp   | 178 ++++++++++++++++++++++++
+ clang/lib/Driver/ToolChains/Menix.h     |  53 +++++++
+ llvm/include/llvm/ADT/bit.h             |   2 +-
+ llvm/include/llvm/TargetParser/Triple.h |   4 +-
+ llvm/lib/Support/Unix/Path.inc          |   2 +-
+ llvm/lib/TargetParser/Triple.cpp        |   4 +
+ 9 files changed, 283 insertions(+), 3 deletions(-)
+ create mode 100644 clang/lib/Driver/ToolChains/Menix.cpp
+ create mode 100644 clang/lib/Driver/ToolChains/Menix.h
+
+diff --git a/clang/lib/Basic/Targets.cpp b/clang/lib/Basic/Targets.cpp
+index 29133f9ee8fc..7b8b57f4cc12 100644
+--- a/clang/lib/Basic/Targets.cpp
++++ b/clang/lib/Basic/Targets.cpp
+@@ -174,6 +174,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
+       default: // Assume MSVC for unknown environments
+         return std::make_unique<MicrosoftARM64TargetInfo>(Triple, Opts);
+       }
++    case llvm::Triple::Menix:
++      return std::make_unique<MenixTargetInfo<AArch64leTargetInfo>>(Triple,
++                                                                    Opts);
+     default:
+       return std::make_unique<AArch64leTargetInfo>(Triple, Opts);
+     }
+@@ -463,6 +466,8 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
+         return std::make_unique<OHOSTargetInfo<RISCV64TargetInfo>>(Triple,
+                                                                    Opts);
+       }
++    case llvm::Triple::Menix:
++      return std::make_unique<MenixTargetInfo<RISCV64TargetInfo>>(Triple, Opts);
+     default:
+       return std::make_unique<RISCV64TargetInfo>(Triple, Opts);
+     }
+@@ -646,6 +651,8 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
+       return std::make_unique<PS5OSTargetInfo<X86_64TargetInfo>>(Triple, Opts);
+     case llvm::Triple::Hurd:
+       return std::make_unique<HurdTargetInfo<X86_64TargetInfo>>(Triple, Opts);
++    case llvm::Triple::Menix:
++      return std::make_unique<MenixTargetInfo<X86_64TargetInfo>>(Triple, Opts);
+     default:
+       return std::make_unique<X86_64TargetInfo>(Triple, Opts);
+     }
+diff --git a/clang/lib/Basic/Targets/OSTargets.h b/clang/lib/Basic/Targets/OSTargets.h
+index 357c1965057c..503d849be748 100644
+--- a/clang/lib/Basic/Targets/OSTargets.h
++++ b/clang/lib/Basic/Targets/OSTargets.h
+@@ -373,6 +373,41 @@ public:
+   }
+ };
+ 
++// Menix Target
++template <typename Target>
++class LLVM_LIBRARY_VISIBILITY MenixTargetInfo : public OSTargetInfo<Target> {
++protected:
++  void getOSDefines(const LangOptions &Opts, const llvm::Triple &Triple,
++                    MacroBuilder &Builder) const override {
++    Builder.defineMacro("__menix__");
++    Builder.defineMacro("__ELF__");
++    DefineStd(Builder, "unix", Opts);
++    if (Opts.POSIXThreads)
++      Builder.defineMacro("_REENTRANT");
++    if (Opts.CPlusPlus)
++      Builder.defineMacro("_GNU_SOURCE");
++    if (this->HasFloat128)
++      Builder.defineMacro("__FLOAT128__");
++  }
++
++public:
++  MenixTargetInfo(const llvm::Triple &Triple, const TargetOptions &Opts)
++      : OSTargetInfo<Target>(Triple, Opts) {
++    this->SizeType = TargetInfo::UnsignedLong;
++    this->IntPtrType = TargetInfo::SignedLong;
++    this->PtrDiffType = TargetInfo::SignedLong;
++    this->ProcessIDType = TargetInfo::UnsignedLong;
++    switch (Triple.getArch()) {
++    default:
++      break;
++    case llvm::Triple::x86:
++    case llvm::Triple::x86_64:
++      this->HasFloat128 = true;
++      break;
++    }
++  }
++};
++
+ // NetBSD Target
+ template <typename Target>
+ class LLVM_LIBRARY_VISIBILITY NetBSDTargetInfo : public OSTargetInfo<Target> {
+diff --git a/clang/lib/Driver/CMakeLists.txt b/clang/lib/Driver/CMakeLists.txt
+index 32a4378ab499..89301eee784f 100644
+--- a/clang/lib/Driver/CMakeLists.txt
++++ b/clang/lib/Driver/CMakeLists.txt
+@@ -65,6 +65,7 @@ add_clang_library(clangDriver
+   ToolChains/HLSL.cpp
+   ToolChains/Hurd.cpp
+   ToolChains/Linux.cpp
++  ToolChains/Menix.cpp
+   ToolChains/MipsLinux.cpp
+   ToolChains/MinGW.cpp
+   ToolChains/MSP430.cpp
+diff --git a/clang/lib/Driver/ToolChains/Menix.cpp b/clang/lib/Driver/ToolChains/Menix.cpp
+new file mode 100644
+index 000000000000..75cd3e4eb7f9
+--- /dev/null
++++ b/clang/lib/Driver/ToolChains/Menix.cpp
+@@ -0,0 +1,178 @@
++//===--- Menix.h - Menix ToolChain Implementations --------------*- C++ -*-===//
++//
++// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
++// See https://llvm.org/LICENSE.txt for license information.
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
++//
++//===----------------------------------------------------------------------===//
++
++#include "Menix.h"
++#include "Arch/ARM.h"
++#include "Arch/RISCV.h"
++#include "CommonArgs.h"
++#include "clang/Config/config.h"
++#include "clang/Driver/Distro.h"
++#include "clang/Driver/Driver.h"
++#include "clang/Driver/Options.h"
++#include "clang/Driver/SanitizerArgs.h"
++#include "llvm/Option/ArgList.h"
++#include "llvm/ProfileData/InstrProf.h"
++#include "llvm/Support/Path.h"
++#include <system_error>
++
++using namespace clang::driver;
++using namespace clang::driver::toolchains;
++using namespace clang;
++using namespace llvm::opt;
++
++using tools::addPathIfExists;
++
++/// \brief Get our best guess at the multiarch triple for a target.
++std::string Menix::getMultiarchTriple(const Driver &D,
++                                      const llvm::Triple &TargetTriple,
++                                      StringRef SysRoot) const {
++  // For most architectures, just use whatever we have rather than trying to be
++  // clever.
++  switch (TargetTriple.getArch()) {
++  default:
++    break;
++
++  case llvm::Triple::x86_64:
++    return "x86_64-menix";
++  case llvm::Triple::aarch64:
++    return "aarch64-menix";
++  case llvm::Triple::riscv64:
++    return "riscv64-menix";
++  }
++  return TargetTriple.str();
++}
++
++static StringRef getOSLibDir(const llvm::Triple &Triple, const ArgList &Args) {
++  return Triple.isArch32Bit() ? "lib32" : "lib";
++}
++
++Menix::Menix(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
++    : Generic_ELF(D, Triple, Args) {
++  GCCInstallation.init(Triple, Args);
++  Multilibs = GCCInstallation.getMultilibs();
++  SelectedMultilibs.assign({GCCInstallation.getMultilib()});
++  std::string SysRoot = computeSysRoot();
++
++  ToolChain::path_list &PPaths = getProgramPaths();
++  Generic_GCC::PushPPaths(PPaths);
++
++#ifdef ENABLE_LINKER_BUILD_ID
++  ExtraOpts.push_back("--build-id");
++#endif
++
++  // The selection of paths to try here is designed to match the patterns which
++  // the GCC driver itself uses, as this is part of the GCC-compatible driver.
++  // This was determined by running GCC in a fake filesystem, creating all
++  // possible permutations of these directories, and seeing which ones it added
++  // to the link paths.
++  path_list &Paths = getFilePaths();
++
++  const std::string OSLibDir = std::string(getOSLibDir(Triple, Args));
++  const std::string MultiarchTriple = getMultiarchTriple(D, Triple, SysRoot);
++
++  Generic_GCC::AddMultilibPaths(D, SysRoot, OSLibDir, MultiarchTriple, Paths);
++
++  addPathIfExists(D, concat(SysRoot, "/lib", MultiarchTriple), Paths);
++  addPathIfExists(D, concat(SysRoot, "/lib/..", OSLibDir), Paths);
++  addPathIfExists(D, concat(SysRoot, "/usr/lib/", MultiarchTriple), Paths);
++  addPathIfExists(D, concat(SysRoot, "/usr/lib/../", OSLibDir), Paths);
++
++  Generic_GCC::AddMultiarchPaths(D, SysRoot, OSLibDir, Paths);
++
++  addPathIfExists(D, SysRoot + "/lib", Paths);
++  addPathIfExists(D, SysRoot + "/usr/lib", Paths);
++}
++
++bool Menix::HasNativeLLVMSupport() const { return true; }
++
++Tool *Menix::buildLinker() const { return new tools::gnutools::Linker(*this); }
++
++Tool *Menix::buildAssembler() const {
++  return new tools::gnutools::Assembler(*this);
++}
++
++std::string Menix::computeSysRoot() const {
++  if (!getDriver().SysRoot.empty())
++    return getDriver().SysRoot;
++  return std::string();
++}
++
++std::string Menix::getDynamicLinker(const ArgList &Args) const {
++  return "/usr/lib/ld.so";
++}
++
++void Menix::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
++                                      ArgStringList &CC1Args) const {
++  const Driver &D = getDriver();
++  std::string SysRoot = computeSysRoot();
++
++  if (DriverArgs.hasArg(options::OPT_nostdinc))
++    return;
++
++  if (!DriverArgs.hasArg(options::OPT_nostdlibinc))
++    return;
++
++  addSystemInclude(DriverArgs, CC1Args, SysRoot + "/usr/local/include");
++
++  if (!DriverArgs.hasArg(options::OPT_nobuiltininc)) {
++    SmallString<128> P(D.ResourceDir);
++    llvm::sys::path::append(P, "include");
++    addSystemInclude(DriverArgs, CC1Args, P);
++  }
++
++  if (DriverArgs.hasArg(options::OPT_nostdlibinc))
++    return;
++
++  // LOCAL_INCLUDE_DIR
++  addSystemInclude(DriverArgs, CC1Args, concat(SysRoot, "/usr/local/include"));
++  // TOOL_INCLUDE_DIR
++  AddMultilibIncludeArgs(DriverArgs, CC1Args);
++
++  // Check for configure-time C include directories.
++  StringRef CIncludeDirs(C_INCLUDE_DIRS);
++  if (CIncludeDirs != "") {
++    SmallVector<StringRef, 5> dirs;
++    CIncludeDirs.split(dirs, ":");
++    for (StringRef dir : dirs) {
++      StringRef Prefix =
++          llvm::sys::path::is_absolute(dir) ? StringRef(SysRoot) : "";
++      addExternCSystemInclude(DriverArgs, CC1Args, Prefix + dir);
++    }
++    return;
++  }
++
++  addExternCSystemInclude(DriverArgs, CC1Args, concat(SysRoot, "/include"));
++  addExternCSystemInclude(DriverArgs, CC1Args, concat(SysRoot, "/usr/include"));
++}
++
++void Menix::addLibStdCxxIncludePaths(const llvm::opt::ArgList &DriverArgs,
++                                     llvm::opt::ArgStringList &CC1Args) const {
++  // We need a detected GCC installation on Astral to provide libstdc++'s
++  // headers.
++  if (!GCCInstallation.isValid())
++    return;
++
++  StringRef TripleStr = GCCInstallation.getTriple().str();
++
++  // Try generic GCC detection.
++  Generic_GCC::addGCCLibStdCxxIncludePaths(DriverArgs, CC1Args, TripleStr);
++}
++
++SanitizerMask Menix::getSupportedSanitizers() const {
++  auto Arch = getTriple().getArch();
++  SanitizerMask Res = ToolChain::getSupportedSanitizers();
++  Res |= SanitizerKind::PointerCompare;
++  Res |= SanitizerKind::PointerSubtract;
++  Res |= SanitizerKind::KernelAddress;
++  Res |= SanitizerKind::Vptr;
++  if (Arch == llvm::Triple::x86_64) {
++    Res |= SanitizerKind::KernelMemory;
++    Res |= SanitizerKind::Function;
++  }
++  return Res;
++}
+diff --git a/clang/lib/Driver/ToolChains/Menix.h b/clang/lib/Driver/ToolChains/Menix.h
+new file mode 100644
+index 000000000000..e4054187281b
+--- /dev/null
++++ b/clang/lib/Driver/ToolChains/Menix.h
+@@ -0,0 +1,53 @@
++//===--- Menix.h - Menix ToolChain Implementations --------------*- C++ -*-===//
++//
++// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
++// See https://llvm.org/LICENSE.txt for license information.
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
++//
++//===----------------------------------------------------------------------===//
++
++#ifndef LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ASTRAL_H
++#define LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ASTRAL_H
++
++#include "Gnu.h"
++#include "clang/Driver/ToolChain.h"
++
++namespace clang {
++namespace driver {
++namespace toolchains {
++
++class LLVM_LIBRARY_VISIBILITY Menix : public Generic_ELF {
++public:
++  Menix(const Driver &D, const llvm::Triple &Triple,
++        const llvm::opt::ArgList &Args);
++
++  bool HasNativeLLVMSupport() const override;
++
++  std::string getMultiarchTriple(const Driver &D,
++                                 const llvm::Triple &TargetTriple,
++                                 StringRef SysRoot) const override;
++
++  void
++  AddClangSystemIncludeArgs(const llvm::opt::ArgList &DriverArgs,
++                            llvm::opt::ArgStringList &CC1Args) const override;
++  void
++  addLibStdCxxIncludePaths(const llvm::opt::ArgList &DriverArgs,
++                           llvm::opt::ArgStringList &CC1Args) const override;
++  SanitizerMask getSupportedSanitizers() const override;
++  virtual std::string computeSysRoot() const override;
++
++  virtual std::string
++  getDynamicLinker(const llvm::opt::ArgList &Args) const override;
++
++  std::vector<std::string> ExtraOpts;
++
++protected:
++  Tool *buildAssembler() const override;
++  Tool *buildLinker() const override;
++};
++
++} // end namespace toolchains
++} // end namespace driver
++} // end namespace clang
++
++#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_MENIX_H
+diff --git a/llvm/include/llvm/ADT/bit.h b/llvm/include/llvm/ADT/bit.h
+index c42b5e686bdc..ee681e643b3d 100644
+--- a/llvm/include/llvm/ADT/bit.h
++++ b/llvm/include/llvm/ADT/bit.h
+@@ -29,7 +29,7 @@
+ 
+ #if defined(__linux__) || defined(__GNU__) || defined(__HAIKU__) ||            \
+     defined(__Fuchsia__) || defined(__EMSCRIPTEN__) || defined(__NetBSD__) ||  \
+-    defined(__OpenBSD__) || defined(__DragonFly__)
++    defined(__OpenBSD__) || defined(__DragonFly__) || defined(__menix__)
+ #include <endian.h>
+ #elif defined(_AIX)
+ #include <sys/machine.h>
+diff --git a/llvm/include/llvm/TargetParser/Triple.h b/llvm/include/llvm/TargetParser/Triple.h
+index d2126a03db90..4ac00f53d639 100644
+--- a/llvm/include/llvm/TargetParser/Triple.h
++++ b/llvm/include/llvm/TargetParser/Triple.h
+@@ -239,7 +239,8 @@ public:
+     LiteOS,
+     Serenity,
+     Vulkan, // Vulkan SPIR-V
+-    LastOSType = Vulkan
++	Menix,
++    LastOSType = Menix
+   };
+   enum EnvironmentType {
+     UnknownEnvironment,
+@@ -258,6 +259,7 @@ public:
+     EABI,
+     EABIHF,
+     Android,
++	Mlibc,
+     Musl,
+     MuslEABI,
+     MuslEABIHF,
+diff --git a/llvm/lib/Support/Unix/Path.inc b/llvm/lib/Support/Unix/Path.inc
+index cf05db546e02..be9a13e65f9c 100644
+--- a/llvm/lib/Support/Unix/Path.inc
++++ b/llvm/lib/Support/Unix/Path.inc
+@@ -129,7 +129,7 @@ const file_t kInvalidFile = -1;
+ #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) ||      \
+     defined(__FreeBSD_kernel__) || defined(__linux__) || defined(__CYGWIN__) || \
+     defined(__DragonFly__) || defined(_AIX) || defined(__GNU__) ||              \
+-    (defined(__sun__) && defined(__svr4__) || defined(__HAIKU__))
++    (defined(__sun__) && defined(__svr4__) || defined(__HAIKU__)) || defined(__menix__)
+ static int test_dir(char ret[PATH_MAX], const char *dir, const char *bin) {
+   struct stat sb;
+   char fullpath[PATH_MAX];
+diff --git a/llvm/lib/TargetParser/Triple.cpp b/llvm/lib/TargetParser/Triple.cpp
+index 21d6c74b5956..c7851d775383 100644
+--- a/llvm/lib/TargetParser/Triple.cpp
++++ b/llvm/lib/TargetParser/Triple.cpp
+@@ -282,6 +282,7 @@ StringRef Triple::getOSTypeName(OSType Kind) {
+   case Linux: return "linux";
+   case Lv2: return "lv2";
+   case MacOSX: return "macosx";
++  case Menix: return "menix";
+   case Mesa3D: return "mesa3d";
+   case NVCL: return "nvcl";
+   case NaCl: return "nacl";
+@@ -332,6 +333,7 @@ StringRef Triple::getEnvironmentTypeName(EnvironmentType Kind) {
+   case Itanium: return "itanium";
+   case MSVC: return "msvc";
+   case MacABI: return "macabi";
++  case Mlibc: return "mlibc";
+   case Musl: return "musl";
+   case MuslEABI: return "musleabi";
+   case MuslEABIHF: return "musleabihf";
+@@ -687,6 +689,7 @@ static Triple::OSType parseOS(StringRef OSName) {
+     .StartsWith("liteos", Triple::LiteOS)
+     .StartsWith("serenity", Triple::Serenity)
+     .StartsWith("vulkan", Triple::Vulkan)
++    .StartsWith("menix", Triple::Menix)
+     .Default(Triple::UnknownOS);
+ }
+ 
+@@ -737,6 +740,7 @@ static Triple::EnvironmentType parseEnvironment(StringRef EnvironmentName) {
+       .StartsWith("opencl", Triple::OpenCL)
+       .StartsWith("ohos", Triple::OpenHOS)
+       .StartsWith("pauthtest", Triple::PAuthTest)
++      .StartsWith("mlibc", Triple::Mlibc)
+       .Default(Triple::UnknownEnvironment);
+ }
+ 
+-- 
+2.48.1
+
