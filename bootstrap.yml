@@ -1,6 +1,7 @@
 imports:
 - file: packages/apps.yml
 - file: packages/boot.yml
+- file: packages/kernel.yml
 - file: packages/languages.yml
 - file: packages/libraries.yml
 - file: packages/meta.yml

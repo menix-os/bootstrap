@@ -1,5 +1,6 @@
 packages:
 - name: mesa3d
+  # TODO: Needs libdrm, wayland, etc
   labels: [ broken, x86_64, aarch64, riscv64 ]
   architecture: '@OPTION:arch@'
   source:
@@ -10,6 +11,16 @@ packages:
   tools_required:
   - host-gcc
   - host-meson
+  pkgs_required:
+  - mlibc
+  - libdrm
+  - llvm
+  - wayland
+  - wayland-protocols
+  - zlib
+  - libglvnd
+  - libexpat
+  - zstd
   configure:
   - args:
     - 'meson'
@@ -17,12 +28,11 @@ packages:
     - '--cross-file'
     - '@BUILD_ROOT@/tools/host-meson/cross.txt'
     - '--prefix=/usr'
-    - '-Dplatforms=x11'
-    - '-Dglx=xlib'
-    - '-Dgallium-drivers=swrast'
+    - '-Dplatforms=wayland'
+    - '-Dglx=dri'
+    - '-Dgallium-drivers=softpipe,llvmpipe'
     - '-Dvulkan-drivers='
     - '-Dllvm=enabled'
-    - '-Dllvmpipe=enabled'
     - '-Dvalgrind=disabled'
     - '-Dlibunwind=disabled'
     - '@THIS_SOURCE_DIR@'

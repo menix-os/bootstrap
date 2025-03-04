@@ -7,6 +7,7 @@ objcopy = '${ARCH}-${TRIPLE}-objcopy'
 ranlib = '${ARCH}-${TRIPLE}-gcc-ranlib'
 strip = '${ARCH}-${TRIPLE}-strip'
 pkg-config = 'pkgconf'
+llvm-config = '${SOURCE_ROOT}/support/llvmconfig'
 
 [host_machine]
 system = 'menix'

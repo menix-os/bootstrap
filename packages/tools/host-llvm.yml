@@ -1,21 +1,14 @@
-sources:
-- name: llvm
-  subdir: 'ports'
-  git: 'https://github.com/llvm/llvm-project'
-  tag: 'llvmorg-19.1.7'
-  version: '19.1.7'
-
 tools:
 - name: host-llvm
   labels: [ x86_64, aarch64, riscv64 ]
-  architecture: noarch
+  architecture: '@OPTION:arch@'
   exports_shared_libs: true
   from_source: llvm
   sources_required:
   - binutils
   tools_required:
   - host-cmake
-  revision: 4
+  revision: 1
   configure:
   - args:
     - 'cmake'
@@ -30,3 +23,7 @@ tools:
     - '-DDEFAULT_SYSROOT=@SYSROOT_DIR@'
     - '-DLLVM_BINUTILS_INCDIR=@SOURCE_ROOT@/ports/binutils/include'
     - '@THIS_SOURCE_DIR@/llvm'
+  compile:
+  - args: [ 'ninja' ]
+  install:
+  - args: [ 'ninja', 'install' ]

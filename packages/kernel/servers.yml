@@ -1,0 +1,22 @@
+packages:
+- name: menix-server-bootd
+  labels: [ x86_64, aarch64, riscv64 ]
+  architecture: '@OPTION:arch@'
+  from_source: menix
+  revision: 1
+  build:
+  - args:
+    - 'cargo'
+    - '+nightly'
+    - 'build'
+    - '--release'
+    - '--target'
+    - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
+    - '-Zbuild-std=core,alloc'
+    - '-Zbuild-std-features=compiler-builtins-mem'
+    - '--manifest-path'
+    - '@THIS_SOURCE_DIR@/servers/bootd/Cargo.toml'
+    environ:
+      CARGO_TARGET_DIR: '@THIS_BUILD_DIR@'
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/servers' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/bootd', '@THIS_COLLECT_DIR@/boot/servers' ]

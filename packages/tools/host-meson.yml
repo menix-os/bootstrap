@@ -13,3 +13,4 @@ tools:
       ARCH: '@OPTION:arch@'
       TRIPLE: '@OPTION:triple@'
       SYSROOT_DIR: '@SYSROOT_DIR@'
+      SOURCE_ROOT: '@SOURCE_ROOT@'

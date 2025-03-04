@@ -5,6 +5,7 @@ imports:
 - file: tools/host-cmake.yml
 - file: tools/host-gcc.yml
 - file: tools/host-libtool.yml
+- file: tools/host-llvm.yml
 - file: tools/host-meson.yml
 - file: tools/host-ovmf-bin.yml
 - file: tools/host-pkgconf.yml

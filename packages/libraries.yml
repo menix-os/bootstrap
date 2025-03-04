@@ -1,6 +1,7 @@
 imports:
 - file: libraries/gmp.yml
 - file: libraries/linux-headers.yml
+- file: libraries/llvm.yml
 - file: libraries/mesa3d.yml
 - file: libraries/mlibc.yml
 - file: libraries/mpc.yml

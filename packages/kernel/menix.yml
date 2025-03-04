@@ -1,0 +1,31 @@
+sources:
+- name: menix
+  subdir: sources
+  git: 'https://github.com/menix-os/menix.git'
+  branch: main
+  submodules: true
+  rolling_version: true
+  version: '0.0pl@ROLLING_ID@'
+
+packages:
+- name: menix
+  labels: [ x86_64 ]
+  architecture: '@OPTION:arch@'
+  from_source: menix
+  revision: 1
+  build:
+  - args:
+    - 'cargo'
+    - '+nightly'
+    - 'build'
+    - '--release'
+    - '--target'
+    - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
+    - '-Zbuild-std=core,alloc'
+    - '-Zbuild-std-features=compiler-builtins-mem'
+    - '--manifest-path'
+    - '@THIS_SOURCE_DIR@/kernel/Cargo.toml'
+    environ:
+      CARGO_TARGET_DIR: '@THIS_BUILD_DIR@'
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/menix', '@THIS_COLLECT_DIR@/boot' ]

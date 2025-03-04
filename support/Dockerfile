@@ -14,9 +14,11 @@ RUN zypper --non-interactive install \
 	libopenssl-3-devel \
 	makeinfo \
 	mdbook \
+	ninja \
 	patch \
-	python313 \
-	python313-pip \
+	python311 \
+	python311-pip \
+	python311-Mako \
 	rsync \
 	sed \
 	# Generic build systems
