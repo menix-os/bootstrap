@@ -32,3 +32,26 @@ packages:
   #     DESTDIR: '@THIS_COLLECT_DIR@'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
   - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/bin/.', '@THIS_COLLECT_DIR@/boot' ]
+
+- name: menix-rust
+  labels: [ broken ]
+  architecture: '@OPTION:arch@'
+  from_source: menix
+  revision: 1
+  build:
+  - args:
+    - 'cargo'
+    - '+nightly'
+    - 'build'
+    - '--release'
+    - '--target'
+    - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
+    - '--manifest-path'
+    - '@THIS_SOURCE_DIR@/Cargo.toml'
+    - '-Zbuild-std=core,alloc'
+    - '-Zbuild-std-features=compiler-builtins-mem'
+    environ:
+      CARGO_TARGET_DIR: '@THIS_BUILD_DIR@'
+  - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/menix', '@THIS_COLLECT_DIR@/boot' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/bootd', '@THIS_COLLECT_DIR@/boot' ]
