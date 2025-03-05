@@ -2,7 +2,7 @@ sources:
 - name: menix
   subdir: sources
   git: 'https://github.com/menix-os/menix.git'
-  branch: main
+  branch: rust
   submodules: true
   rolling_version: true
   version: '0.0pl@ROLLING_ID@'
