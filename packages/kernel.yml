@@ -1,3 +1,2 @@
 imports:
 - file: kernel/menix.yml
-- file: kernel/servers.yml
