@@ -21,6 +21,9 @@ packages:
   tools_required:
   - host-binutils
   - host-gcc
+  pkgs_required:
+  - menix
+  - menix-servers
   configure:
   # Rename x86_64 to x86-64 because that's what it's called in Limine.
   - args: |
