@@ -17,6 +17,8 @@ packages:
   - args:
     - 'cargo'
     - 'build'
+    - '--target-dir'
+    - '@THIS_BUILD_DIR@'
     - '--release'
     - '--target'
     - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
@@ -24,8 +26,6 @@ packages:
     - '@THIS_SOURCE_DIR@/kernel/Cargo.toml'
     - '-Zbuild-std=core,alloc'
     - '-Zbuild-std-features=compiler-builtins-mem'
-    environ:
-      CARGO_TARGET_DIR: '@THIS_BUILD_DIR@'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
   - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/menix', '@THIS_COLLECT_DIR@/boot' ]
 
@@ -38,14 +38,14 @@ packages:
   - args:
     - 'cargo'
     - 'build'
+    - '--target-dir'
+    - '@THIS_BUILD_DIR@'
     - '--target'
     - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
     - '--manifest-path'
     - '@THIS_SOURCE_DIR@/kernel/Cargo.toml'
     - '-Zbuild-std=core,alloc'
     - '-Zbuild-std-features=compiler-builtins-mem'
-    environ:
-      CARGO_TARGET_DIR: '@THIS_BUILD_DIR@'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
   - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/debug/menix', '@THIS_COLLECT_DIR@/boot/menix-debug' ]
 
@@ -58,6 +58,8 @@ packages:
   - args:
     - 'cargo'
     - 'build'
+    - '--target-dir'
+    - '@THIS_BUILD_DIR@'
     - '--release'
     - '--target'
     - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
@@ -65,7 +67,5 @@ packages:
     - '@THIS_SOURCE_DIR@/servers/Cargo.toml'
     - '-Zbuild-std=core,alloc'
     - '-Zbuild-std-features=compiler-builtins-mem'
-    environ:
-      CARGO_TARGET_DIR: '@THIS_BUILD_DIR@'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/servers' ]
   - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/bootd', '@THIS_COLLECT_DIR@/boot/servers' ]
