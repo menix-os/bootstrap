@@ -69,3 +69,4 @@ packages:
     - '-Zbuild-std-features=compiler-builtins-mem'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot/servers' ]
   - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/bootd', '@THIS_COLLECT_DIR@/boot/servers' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/posixd', '@THIS_COLLECT_DIR@/boot/servers' ]
