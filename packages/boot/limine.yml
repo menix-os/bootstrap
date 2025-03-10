@@ -2,8 +2,8 @@ sources:
 - name: limine
   subdir: 'ports'
   git: 'https://github.com/limine-bootloader/limine.git'
-  tag: 'v9.0.0'
-  version: '9.0.0'
+  tag: 'v9.1.0'
+  version: '9.1.0'
   tools_required:
   - host-autoconf
   - host-automake
