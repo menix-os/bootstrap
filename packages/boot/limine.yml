@@ -2,8 +2,8 @@ sources:
 - name: limine
   subdir: 'ports'
   git: 'https://github.com/limine-bootloader/limine.git'
-  tag: 'v9.1.0'
-  version: '9.1.0'
+  tag: 'v9.1.3'
+  version: '9.1.3'
   tools_required:
   - host-autoconf
   - host-automake
@@ -21,9 +21,6 @@ packages:
   tools_required:
   - host-binutils
   - host-gcc
-  pkgs_required:
-  - menix
-  - menix-servers
   configure:
   # Rename x86_64 to x86-64 because that's what it's called in Limine.
   - args: |
