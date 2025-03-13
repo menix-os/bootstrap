@@ -1,17 +1,16 @@
-From 3d061a2215d4464f1e69acfbab68c663274143f1 Mon Sep 17 00:00:00 2001
+From 8603a2009bcf28251d75adb663ed83cc0649a834 Mon Sep 17 00:00:00 2001
 From: Marvin Friedrich <contact@marvinf.com>
-Date: Mon, 24 Feb 2025 00:23:34 +0100
+Date: Thu, 13 Mar 2025 18:54:09 +0100
 Subject: [PATCH] Add Menix support
 
 ---
- meson.build                 |  8 ++++++--
- meson_options.txt           |  2 +-
- src/einfo/einfo.c           | 24 ++++++++++++++++++++++++
- src/librc/librc-daemon.c    |  2 +-
- src/meson.build             |  4 ++++
- src/openrc-run/openrc-run.c |  2 +-
- src/openrc/rc-logger.c      |  2 +-
- 7 files changed, 38 insertions(+), 6 deletions(-)
+ meson.build                 | 8 ++++++--
+ meson_options.txt           | 2 +-
+ src/librc/librc-daemon.c    | 2 +-
+ src/meson.build             | 4 ++++
+ src/openrc-run/openrc-run.c | 2 +-
+ src/openrc/rc-logger.c      | 2 +-
+ 6 files changed, 14 insertions(+), 6 deletions(-)
 
 diff --git a/meson.build b/meson.build
 index f0d35ef8..bdf72dbf 100644
@@ -52,41 +51,6 @@ index 30a7dcfd..1072e210 100644
    description : 'Operating System (autodetected if not specified)')
  option('pam', type : 'boolean',
    description : 'enable PAM support')
-diff --git a/src/einfo/einfo.c b/src/einfo/einfo.c
-index a80e12aa..9d1a7baa 100644
---- a/src/einfo/einfo.c
-+++ b/src/einfo/einfo.c
-@@ -27,6 +27,30 @@
- #include "einfo.h"
- #include "helpers.h"
- 
-+/* This seems to be part of glibc */
-+#ifdef __menix__
-+typedef struct _code {
-+	const char *c_name;
-+	int	c_val;
-+} CODE;
-+
-+CODE prioritynames[] =
-+  {
-+    { "alert", LOG_ALERT },
-+    { "crit", LOG_CRIT },
-+    { "debug", LOG_DEBUG },
-+    { "emerg", LOG_EMERG },
-+    { "err", LOG_ERR },
-+    { "error", LOG_ERR },		/* DEPRECATED */
-+    { "info", LOG_INFO },
-+    { "notice", LOG_NOTICE },
-+    { "panic", LOG_EMERG },		/* DEPRECATED */
-+    { "warn", LOG_WARNING },		/* DEPRECATED */
-+    { "warning", LOG_WARNING },
-+    { NULL, -1 }
-+  };
-+#endif
-+
- /* usecs to wait while we poll the file existence  */
- #define WAIT_INTERVAL	20000000
- 
 diff --git a/src/librc/librc-daemon.c b/src/librc/librc-daemon.c
 index c70963e5..3c09a257 100644
 --- a/src/librc/librc-daemon.c
