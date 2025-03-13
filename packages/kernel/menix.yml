@@ -2,7 +2,7 @@ sources:
 - name: menix
   subdir: sources
   git: 'https://github.com/menix-os/menix.git'
-  branch: main
+  branch: rust
   submodules: true
   rolling_version: true
   version: '0.0pl@ROLLING_ID@'
@@ -12,45 +12,43 @@ packages:
   labels: [ x86_64 ]
   architecture: '@OPTION:arch@'
   from_source: menix
-  tools_required:
-  - host-gcc
-  - host-cmake
-  pkgs_required:
-  - mlibc
-  configure:
-  - args:
-    - 'cmake'
-    - '-S@THIS_SOURCE_DIR@'
-    - '-DMENIX_ARCH=@OPTION:arch@'
-    - '-DCMAKE_C_COMPILER=@OPTION:arch@-@OPTION:triple@-gcc'
-    - '-DCMAKE_BUILD_TYPE=Release'
-    - '-GNinja'
+  revision: 1
   build:
   - args:
-    - 'ninja'
+    - 'cargo'
+    - 'build'
+    - '--target-dir'
+    - '@THIS_BUILD_DIR@'
+    - '--release'
+    - '--target'
+    - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
+    - '--manifest-path'
+    - '@THIS_SOURCE_DIR@/kernel/Cargo.toml'
+    - '-Zbuild-std=core,alloc'
+    - '-Zbuild-std-features=compiler-builtins-mem'
+    environ:
+      CARGO_HOME: '@THIS_BUILD_DIR@/cargo-home'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
-  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/bin/menix', '@THIS_COLLECT_DIR@/boot/menix' ]
-  # TODO: Build CPIO archive for drivers
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/menix', '@THIS_COLLECT_DIR@/boot' ]
 
 - name: menix-debug
   labels: [ x86_64 ]
   architecture: '@OPTION:arch@'
   from_source: menix
-  tools_required:
-  - host-gcc
-  - host-cmake
-  pkgs_required:
-  - mlibc
-  configure:
-  - args:
-    - 'cmake'
-    - '-S@THIS_SOURCE_DIR@'
-    - '-DMENIX_ARCH=@OPTION:arch@'
-    - '-DCMAKE_C_COMPILER=@OPTION:arch@-@OPTION:triple@-gcc'
-    - '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
-    - '-GNinja'
+  revision: 1
   build:
   - args:
-    - 'ninja'
+    - 'cargo'
+    - 'build'
+    - '--target-dir'
+    - '@THIS_BUILD_DIR@'
+    - '--target'
+    - '@THIS_SOURCE_DIR@/toolchain/@OPTION:arch@.json'
+    - '--manifest-path'
+    - '@THIS_SOURCE_DIR@/kernel/Cargo.toml'
+    - '-Zbuild-std=core,alloc'
+    - '-Zbuild-std-features=compiler-builtins-mem'
+    environ:
+      CARGO_HOME: '@THIS_BUILD_DIR@/cargo-home'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
-  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/bin/menix', '@THIS_COLLECT_DIR@/boot/menix-debug' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/debug/menix', '@THIS_COLLECT_DIR@/boot/menix-debug' ]
