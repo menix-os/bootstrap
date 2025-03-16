@@ -29,7 +29,7 @@ packages:
     environ:
       CARGO_HOME: '@THIS_BUILD_DIR@/cargo-home'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
-  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/menix', '@THIS_COLLECT_DIR@/boot' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/libmenix.so', '@THIS_COLLECT_DIR@/boot/menix' ]
 
 - name: menix-debug
   labels: [ x86_64 ]
@@ -51,4 +51,4 @@ packages:
     environ:
       CARGO_HOME: '@THIS_BUILD_DIR@/cargo-home'
   - args: [ 'mkdir', '-p', '@THIS_COLLECT_DIR@/boot' ]
-  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/debug/menix', '@THIS_COLLECT_DIR@/boot/menix-debug' ]
+  - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/debug/libmenix.so', '@THIS_COLLECT_DIR@/boot/menix-debug' ]
