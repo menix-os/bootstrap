@@ -35,8 +35,9 @@ fi
 
 # Architecture specific flags
 case $ARCH in
-x86_64) QEMU_FLAGS="${QEMU_FLAGS} -machine q35,smm=off" ;;
-*)      QEMU_FLAGS="${QEMU_FLAGS}" ;;
+x86_64)  QEMU_FLAGS="${QEMU_FLAGS} -machine q35,smm=off" ;;
+riscv64) QEMU_FLAGS="${QEMU_FLAGS} -machine virt -device virtio-gpu" ;;
+*)       QEMU_FLAGS="${QEMU_FLAGS}" ;;
 esac
 
 echo qemu-system-$ARCH $QEMU_FLAGS

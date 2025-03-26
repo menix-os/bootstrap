@@ -31,4 +31,4 @@ tools:
   - ovmf-bin-aarch64
   - ovmf-bin-riscv64
   install:
-  - args: [ 'cp', '@THIS_SOURCE_DIR@/ovmf-code-@OPTION:arch@.fd', '@PREFIX@/' ]
+  - args: [ 'cp', '@SOURCE_ROOT@/ports/ovmf-bin-@OPTION:arch@/ovmf-code-@OPTION:arch@.fd', '@PREFIX@/' ]
