@@ -1,21 +1,21 @@
-From 6813110604d3e7e9638a9fd848c81ad1a9fc87ad Mon Sep 17 00:00:00 2001
+From e6bd30952c0cd18841d407704f628add8ae8bfb5 Mon Sep 17 00:00:00 2001
 From: Marvin Friedrich <contact@marvinf.com>
-Date: Thu, 6 Feb 2025 16:25:15 +0100
+Date: Wed, 26 Mar 2025 00:59:18 +0100
 Subject: [PATCH] Add Menix support
 
 ---
- CMakeLists.txt                      | 68 +++++++++++++++++++++++++++++
+ CMakeLists.txt                      | 83 +++++++++++++++++++++++++++++
  src/detection/os/os_menix.c         |  7 +++
- src/logo/ascii/menix.txt            | 21 +++++++++
+ src/logo/ascii/menix.txt            | 21 ++++++++
  src/options/general.h               |  2 +-
  src/util/FFstrbuf.h                 |  1 +
  src/util/platform/FFPlatform_unix.c |  2 +-
- 6 files changed, 99 insertions(+), 2 deletions(-)
+ 6 files changed, 114 insertions(+), 2 deletions(-)
  create mode 100644 src/detection/os/os_menix.c
  create mode 100644 src/logo/ascii/menix.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 71c0e886..71eecd61 100644
+index 71c0e886..10ab631d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -30,6 +30,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
@@ -27,7 +27,7 @@ index 71c0e886..71eecd61 100644
  elseif(NOT APPLE AND NOT WIN32)
      message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
  endif()
-@@ -1079,6 +1081,70 @@ elseif(SunOS)
+@@ -1079,6 +1081,85 @@ elseif(SunOS)
          src/util/platform/FFPlatform_unix.c
          src/util/binary_linux.c
      )
@@ -58,7 +58,6 @@ index 71c0e886..71eecd61 100644
 +		src/detection/diskio/diskio_nosupport.c
 +		src/detection/font/font_nosupport.c
 +		src/detection/host/host_nosupport.c
-+		src/detection/icons/icons_linux.c
 +		src/detection/initsystem/initsystem_linux.c
 +		src/detection/keyboard/keyboard_linux.c
 +		src/detection/libc/libc_linux.c
@@ -81,11 +80,11 @@ index 71c0e886..71eecd61 100644
 +		src/detection/terminalfont/terminalfont_linux.c
 +		src/detection/terminalshell/terminalshell_linux.c
 +		src/detection/terminalsize/terminalsize_linux.c
-+		src/detection/theme/theme_linux.c
++		src/detection/theme/theme_nosupport.c
 +		src/detection/tpm/tpm_linux.c
 +		src/detection/uptime/uptime_linux.c
 +		src/detection/users/users_nosupport.c
-+		src/detection/wallpaper/wallpaper_linux.c
++		src/detection/wallpaper/wallpaper_nosupport.c
 +		src/detection/wifi/wifi_nosupport.c
 +		src/detection/wm/wm_nosupport.c
 +		src/detection/de/de_nosupport.c
@@ -94,11 +93,27 @@ index 71c0e886..71eecd61 100644
 +		src/detection/zpool/zpool_linux.c
 +		src/util/platform/FFPlatform_unix.c
 +		src/util/binary_linux.c
++		src/detection/displayserver/linux/displayserver_linux.c
++		src/detection/displayserver/linux/drm.c
++		src/detection/displayserver/linux/wayland/wayland.c
++		src/detection/displayserver/linux/wayland/global-output.c
++		src/detection/displayserver/linux/wayland/zwlr-output.c
++		src/detection/displayserver/linux/wayland/kde-output.c
++		src/detection/displayserver/linux/wayland/wlr-output-management-unstable-v1-protocol.c
++		src/detection/displayserver/linux/wayland/kde-output-device-v2-protocol.c
++		src/detection/displayserver/linux/wayland/kde-output-order-v1-protocol.c
++		src/detection/displayserver/linux/wayland/xdg-output-unstable-v1-protocol.c
++		src/detection/displayserver/linux/wmde.c
++		src/detection/displayserver/linux/xcb.c
++		src/detection/displayserver/linux/xlib.c
++		src/detection/gpu/gpu_nosupport.c
++		src/detection/localip/localip_linux.c
++		src/detection/icons/icons_nosupport.c
 +	)
  endif()
  
  if(ENABLE_DIRECTX_HEADERS)
-@@ -1189,6 +1255,8 @@ elseif(NetBSD)
+@@ -1189,6 +1270,8 @@ elseif(NetBSD)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-char-subscripts")
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
@@ -109,7 +124,7 @@ index 71c0e886..71eecd61 100644
  if(FreeBSD OR OpenBSD OR NetBSD)
 diff --git a/src/detection/os/os_menix.c b/src/detection/os/os_menix.c
 new file mode 100644
-index 00000000..7a8d6769
+index 00000000..f27f0876
 --- /dev/null
 +++ b/src/detection/os/os_menix.c
 @@ -0,0 +1,7 @@
@@ -117,7 +132,7 @@ index 00000000..7a8d6769
 +
 +void ffDetectOSImpl(FFOSResult* os)
 +{
-+    ffStrbufSetStatic(&os->name, "menix");
++    ffStrbufSetStatic(&os->name, "Menix");
 +    ffStrbufSet(&os->version, &instance.state.platform.sysinfo.release);
 +}
 diff --git a/src/logo/ascii/menix.txt b/src/logo/ascii/menix.txt
@@ -186,5 +201,5 @@ index b0d0ac1b..a1e8b7b6 100644
          exePath[exePathLen] = '\0';
      #elif defined(__APPLE__)
 -- 
-2.48.1
+2.49.0
 
