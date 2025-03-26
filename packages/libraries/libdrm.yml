@@ -7,7 +7,7 @@ sources:
 
 packages:
 - name: libdrm-headers
-  labels: [ x86_64, aarch64, riscv64 ]
+  labels: [ noarch ]
   architecture: '@OPTION:arch@'
   from_source: 'libdrm'
   revision: 1
@@ -21,7 +21,7 @@ packages:
   - args: [ 'cp', '-r', '@THIS_SOURCE_DIR@/include', '@THIS_COLLECT_DIR@/usr/src/libdrm-headers/include' ]
 
 - name: libdrm
-  labels: [ x86_64, aarch64, riscv64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   from_source: 'libdrm'
   tools_required:
@@ -33,10 +33,8 @@ packages:
   configure:
   - args:
     - 'meson'
-    - '--native-file'
-    - '@SOURCE_ROOT@/scripts/meson.native-file'
     - '--cross-file'
-    - '@SOURCE_ROOT@/scripts/meson-@OPTION:arch-triple@.cross-file'
+    - '@BUILD_ROOT@/tools/host-meson/cross.txt'
     - '--prefix=/usr'
     - '--libdir=lib'
     - '--buildtype=debugoptimized'

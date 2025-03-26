@@ -9,7 +9,7 @@ sources:
 
 packages:
 - name: menix
-  labels: [ x86_64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   from_source: menix
   revision: 1
@@ -32,7 +32,7 @@ packages:
   - args: [ 'cp', '-r', '@THIS_BUILD_DIR@/@OPTION:arch@/release/libmenix.so', '@THIS_COLLECT_DIR@/boot/menix' ]
 
 - name: menix-debug
-  labels: [ x86_64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   from_source: menix
   revision: 1

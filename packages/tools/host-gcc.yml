@@ -1,6 +1,6 @@
 tools:
 - name: host-gcc-bootstrap
-  labels: [ x86_64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   from_source: gcc
   revision: 1
@@ -57,7 +57,7 @@ tools:
 
 
 - name: host-gcc
-  labels: [ x86_64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   from_source: gcc
   revision: 1

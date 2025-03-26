@@ -8,8 +8,8 @@ sources:
 
 packages:
 - name: mlibc-headers
-  labels: [ x86_64 ]
-  architecture: '@OPTION:arch@'
+  labels: [ noarch ]
+  architecture: 'noarch'
   from_source: mlibc
   revision: 1
   tools_required:
@@ -33,7 +33,7 @@ packages:
       DESTDIR: '@THIS_COLLECT_DIR@'
 
 - name: mlibc
-  labels: [ x86_64 ]
+  labels: [ x86_64, aarch64, riscv64 ]
   architecture: '@OPTION:arch@'
   from_source: mlibc
   revision: 1

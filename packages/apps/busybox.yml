@@ -7,7 +7,7 @@ sources:
 
 packages:
 - name: busybox
-  labels: [ x86_64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   from_source: busybox
   revision: 1
