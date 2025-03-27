@@ -1,7 +1,7 @@
 [binaries]
-ar = '${ARCH}-${TRIPLE}-gcc-ar'
-c = '${ARCH}-${TRIPLE}-gcc'
-cpp = '${ARCH}-${TRIPLE}-g++'
+ar = 'llvm-ar'
+c = 'clang'
+cpp = 'clang++'
 nm = '${ARCH}-${TRIPLE}-gcc-nm'
 objcopy = '${ARCH}-${TRIPLE}-objcopy'
 ranlib = '${ARCH}-${TRIPLE}-gcc-ranlib'

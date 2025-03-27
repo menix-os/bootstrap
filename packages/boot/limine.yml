@@ -15,27 +15,19 @@ sources:
 
 packages:
 - name: limine
-  labels: [ x86_64, aarch64, riscv64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   from_source: limine
   tools_required:
-  - host-binutils
-  - host-gcc
+  # TODO: - host-llvm
   configure:
-  # Rename x86_64 to x86-64 because that's what it's called in Limine.
-  - args: |
-      do_config () {
-        '@THIS_SOURCE_DIR@/configure' \
-        '--prefix=/usr' \
-        '--host=@OPTION:arch@-@OPTION:triple@' \
-        "$@"
-      }
-      case '@OPTION:arch@' in
-      x86_64) do_config --enable-uefi-x86-64 ;;
-      *)      do_config --enable-uefi-@OPTION:arch@ ;;
-      esac
+  - args:
+    - '@THIS_SOURCE_DIR@/configure'
+    - '--prefix=/usr'
+    - '--host=@OPTION:arch@-@OPTION:triple@'
+    - '--enable-all'
     environ:
-      TOOLCHAIN_FOR_TARGET: '@OPTION:arch@-@OPTION:triple@'
+      TOOLCHAIN_FOR_TARGET: 'llvm'
   build:
   - args: [ 'make', '-j@PARALLELISM@' ]
   - args: [ 'make', 'install' ]

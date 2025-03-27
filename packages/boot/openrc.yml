@@ -9,7 +9,7 @@ packages:
     version: '0.56'
   revision: 1
   tools_required:
-  - host-gcc
+  - host-llvm
   - host-meson
   pkgs_required:
   - mlibc

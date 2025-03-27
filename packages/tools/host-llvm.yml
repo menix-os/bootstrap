@@ -1,6 +1,6 @@
 tools:
 - name: host-llvm
-  labels: [ x86_64, aarch64, riscv64 ]
+  labels: [ x86_64, aarch64, riscv64, loongarch64 ]
   architecture: '@OPTION:arch@'
   exports_shared_libs: true
   from_source: llvm
@@ -18,8 +18,9 @@ tools:
     - '-DCMAKE_CXX_COMPILER=g++'
     - '-DCMAKE_BUILD_TYPE=Release'
     - '-DLLVM_LINK_LLVM_DYLIB=ON'
-    - '-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV'
-    - '-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra;lld'
+    - '-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV;LoongArch'
+    - '-DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld"'
+    - '-DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi"'
     - '-DDEFAULT_SYSROOT=@SYSROOT_DIR@'
     - '-DLLVM_BINUTILS_INCDIR=@SOURCE_ROOT@/ports/binutils/include'
     - '@THIS_SOURCE_DIR@/llvm'
