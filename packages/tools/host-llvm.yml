@@ -21,6 +21,8 @@ tools:
     - '-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV;LoongArch'
     - '-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra;lld'
     - '-DLLVM_ENABLE_RUNTIMES=compiler-rt;libcxx;libcxxabi;libunwind'
+    - '-DLLVM_ENABLE_EH=ON'
+    - '-DLLVM_ENABLE_RTTI=ON'
     - '-DDEFAULT_SYSROOT=@SYSROOT_DIR@'
     - '-DLLVM_BINUTILS_INCDIR=@SOURCE_ROOT@/ports/binutils/include'
     - '@THIS_SOURCE_DIR@/llvm'
