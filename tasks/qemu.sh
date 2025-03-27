@@ -19,7 +19,7 @@ QEMU_FLAGS="-serial stdio \
 	-device nvme,serial=FAKE_SERIAL_ID,drive=disk \
 	-netdev user,id=net0 \
 	-device virtio-net,disable-modern=on,netdev=net0 \
-	-bios $OVMF"
+	-drive if=pflash,format=raw,file=$OVMF"
 
 # Debugging
 if [[ ${DEBUG} -eq "1" ]]; then
