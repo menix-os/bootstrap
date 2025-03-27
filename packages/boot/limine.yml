@@ -19,7 +19,8 @@ packages:
   architecture: '@OPTION:arch@'
   from_source: limine
   tools_required:
-  # TODO: - host-llvm
+  - host-binutils
+  - host-llvm
   configure:
   - args:
     - '@THIS_SOURCE_DIR@/configure'
