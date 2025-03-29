@@ -52,12 +52,13 @@ run-image: ovmf/ovmf-code-$(ARCH).fd image
 menix.img:
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 2G 100M
 
-.PHONY: image
-image: jinx menix.img
+build-$(ARCH)/jinx-config:
 	@mkdir -p build-$(ARCH)
-	@rm -rf build-$(ARCH)/sysroot
-	@cd build-$(ARCH) && env \
-		JINX_SOURCE_DIR=$(realpath .) \
-		$(realpath ./jinx) install sysroot '*'
+	@ARCH=$(ARCH) envsubst '$${ARCH}' < support/jinx-config > build-$(ARCH)/jinx-config
+	@cp support/jinx-parameters build-$(ARCH)/jinx-parameters
+
+.PHONY: image
+image: jinx menix.img build-$(ARCH)/jinx-config
+	@cd build-$(ARCH) && ../jinx install sysroot '*'
+	@cd build-$(ARCH) && ../jinx host-build limine
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh build-$(ARCH)/sysroot menix.img $(ARCH)
-	@rm -rf build-$(ARCH)/sysroot

@@ -1,4 +1,4 @@
 #! /bin/sh
 
-ARCH=riscv64
+ARCH=${ARCH}
 . "${base_dir}/jinx-config"

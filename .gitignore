@@ -4,8 +4,6 @@
 
 # Jinx
 .jinx-cache/
-!build-*/jinx-config
-!build-*/jinx-parameters
 build-*/
 sources/
 jinx
