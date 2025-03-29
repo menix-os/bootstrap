@@ -1,0 +1,37 @@
+#! /bin/sh
+
+name=busybox
+version=1.37.0
+revision=1
+git_url=https://git.busybox.net/busybox
+commit=be7d1b7b1701d225379bc1665487ed0871b592a5
+hostdeps="gcc"
+deps="core-libs"
+imagedeps="build-essential"
+
+configure() {
+    cp -rpf "${source_dir}"/. ./
+    cp "${base_dir}/extras/busybox/.config" ./config.in
+
+        OS_TRIPLET="${OS_TRIPLET}" \
+        SYSROOT_DIR="${sysroot_dir}" \
+        PREFIX_DIR="${prefix}" \
+    envsubst < ./config.in > ./.config
+
+    make oldconfig
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+        OS_TRIPLET="${OS_TRIPLET}" \
+        SYSROOT_DIR="${sysroot_dir}" \
+        PREFIX_DIR="${dest_dir}${prefix}" \
+    envsubst < ./config.in > ./.config
+
+    DESTDIR="${dest_dir}" make -j${parallelism} install
+
+    post_package_strip
+}

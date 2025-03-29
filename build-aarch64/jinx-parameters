@@ -1,0 +1,4 @@
+#! /bin/sh
+
+JINX_SOURCE_DIR=..
+JINX_CONFIG_FILE=jinx-config

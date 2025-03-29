@@ -1,0 +1,28 @@
+#! /bin/sh
+
+name=menix-debug
+from_source=menix
+imagedeps="build-essential rustup"
+allow_network=yes
+
+prepare() {
+        RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
+    rustup toolchain install nightly --component rust-src
+
+        RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
+    rustup default nightly
+}
+
+build() {
+    cp -rpf "${source_dir}"/. ./
+
+        RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
+        CARGO_HOME="${JINX_CACHE_DIR}/.cargo" \
+    cargo build \
+        --target=toolchain/${ARCH}.json
+}
+
+package() {
+    mkdir -p "${dest_dir}${prefix}/share/menix/"
+    install -m644 target/${ARCH}/debug/menix.kso "${dest_dir}${prefix}/share/menix/menix-debug"
+}
