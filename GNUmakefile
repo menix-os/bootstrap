@@ -1,5 +1,6 @@
 ARCH ?= x86_64
-QEMUFLAGS ?= -m 2G -serial stdio -smp 4
+SMP ?= 4
+QEMUFLAGS ?= -m 2G -serial stdio -smp $(SMP)
 
 override QEMUFLAGS += \
 	-no-reboot \

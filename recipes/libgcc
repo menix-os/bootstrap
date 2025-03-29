@@ -7,13 +7,13 @@ imagedeps="build-essential"
 deps="mlibc"
 
 build() {
-    cd "${base_dir}"/host-builds/gcc/build
+    cd "${build_dir}"/host-builds/gcc/build
 
     make -j${parallelism} all-target-libgcc
 }
 
 package() {
-    cd "${base_dir}"/host-builds/gcc/build
+    cd "${build_dir}"/host-builds/gcc/build
 
     rm -rf tmp_libgcc_dir
     mkdir tmp_libgcc_dir
@@ -26,6 +26,6 @@ package() {
     cp -r tmp_libgcc_dir/usr/local/${OS_TRIPLET}/* "${dest_dir}${prefix}"/
 
     # Copy libgcc into GCC's tree else it will complain.
-    mkdir -p "${base_dir}"/host-pkgs/gcc/usr/local/lib
-    cp -r tmp_libgcc_dir/usr/local/lib/* "${base_dir}"/host-pkgs/gcc/usr/local/lib/
+    mkdir -p "${build_dir}"/host-pkgs/gcc/usr/local/lib
+    cp -r tmp_libgcc_dir/usr/local/lib/* "${build_dir}"/host-pkgs/gcc/usr/local/lib/
 }
