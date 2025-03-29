@@ -1,0 +1,32 @@
+#! /bin/sh
+
+name=mlibc
+version=0.0
+revision=1
+git_url="https://github.com/menix-os/mlibc.git"
+branch="add-menix"
+imagedeps="build-essential meson ninja-build"
+hostdeps="gcc pkg-config libgcc-binaries"
+builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"
+deps="linux-headers mlibc-headers"
+
+configure() {
+        CFLAGS="$TARGET_CFLAGS" \
+        CXXFLAGS="$TARGET_CXXFLAGS" \
+        LDFLAGS="$TARGET_LDFLAGS -Wl,/usr/local/libgcc-binaries/libgcc-${ARCH}.a" \
+    meson_configure_noflags \
+        --buildtype=release \
+        -Dno_headers=true \
+        -Dlinux_kernel_headers=${sysroot_dir}${prefix}/include \
+        -Ddefault_library=both \
+        -Dlibgcc_dependency=false \
+        -Duse_freestnd_hdrs=enabled
+}
+
+build() {
+    ninja -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+}

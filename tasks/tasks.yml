@@ -1,5 +1,0 @@
-imports:
-- file: empty-image.yml
-- file: initrd.yml
-- file: make-image.yml
-- file: qemu.yml

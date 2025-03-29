@@ -1,0 +1,26 @@
+diff --git binutils-clean/gprofng/libcollector/configure.ac binutils-workdir/gprofng/libcollector/configure.ac
+index 3205da3..be5d23c 100644
+--- binutils-clean/gprofng/libcollector/configure.ac
++++ binutils-workdir/gprofng/libcollector/configure.ac
+@@ -18,7 +18,7 @@ dnl <http://www.gnu.org/licenses/>.
+ 
+ m4_include([../../bfd/version.m4])
+ AC_INIT([gprofng], [BFD_VERSION])
+-AC_CONFIG_MACRO_DIRS([../../config ../..])
++#AC_CONFIG_MACRO_DIRS([../../config ../..])
+ AC_CONFIG_AUX_DIR(../..)
+ AC_CANONICAL_TARGET
+ AM_INIT_AUTOMAKE
+diff --git binutils-clean/libiberty/configure.ac binutils-workdir/libiberty/configure.ac
+index c27e08e..e48ef89 100644
+--- binutils-clean/libiberty/configure.ac
++++ binutils-workdir/libiberty/configure.ac
+@@ -37,7 +37,7 @@ else
+   libiberty_topdir="${srcdir}/.."
+ fi
+ AC_SUBST(libiberty_topdir)
+-AC_CONFIG_AUX_DIR($libiberty_topdir)
++AC_CONFIG_AUX_DIR([.])
+ 
+ dnl Very limited version of automake's enable-maintainer-mode
+ 

@@ -1,0 +1,4 @@
+#! /bin/sh
+
+ARCH=aarch64
+. "${base_dir}/jinx-config"

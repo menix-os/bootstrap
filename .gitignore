@@ -2,8 +2,15 @@
 .vscode/
 .idea/
 
-# xbstrap
-.xbstrap/
-ports/
+# Jinx
+.jinx-cache/
+!build-*/jinx-config
+!build-*/jinx-parameters
+build-*/
 sources/
-build*/
+jinx
+
+# Other files
+ovmf/
+menix.img
+menix.iso

@@ -5,63 +5,50 @@ This repository builds a fully bootable distribution for the [menix](https://git
 It also includes several ports of popular apps and tools.
 
 ## Prerequisites
-- `xbstrap` (via pip or from [source](https://github.com/managarm/xbstrap))
-- `xbps`
-- `docker`
+
+To build the distribution you will need the following tools installed on your system:
+
+- A POSIX-compatible shell
+- GNU make
+- curl
+
+To create a bootable image you will additionally need:
+
+- dosfstools (for mkfs.vfat)
+- e2fsprogs (for mkfs.ext2)
+- parted (for partitioning the image)
+
+To run the built image you will also need QEMU for the target architecture.
 
 ## Build instructions
 
-- Create a new directory, e.g. `build` and change your working directory to it. Don't leave this directory.
+The easiest way to get a bootable image is to run `make image` in the root
+of the repository. This will build the kernel and the distribution and create a
+bootable image named `menix.img` in the current directory.
 
-- Create a file named `bootstrap-site.yml`.
+You can also build separate packages by running `$bootstrap/jinx build <package>`
+inside the respective build directory for the target architecture.
 
-- Fill the file with the following content and replace the `$variables` with the respective values.
+For example,
+to build the `bash` package for the x86_64 architecture, you would run the following commands, assuming you are in the root of the repository:
 
-Name      | Description
-----      | ---
-`$arch`   | The CPU architecture you're building for, e.g. `x86_64`.
-`$source` | The (relative or absolute) path to the directory where this README is stored.
-
-```yaml
-define_options:
-  arch: $arch
-
-labels:
-  match:
-  - $arch
-  - noarch
-  ban:
-  - broken
-
-pkg_management:
-  format: xbps
-
-container:
-  runtime: docker
-  image: menix-buildenv
-  src_mount: /var/bootstrap-menix/src
-  build_mount: /var/bootstrap-menix/build
-  allow_containerless: true
+```sh
+$ cd build-x86_64 # Switch to the x86_64 build directory
+$ ../jinx build bash # Build the bash package
 ```
 
-Then, run the following commands:
+The built package will be located in the `pkgs` directory.
+
+## Running the image
+
+To run the image, you can use the provided make target:
+
 ```sh
-# Build the Docker container
-docker build -t menix-buildenv --build-arg=USER=$(id -u) $source/support
-# Initialize the build directory
-xbstrap init $source
-# Build all packages
-# Note that this will literally build *every* package and might take a while.
-xbstrap build --all
-# Create an empty image
-xbstrap run empty-image
-# Create an initrd from the built packages
-xbstrap run initrd
-# Copy everything into the image
-xbstrap run make-image
+$ make run-image
 ```
 
-To test in QEMU, either use the generated image directly, or run:
+This will run the image using QEMU with the appropriate options for the target architecture. If you want to pass your own QEMU flags, you can do so by setting the `QEMUFLAGS` variable:
+
 ```sh
-xbstrap run qemu
+$ make run-image QEMUFLAGS="-m 512M -smp 4"
 ```
