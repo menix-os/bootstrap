@@ -26,7 +26,7 @@ else
 endif
 
 jinx:
-	curl -Lo $@ https://codeberg.org/mintsuki/jinx/src/commit/56e7c79814adf3612b73b3274fa8f7b20bd52c72/jinx
+	curl -Lo $@ https://codeberg.org/mintsuki/jinx/raw/commit/56e7c79814adf3612b73b3274fa8f7b20bd52c72/jinx
 	chmod +x $@
 
 build-$(ARCH)/jinx-config:
