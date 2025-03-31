@@ -11,7 +11,7 @@ index 0226b37..6afb3b4 100644
 -
  #undef STARTFILE_SPEC
 -#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared:crtbeginS.o%s;:crtbegin.o%s}"
-+#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
++#define STARTFILE_SPEC "%{shared:Scrt1.o%s;:crt1.o%s} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
  
  #undef ENDFILE_SPEC
 -#define ENDFILE_SPEC "%{shared:crtendS.o%s;:crtend.o%s} crtn.o%s"

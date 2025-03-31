@@ -8,7 +8,7 @@ branch="add-menix"
 imagedeps="build-essential meson ninja-build"
 hostdeps="gcc pkg-config libgcc-binaries"
 builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"
-deps="linux-headers mlibc-headers"
+deps="mlibc-headers"
 
 configure() {
         CFLAGS="$TARGET_CFLAGS" \
