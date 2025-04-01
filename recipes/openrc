@@ -13,7 +13,7 @@ configure() {
     meson_configure \
         -Daudit=disabled \
         -Dbash-completions=true \
-        -Dbranding="Menix" \
+        -Dbranding=\"Menix\" \
         -Dlocal_prefix=usr/local \
         -Dnewnet=false \
         -Dos=Menix \
