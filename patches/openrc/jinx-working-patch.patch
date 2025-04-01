@@ -98,3 +98,16 @@ index 3157069..c09a18a 100644
  #  include <pty.h>
  #elif defined(__NetBSD__) || defined(__OpenBSD__)
  #  include <util.h>
+diff --git openrc-clean/src/shared/misc.c openrc-workdir/src/shared/misc.c
+index e6d477d..108c537 100644
+--- openrc-clean/src/shared/misc.c
++++ openrc-workdir/src/shared/misc.c
+@@ -605,7 +605,7 @@ cloexec_fds_from(int first)
+ {
+ 	int i;
+ 	if (close_range(first, UINT_MAX, CLOSE_RANGE_CLOEXEC) < 0) {
+-		for (i = getdtablesize() - 1; i >= first; --i)
++		for (i = sysconf(_SC_OPEN_MAX) - 1; i >= first; --i)
+ 			fcntl(i, F_SETFD, FD_CLOEXEC);
+ 	}
+ }
