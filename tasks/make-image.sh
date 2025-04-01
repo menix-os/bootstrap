@@ -40,8 +40,8 @@ sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
 # Install kernel and modules
 sudo cp "$BUILD_DIR/pkgs/menix/usr/share/menix/menix" "$tmpdir/root/boot/"
+sudo cp "$BUILD_DIR/pkgs/menix/usr/lib/modules/"*.kso "$tmpdir/root/boot/modules/"
 sudo cp "$BUILD_DIR/pkgs/menix-debug/usr/share/menix/menix-debug" "$tmpdir/root/boot/"
-sudo cp "$BUILD_DIR/pkgs/menix-modules/usr/lib/modules/"*.kso "$tmpdir/root/boot/"
 
 # Install bootloader
 sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"
@@ -58,5 +58,5 @@ case "${ARCH}" in
         ;;
 esac
 
-sudo cp "$BUILD_DIR/host-pkgs/limine/usr/local/share/limine/${efi_filename}" "$tmpdir/root/boot/EFI/BOOT/"
+sudo cp "$BUILD_DIR/pkgs/limine/usr/share/limine/${efi_filename}" "$tmpdir/root/boot/EFI/BOOT/"
 sudo cp "$ROOT_DIR/support/limine.conf" "$tmpdir/root/boot/"

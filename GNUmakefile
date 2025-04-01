@@ -42,6 +42,10 @@ ovmf/ovmf-code-$(ARCH).fd:
 		riscv64) dd if=/dev/zero of=$@ bs=1 count=0 seek=33554432 2>/dev/null;; \
 	esac
 
+.PHONY: install-all
+install-all: jinx build-$(ARCH)/jinx-config
+	@cd build-$(ARCH) && ../jinx install sysroot '*'
+
 .PHONY: run-image
 run-image: ovmf/ovmf-code-$(ARCH).fd image
 	qemu-system-$(ARCH) $(QEMUFLAGS) \
@@ -53,6 +57,4 @@ menix.img:
 
 .PHONY: image
 image: jinx build-$(ARCH)/jinx-config menix.img
-	@cd build-$(ARCH) && ../jinx install sysroot '*'
-	@cd build-$(ARCH) && ../jinx host-build limine
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh build-$(ARCH)/sysroot menix.img $(ARCH)

@@ -22,8 +22,14 @@ To run the built image you will also need QEMU for the target architecture.
 
 ## Build instructions
 
-The easiest way to get a bootable image is to run `make image` in the root
-of the repository. This will build the kernel and the distribution and create a
+The easiest way to get a bootable image is to run
+
+```sh
+make install-all
+make image
+```
+
+in the root of the repository. This will build the kernel and the distribution and create a
 bootable image named `menix.img` in the current directory.
 
 You can also build separate packages by running `$bootstrap/jinx build <package>`

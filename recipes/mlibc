@@ -3,12 +3,12 @@
 name=mlibc
 version=0.0
 revision=1
-git_url="https://github.com/menix-os/mlibc.git"
-branch="add-menix"
+git_url="https://github.com/managarm/mlibc.git"
+commit="310bf7c75c1a8fbd4b39a06f9b45fdc0b5d78b7a"
 imagedeps="build-essential meson ninja-build"
 hostdeps="gcc pkg-config libgcc-binaries"
 builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"
-deps="mlibc-headers"
+deps="linux-headers mlibc-headers"
 
 configure() {
         CFLAGS="$TARGET_CFLAGS" \
@@ -16,6 +16,7 @@ configure() {
         LDFLAGS="$TARGET_LDFLAGS -Wl,/usr/local/libgcc-binaries/libgcc-${ARCH}.a" \
     meson_configure_noflags \
         -Dno_headers=true \
+        -Dlinux_kernel_headers=${sysroot_dir}${prefix}/include \
         -Ddefault_library=both \
         -Dlibgcc_dependency=false \
         -Duse_freestnd_hdrs=enabled
