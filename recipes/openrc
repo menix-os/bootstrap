@@ -1,0 +1,34 @@
+#! /bin/sh
+
+name=openrc
+version=0.61
+revision=1
+tarball_url="https://github.com/OpenRC/openrc/archive/refs/tags/0.61.tar.gz"
+tarball_blake2b="d009680e4c18981ff46218836abd9a8662b511c06d9856e994d403a89fe7bc2557f0bba8c8a13128f084895c0bc71c7646d13aa978fbfe76ba8b23d58bb0ac7e"
+imagedeps="build-essential meson ninja-build"
+hostdeps="llvm pkg-config"
+deps="mlibc"
+
+configure() {
+    meson_configure \
+        -Daudit=disabled \
+        -Dbash-completions=true \
+        -Dbranding="Menix" \
+        -Dlocal_prefix=usr/local \
+        -Dnewnet=false \
+        -Dos=Menix \
+        -Dpam=false \
+        -Dpkg_prefix=usr \
+        -Dselinux=disabled \
+        -Dshell="/bin/sh" \
+        -Dsysvinit=false \
+        -Dzsh-completions=false
+}
+
+build() {
+	ninja
+}
+
+package() {
+    DESTDIR="${dest_dir}" ninja install
+}

@@ -1,0 +1,7 @@
+#! /bin/sh
+
+name=llvm
+version=19.1.7
+revision=1
+tarball_url=https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${version}.tar.gz
+tarball_blake2b="e157bb1f5a89d7aa09243f0408788919da7ff352b811c3912dd6753313f18bc152bdefc6d7d2168353a47206365073c0615945e1fc32783d0e7f649c3946a217"

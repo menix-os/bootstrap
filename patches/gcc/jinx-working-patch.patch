@@ -1,21 +1,7 @@
-From 7d02563d4efe5f746c3551915a63b9e6d1527822 Mon Sep 17 00:00:00 2001
-From: Marvin Friedrich <contact@marvinf.com>
-Date: Fri, 21 Feb 2025 13:58:53 +0100
-Subject: [PATCH] Add Menix support
-
----
- fixincludes/mkfixinc.sh     |  1 +
- gcc/config.gcc              | 12 ++++++++++++
- gcc/config/menix.h          | 24 ++++++++++++++++++++++++
- libgcc/config.host          | 21 ++++++++++++++++++++-
- libstdc++-v3/crossconfig.m4 | 11 +++++++++++
- 5 files changed, 68 insertions(+), 1 deletion(-)
- create mode 100644 gcc/config/menix.h
-
-diff --git a/fixincludes/mkfixinc.sh b/fixincludes/mkfixinc.sh
-index df90720b716..fff9901691e 100755
---- a/fixincludes/mkfixinc.sh
-+++ b/fixincludes/mkfixinc.sh
+diff --git gcc-clean/fixincludes/mkfixinc.sh gcc-workdir/fixincludes/mkfixinc.sh
+index df90720..fff9901 100755
+--- gcc-clean/fixincludes/mkfixinc.sh
++++ gcc-workdir/fixincludes/mkfixinc.sh
 @@ -11,6 +11,7 @@ target=fixinc.sh
  
  # Check for special fix rules for particular targets
@@ -24,10 +10,45 @@ index df90720b716..fff9901691e 100755
      i?86-*-cygwin* | \
      i?86-*-mingw32* | \
      x86_64-*-mingw32* | \
-diff --git a/gcc/config.gcc b/gcc/config.gcc
-index 95c91ee02be..e78d40a45c5 100644
---- a/gcc/config.gcc
-+++ b/gcc/config.gcc
+diff --git gcc-workdir/gcc/config/menix.h gcc-workdir/gcc/config/menix.h
+new file mode 100644
+index 0000000..2ffb718
+--- /dev/null
++++ gcc-workdir/gcc/config/menix.h
+@@ -0,0 +1,29 @@
++#undef TARGET_MENIX
++#define TARGET_MENIX 1
++
++#undef LIB_SPEC
++#define LIB_SPEC "-lc"
++
++#undef STARTFILE_SPEC
++#define STARTFILE_SPEC "%{shared|static-pie|pie|!no-pie:Scrt1.o%s;:crt1.o%s} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
++
++#undef ENDFILE_SPEC
++#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
++
++#define GNU_USER_LINK_EMULATION32 "elf_i386"
++#define GNU_USER_LINK_EMULATION64 "elf_x86_64"
++#define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
++
++#define GNU_USER_DYNAMIC_LINKER32 "/does_not_exist"
++#define GNU_USER_DYNAMIC_LINKER64 "/usr/lib/ld.so"
++#define GNU_USER_DYNAMIC_LINKERX32 "/does_not_exist"
++
++#undef TARGET_OS_CPP_BUILTINS
++#define TARGET_OS_CPP_BUILTINS()         \
++  do {                                   \
++    builtin_define ("__menix__");        \
++    builtin_define ("__unix__");         \
++    builtin_assert ("system=menix");     \
++    builtin_assert ("system=unix");      \
++    builtin_assert ("system=posix");     \
++  } while (0);
+diff --git gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
+index 95c91ee..e78d40a 100644
+--- gcc-clean/gcc/config.gcc
++++ gcc-workdir/gcc/config.gcc
 @@ -884,6 +884,15 @@ case ${target} in
    rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
@@ -54,40 +75,10 @@ index 95c91ee02be..e78d40a45c5 100644
  x86_64-*-fuchsia*)
  	tmake_file="${tmake_file} i386/t-x86_64-elf"
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
-diff --git a/gcc/config/menix.h b/gcc/config/menix.h
-new file mode 100644
-index 00000000000..0226b37223d
---- /dev/null
-+++ b/gcc/config/menix.h
-@@ -0,0 +1,24 @@
-+#undef TARGET_MENIX
-+#define TARGET_MENIX 1
-+
-+#undef LIB_SPEC
-+#define LIB_SPEC "-lc"
-+
-+#undef LINK_SPEC
-+#define LINK_SPEC "%{shared:-shared} %{static:-static} %{!shared: %{!static: %{rdynamic:-export-dynamic}}} %{!dynamic-linker:-dynamic-linker /usr/lib/ld.so}"
-+
-+#undef STARTFILE_SPEC
-+#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared:crtbeginS.o%s;:crtbegin.o%s}"
-+
-+#undef ENDFILE_SPEC
-+#define ENDFILE_SPEC "%{shared:crtendS.o%s;:crtend.o%s} crtn.o%s"
-+
-+#undef TARGET_OS_CPP_BUILTINS
-+#define TARGET_OS_CPP_BUILTINS()         \
-+  do {                                   \
-+    builtin_define ("__menix__");        \
-+    builtin_define ("__unix__");         \
-+    builtin_assert ("system=menix");     \
-+    builtin_assert ("system=unix");      \
-+    builtin_assert ("system=posix");     \
-+  } while (0);
-diff --git a/libgcc/config.host b/libgcc/config.host
-index e75a7af647f..25d4b0921f8 100644
---- a/libgcc/config.host
-+++ b/libgcc/config.host
+diff --git gcc-clean/libgcc/config.host gcc-workdir/libgcc/config.host
+index e75a7af..25d4b09 100644
+--- gcc-clean/libgcc/config.host
++++ gcc-workdir/libgcc/config.host
 @@ -103,7 +103,7 @@ arm*-*-*)
  	;;
  avr-*-*)
@@ -144,10 +135,10 @@ index e75a7af647f..25d4b0921f8 100644
  riscv*-*-linux*)
  	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-diff --git a/libstdc++-v3/crossconfig.m4 b/libstdc++-v3/crossconfig.m4
-index b3269cb88e0..957cfac93e9 100644
---- a/libstdc++-v3/crossconfig.m4
-+++ b/libstdc++-v3/crossconfig.m4
+diff --git gcc-clean/libstdc++-v3/crossconfig.m4 gcc-workdir/libstdc++-v3/crossconfig.m4
+index b3269cb..957cfac 100644
+--- gcc-clean/libstdc++-v3/crossconfig.m4
++++ gcc-workdir/libstdc++-v3/crossconfig.m4
 @@ -190,6 +190,17 @@ case "${host}" in
      AC_CHECK_FUNCS(secure_getenv)
      AM_ICONV
@@ -166,6 +157,3 @@ index b3269cb88e0..957cfac93e9 100644
    *-mingw32*)
      GLIBCXX_CHECK_LINKER_FEATURES
      GLIBCXX_CHECK_MATH_SUPPORT
--- 
-2.48.1
-

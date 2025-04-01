@@ -6,7 +6,7 @@ revision=1
 git_url="https://github.com/menix-os/mlibc.git"
 branch="add-menix"
 imagedeps="build-essential meson ninja-build"
-hostdeps="gcc pkg-config libgcc-binaries"
+hostdeps="llvm pkg-config libgcc-binaries"
 builddeps="freestnd-c-hdrs freestnd-cxx-hdrs frigg"
 deps="mlibc-headers"
 

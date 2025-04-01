@@ -5,7 +5,7 @@ version=1.37.0
 revision=1
 git_url=https://git.busybox.net/busybox
 commit=be7d1b7b1701d225379bc1665487ed0871b592a5
-hostdeps="gcc"
+hostdeps="llvm"
 deps="core-libs"
 imagedeps="build-essential"
 

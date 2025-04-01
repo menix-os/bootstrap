@@ -1,11 +1,11 @@
 [binaries]
-c = '${ARCH}-menix-mlibc-gcc'
-cpp = '${ARCH}-menix-mlibc-g++'
-ar = '${ARCH}-menix-mlibc-ar'
-nm = '${ARCH}-menix-mlibc-gcc-nm'
-objcopy = '${ARCH}-menix-mlibc-objcopy'
-ranlib = '${ARCH}-menix-mlibc-gcc-ranlib'
-strip = '${ARCH}-menix-mlibc-strip'
+c = 'clang'
+cpp = 'clang++'
+ar = 'llvm-ar'
+nm = 'llvm-nm'
+objcopy = 'llvm-objcopy'
+ranlib = 'llvm-ranlib'
+strip = 'llvm-strip'
 pkg-config = '${ARCH}-menix-mlibc-pkg-config'
 llvm-config = '/base_dir/support/llvm-config'
 

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 name=gcc
-from_source=gcc-host
+from_source=gcc
 revision=1
 imagedeps="build-essential"
 hostdeps="autoconf-2.69 automake libtool pkg-config"
@@ -30,6 +30,7 @@ configure() {
         --disable-multilib \
         --enable-initfini-array \
         --enable-shared \
+        --enable-threads=posix \
         --enable-host-shared
 }
 
