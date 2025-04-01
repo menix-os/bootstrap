@@ -1,0 +1,22 @@
+#! /bin/sh
+
+name=cmake
+from_source=cmake
+revision=1
+imagedeps="build-essential cmake libssl-dev"
+
+configure() {
+    "${source_dir}"/bootstrap \
+        --prefix="${prefix}" \
+        --parallel=${parallelism}
+}
+
+build() {
+    make -j${parallelism}
+}
+
+package() {
+    DESTDIR=${dest_dir} make install
+    # Usually, you can use ${version} here, but CMake calls the current release 4.0.0
+    ln -sf ${base_dir}/support/Menix.cmake ${dest_dir}${prefix}/share/cmake-4.0/Modules/Platform/Menix.cmake
+}

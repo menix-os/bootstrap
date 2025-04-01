@@ -6,7 +6,7 @@ revision=1
 tarball_url="https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz"
 tarball_blake2b="6d15d8f3c8feaf602043bb6e72316ee721c33ef24e110e3bf03fb12eac9703fd29e352268d202ecd2f18b526b4f1dbd90c8046e01ad8e64ddce3e55ad5db513e"
 imagedeps="patchelf"
-hostdeps="llvm pkg-config"
+hostdeps="gcc pkg-config"
 deps="core-libs"
 
 configure() {

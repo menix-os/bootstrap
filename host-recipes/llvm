@@ -4,6 +4,7 @@ name=llvm
 from_source=llvm
 imagedeps="build-essential cmake ninja-build git"
 hostdeps="pkg-config"
+hostrundeps="gcc"
 
 configure() {
     cmake  \

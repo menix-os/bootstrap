@@ -21,16 +21,11 @@ configure() {
         --prefix="${prefix}" \
         --target=${OS_TRIPLET} \
         --with-sysroot="${sysroot_dir}" \
-        --disable-nls \
-        --with-linker-hash-style=gnu \
-        --enable-linker-build-id \
         --enable-languages=c,c++,lto \
-        --enable-default-pie \
-        --enable-default-ssp \
         --disable-multilib \
         --enable-initfini-array \
-        --enable-shared \
         --enable-threads=posix \
+        --enable-shared \
         --enable-host-shared
 }
 

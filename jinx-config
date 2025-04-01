@@ -4,7 +4,7 @@ JINX_MAJOR_VER=0.4
 
 OS_TRIPLET=$ARCH-menix-mlibc
 
-HOST_CFLAGS="-O2 -pipe"
+HOST_CFLAGS="-O2 -pipe -fPIC -fPIE"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
 HOST_LDFLAGS="-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now"
 
@@ -12,8 +12,8 @@ TARGET_CFLAGS="$HOST_CFLAGS"
 TARGET_CXXFLAGS="$HOST_CXXFLAGS"
 TARGET_LDFLAGS="$HOST_LDFLAGS"
 
-TARGET_CC="clang"
-TARGET_CXX="clang++"
+TARGET_CC="${OS_TRIPLET}-gcc"
+TARGET_CXX="${OS_TRIPLET}-g++"
 
 case "$ARCH" in
     x86_64)
@@ -25,7 +25,7 @@ esac
 
 post_package_strip() {
     if [ -z "$strip_command" ]; then
-        strip_command="llvm-strip"
+        strip_command="${OS_TRIPLET}-strip"
     fi
 
     for f in $(find "${dest_dir}"); do
@@ -96,6 +96,7 @@ meson_configure_noflags() {
     fi
 
         ARCH=${ARCH} \
+		sysroot_dir=${sysroot_dir} \
     envsubst < "${base_dir}/support/meson.cross-file" > ./cross-file.txt
 
     meson setup "${meson_source_dir}" \

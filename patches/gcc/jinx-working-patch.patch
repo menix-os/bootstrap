@@ -12,10 +12,10 @@ index df90720..fff9901 100755
      x86_64-*-mingw32* | \
 diff --git gcc-workdir/gcc/config/menix.h gcc-workdir/gcc/config/menix.h
 new file mode 100644
-index 0000000..2ffb718
+index 0000000..15c3542
 --- /dev/null
 +++ gcc-workdir/gcc/config/menix.h
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,37 @@
 +#undef TARGET_MENIX
 +#define TARGET_MENIX 1
 +
@@ -23,7 +23,15 @@ index 0000000..2ffb718
 +#define LIB_SPEC "-lc"
 +
 +#undef STARTFILE_SPEC
-+#define STARTFILE_SPEC "%{shared|static-pie|pie|!no-pie:Scrt1.o%s;:crt1.o%s} crti.o%s %{shared|static-pie|pie|!no-pie:crtbeginS.o%s;:crtbegin.o%s}"
++#if defined HAVE_LD_PIE
++#define STARTFILE_SPEC \
++  "%{!shared: %{pg|p|profile:%{static-pie:grcrt0.o%s;static:gcrt0.o%s;:gcrt1.o%s};static-pie:rcrt0.o%s;static:crt0.o%s;" PIE_SPEC ":Scrt1.o%s;:crt1.o%s}} \
++   crti.o%s %{static:crtbeginT.o%s;shared|static-pie|" PIE_SPEC ":crtbeginS.o%s;:crtbegin.o%s}"
++#else
++#define STARTFILE_SPEC \
++  "%{!shared: %{pg|p|profile:%{static:gcrt0.o%s;:gcrt1.o%s};static:crt0.o%s;:crt1.o%s}} \
++   crti.o%s %{static:crtbeginT.o%s;shared:crtbeginS.o%s;:crtbegin.o%s}"
++#endif
 +
 +#undef ENDFILE_SPEC
 +#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"

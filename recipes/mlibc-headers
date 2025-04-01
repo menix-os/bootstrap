@@ -5,6 +5,7 @@ revision=1
 from_source=mlibc
 imagedeps="meson ninja-build"
 hostdeps="pkg-config"
+deps="linux-headers"
 
 configure() {
     meson_configure \
