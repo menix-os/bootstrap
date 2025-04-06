@@ -10,53 +10,158 @@ index df90720..fff9901 100755
      i?86-*-cygwin* | \
      i?86-*-mingw32* | \
      x86_64-*-mingw32* | \
-diff --git gcc-workdir/gcc/config/menix.h gcc-workdir/gcc/config/menix.h
+diff --git gcc-workdir/gcc/config/aarch64/aarch64-menix.h gcc-workdir/gcc/config/aarch64/aarch64-menix.h
 new file mode 100644
-index 0000000..15c3542
+index 0000000..3526dc0
 --- /dev/null
-+++ gcc-workdir/gcc/config/menix.h
-@@ -0,0 +1,37 @@
-+#undef TARGET_MENIX
-+#define TARGET_MENIX 1
++++ gcc-workdir/gcc/config/aarch64/aarch64-menix.h
+@@ -0,0 +1,44 @@
++#undef GCC_AARCH64_MENIX
++#define GCC_AARCH64_MENIX 1
 +
-+#undef LIB_SPEC
-+#define LIB_SPEC "-lc"
++#undef GNU_USER_DYNAMIC_LINKER
++#define GNU_USER_DYNAMIC_LINKER "/lib/aarch64-menix/ld.so"
 +
-+#undef STARTFILE_SPEC
-+#if defined HAVE_LD_PIE
-+#define STARTFILE_SPEC \
-+  "%{!shared: %{pg|p|profile:%{static-pie:grcrt0.o%s;static:gcrt0.o%s;:gcrt1.o%s};static-pie:rcrt0.o%s;static:crt0.o%s;" PIE_SPEC ":Scrt1.o%s;:crt1.o%s}} \
-+   crti.o%s %{static:crtbeginT.o%s;shared|static-pie|" PIE_SPEC ":crtbeginS.o%s;:crtbegin.o%s}"
++#define MENIX_TARGET_LINK_SPEC  "%{h*}                       \
++  %{static:-Bstatic}                                         \
++  %{shared:-shared}                                          \
++  %{symbolic:-Bsymbolic}                                     \
++  %{!static:%{!static-pie:                                   \
++    %{rdynamic:-export-dynamic}                              \
++    %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}} \
++  %{static-pie:-Bstatic -pie --no-dynamic-linker -z text}    \
++  -X                                                         \
++  -EL"
++
++#if TARGET_FIX_ERR_A53_835769_DEFAULT
++#define CA53_ERR_835769_SPEC \
++  " %{!mno-fix-cortex-a53-835769:--fix-cortex-a53-835769}"
 +#else
-+#define STARTFILE_SPEC \
-+  "%{!shared: %{pg|p|profile:%{static:gcrt0.o%s;:gcrt1.o%s};static:crt0.o%s;:crt1.o%s}} \
-+   crti.o%s %{static:crtbeginT.o%s;shared:crtbeginS.o%s;:crtbegin.o%s}"
++#define CA53_ERR_835769_SPEC \
++  " %{mfix-cortex-a53-835769:--fix-cortex-a53-835769}"
 +#endif
 +
++#if TARGET_FIX_ERR_A53_843419_DEFAULT
++#define CA53_ERR_843419_SPEC \
++  " %{!mno-fix-cortex-a53-843419:--fix-cortex-a53-843419}"
++#else
++#define CA53_ERR_843419_SPEC \
++  " %{mfix-cortex-a53-843419:--fix-cortex-a53-843419}"
++#endif
++
++#define LINK_SPEC MENIX_TARGET_LINK_SPEC \
++                  CA53_ERR_835769_SPEC \
++                  CA53_ERR_843419_SPEC
++
++#define GNU_USER_TARGET_MATHFILE_SPEC \
++  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
++
 +#undef ENDFILE_SPEC
-+#define ENDFILE_SPEC "%{shared|static-pie|pie|!no-pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
++#define ENDFILE_SPEC   \
++  GNU_USER_TARGET_MATHFILE_SPEC " " \
++  GNU_USER_TARGET_ENDFILE_SPEC
+diff --git gcc-workdir/gcc/config/aarch64/t-aarch64-menix gcc-workdir/gcc/config/aarch64/t-aarch64-menix
+new file mode 100644
+index 0000000..33d112f
+--- /dev/null
++++ gcc-workdir/gcc/config/aarch64/t-aarch64-menix
+@@ -0,0 +1,3 @@
++
++LIB1ASMSRC   = aarch64/lib1funcs.asm
++LIB1ASMFUNCS = _aarch64_sync_cache_range
+diff --git gcc-workdir/gcc/config/i386/menix.h gcc-workdir/gcc/config/i386/menix.h
+new file mode 100644
+index 0000000..fbf165c
+--- /dev/null
++++ gcc-workdir/gcc/config/i386/menix.h
+@@ -0,0 +1,10 @@
++#undef GCC_I386_MENIX
++#define GCC_I386_MENIX 1
 +
 +#define GNU_USER_LINK_EMULATION32 "elf_i386"
 +#define GNU_USER_LINK_EMULATION64 "elf_x86_64"
 +#define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
 +
-+#define GNU_USER_DYNAMIC_LINKER32 "/does_not_exist"
-+#define GNU_USER_DYNAMIC_LINKER64 "/usr/lib/ld.so"
-+#define GNU_USER_DYNAMIC_LINKERX32 "/does_not_exist"
++#define GNU_USER_DYNAMIC_LINKER64 "/lib/x86_64-menix/ld.so"
++#define GNU_USER_DYNAMIC_LINKER32 "/lib/i386-menix/ld.so"
++#define GNU_USER_DYNAMIC_LINKERX32 "/lib/x86_32-menix/ld.so"
+diff --git gcc-workdir/gcc/config/loongarch/menix.h gcc-workdir/gcc/config/loongarch/menix.h
+new file mode 100644
+index 0000000..65d3cda
+--- /dev/null
++++ gcc-workdir/gcc/config/loongarch/menix.h
+@@ -0,0 +1,6 @@
++#undef GCC_LOONGARCH_MENIX
++#define GCC_LOONGARCH_MENIX 1
 +
-+#undef TARGET_OS_CPP_BUILTINS
-+#define TARGET_OS_CPP_BUILTINS()         \
-+  do {                                   \
-+    builtin_define ("__menix__");        \
-+    builtin_define ("__unix__");         \
-+    builtin_assert ("system=menix");     \
-+    builtin_assert ("system=unix");      \
-+    builtin_assert ("system=posix");     \
++#undef GNU_USER_DYNAMIC_LINKER
++#define GNU_USER_DYNAMIC_LINKER "/lib/loongarch" ABI_GRLEN_SPEC "-menix/ld.so"
++#define GNU_USER_LINK_EMULATION "elf" ABI_GRLEN_SPEC "loongarch"
+diff --git gcc-workdir/gcc/config/menix.h gcc-workdir/gcc/config/menix.h
+new file mode 100644
+index 0000000..4fb747d
+--- /dev/null
++++ gcc-workdir/gcc/config/menix.h
+@@ -0,0 +1,12 @@
++#undef TARGET_MENIX
++#define TARGET_MENIX 1
++
++#undef GNU_USER_TARGET_OS_CPP_BUILTINS
++#define GNU_USER_TARGET_OS_CPP_BUILTINS() \
++  do {                                    \
++    builtin_define ("__menix__");         \
++    builtin_define ("__unix__");          \
++    builtin_assert ("system=menix");      \
++    builtin_assert ("system=unix");       \
++    builtin_assert ("system=posix");      \
 +  } while (0);
+diff --git gcc-workdir/gcc/config/riscv/menix.h gcc-workdir/gcc/config/riscv/menix.h
+new file mode 100644
+index 0000000..020e31c
+--- /dev/null
++++ gcc-workdir/gcc/config/riscv/menix.h
+@@ -0,0 +1,28 @@
++#undef GCC_RISCV_MENIX
++#define GCC_RISCV_MENIX 1
++
++#define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
++
++#undef GNU_USER_DYNAMIC_LINKER
++#define GNU_USER_DYNAMIC_LINKER "/lib/riscv" XLEN_SPEC "-menix/ld.so"
++
++#define LD_EMUL_SUFFIX \
++  "%{mabi=lp64d:}" \
++  "%{mabi=lp64f:_lp64f}" \
++  "%{mabi=lp64:_lp64}" \
++  "%{mabi=ilp32d:}" \
++  "%{mabi=ilp32f:_ilp32f}" \
++  "%{mabi=ilp32:_ilp32}"
++
++#define LINK_SPEC "\
++-melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv" LD_EMUL_SUFFIX " \
++%{mno-relax:--no-relax} \
++%{mbig-endian:-EB} \
++%{mlittle-endian:-EL} \
++%{shared} \
++  %{!shared: \
++    %{!static: \
++      %{!static-pie: \
++    %{rdynamic:-export-dynamic} \
++    -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
++    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 diff --git gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
-index 95c91ee..e78d40a 100644
+index 95c91ee..6d2e278 100644
 --- gcc-clean/gcc/config.gcc
 +++ gcc-workdir/gcc/config.gcc
+@@ -187,7 +187,7 @@
+ #			the --with-sysroot configure option or the
+ #			--sysroot command line option is used this
+ #			will be relative to the sysroot.
+-# target_type_format_char 
++# target_type_format_char
+ # 			The default character to be used for formatting
+ #			the attribute in a
+ #			.type symbol_name, ${t_t_f_c}<property>
 @@ -884,6 +884,15 @@ case ${target} in
    rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
@@ -73,18 +178,90 @@ index 95c91ee..e78d40a 100644
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    extra_options="$extra_options gnu-user.opt"
    gas=yes
-@@ -2284,6 +2293,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
+@@ -1239,6 +1248,11 @@ aarch64*-*-netbsd*)
+ 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-netbsd"
+ 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
+ 	;;
++aarch64*-*-menix*)
++	tm_file="${tm_file} elfos.h gnu-user.h menix.h glibc-stdint.h"
++	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-menix.h"
++	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-menix"
++	;;
+ aarch64*-*-linux*)
+ 	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h"
+ 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-linux.h"
+@@ -2284,6 +2298,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
  			;;
  	esac
  	;;
 +x86_64-*-menix*)
-+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h menix.h"
++	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h menix.h glibc-stdint.h i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/menix.h"
 +	;;
  x86_64-*-fuchsia*)
  	tmake_file="${tmake_file} i386/t-x86_64-elf"
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
+@@ -2483,6 +2500,13 @@ microblaze*-*-elf)
+ 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
+ 	tmake_file="${tmake_file} microblaze/t-microblaze"
+         ;;
++riscv*-*-menix*)
++	tm_file="${tm_file} elfos.h gnu-user.h menix.h glibc-stdint.h riscv/menix.h"
++	tmake_file="${tmake_file} riscv/t-riscv"
++	gnu_ld=yes
++	gas=yes
++	gcc_cv_initfini_array=yes
++	;;
+ riscv*-*-linux*)
+ 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
+ 	case "x${enable_multilib}" in
+@@ -2564,6 +2588,15 @@ loongarch*-*-linux*)
+ 	gcc_cv_initfini_array=yes
+ 	;;
+ 
++loongarch*-*-menix*)
++	tm_file="${tm_file} elfos.h gnu-user.h menix.h glibc-stdint.h"
++	tm_file="${tm_file} loongarch/gnu-user.h loongarch/menix.h loongarch/loongarch-driver.h"
++	tmake_file="${tmake_file} loongarch/t-multilib"
++	gnu_ld=yes
++	gas=yes
++	gcc_cv_initfini_array=yes
++	;;
++
+ loongarch*-*-elf*)
+ 	tm_file="elfos.h newlib-stdint.h ${tm_file}"
+ 	tm_file="${tm_file} loongarch/elf.h loongarch/linux.h loongarch/loongarch-driver.h"
+@@ -5062,6 +5095,7 @@ case "${target}" in
+ 		esac
+ 
+ 		case ${target} in
++		  *-menix-mlibc*) triplet_os="menix-mlibc";;
+ 		  *-linux-gnu*) triplet_os="linux-gnu";;
+ 		  *-linux-musl*) triplet_os="linux-musl";;
+ 		  *-elf*) triplet_os="elf";;
+diff --git gcc-clean/gcc/config.host gcc-workdir/gcc/config.host
+index f640029..c03a550 100644
+--- gcc-clean/gcc/config.host
++++ gcc-workdir/gcc/config.host
+@@ -61,7 +61,7 @@
+ #			different from the default "liblto_plugin.so".
+ 
+ # When setting any of these variables, check to see if a corresponding
+-# variable is present in config.build; if so, you will likely want to 
++# variable is present in config.build; if so, you will likely want to
+ # set it in both places.
+ 
+ # Default settings.
+@@ -100,7 +100,7 @@ esac
+ 
+ case ${host} in
+   aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia* |\
+-  aarch64*-*-darwin*)
++  aarch64*-*-darwin* | aarch64*-*-menix*)
+     case ${target} in
+       aarch64*-*-*)
+ 	host_extra_gcc_objs="driver-aarch64.o"
 diff --git gcc-clean/libgcc/config.host gcc-workdir/libgcc/config.host
-index e75a7af..25d4b09 100644
+index e75a7af..0b4ee19 100644
 --- gcc-clean/libgcc/config.host
 +++ gcc-workdir/libgcc/config.host
 @@ -103,7 +103,7 @@ arm*-*-*)
@@ -108,20 +285,21 @@ index e75a7af..25d4b09 100644
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-@@ -439,6 +444,12 @@ aarch64*-*-fuchsia*)
+@@ -439,6 +444,13 @@ aarch64*-*-fuchsia*)
  	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
  	tmake_file="${tmake_file} t-dfprules"
  	;;
 +aarch64*-*-menix*)
++	extra_parts="$extra_parts crtfastmath.o"
++	md_unwind_header=aarch64/aarch64-unwind.h
 +	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 +	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
-+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
-+	tmake_file="${tmake_file} t-dfprules"
++	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 +	;;
  aarch64*-*-linux*)
  	extra_parts="$extra_parts crtfastmath.o"
  	md_unwind_header=aarch64/linux-unwind.h
-@@ -941,6 +952,10 @@ x86_64-*-mingw*)
+@@ -941,6 +953,10 @@ x86_64-*-mingw*)
  		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
  	fi
  	;;
@@ -132,7 +310,19 @@ index e75a7af..25d4b09 100644
  ia64*-*-elf*)
  	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
  	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat"
-@@ -1347,6 +1362,10 @@ pru-*-*)
+@@ -998,6 +1014,11 @@ loongarch*-elf*)
+ 	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
+ 	tmake_file="${tmake_file} t-slibgcc-libgcc"
+ 	;;
++loongarch*-menix*)
++	extra_parts="$extra_parts crtfastmath.o"
++	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
++	tmake_file="${tmake_file} t-slibgcc-libgcc"
++	;;
+ m32r-*-elf*)
+ 	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
+ 	extra_parts="$extra_parts crtinit.o crtfini.o"
+@@ -1347,6 +1368,10 @@ pru-*-*)
  	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
  	tm_file="$tm_file pru/pru-abi.h"
  	;;

@@ -19,10 +19,10 @@ build() {
         RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
         CARGO_HOME="${JINX_CACHE_DIR}/.cargo" \
     cargo build \
-        --target=toolchain/${ARCH}.json
+        --target=toolchain/${ARCH}-kernel.json
 }
 
 package() {
     mkdir -p "${dest_dir}${prefix}/share/menix/"
-    install -m644 target/${ARCH}/debug/menix.kso "${dest_dir}${prefix}/share/menix/menix-debug"
+    install -m644 target/${ARCH}-kernel/debug/menix.kso "${dest_dir}${prefix}/share/menix/menix-debug"
 }

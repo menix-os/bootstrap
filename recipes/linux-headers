@@ -10,7 +10,13 @@ imagedeps="build-essential rsync"
 build() {
     cp -rp "${source_dir}"/. ./
 
-    make ARCH=${ARCH} headers_install
+    LINUX_ARCH="${ARCH}"
+    case "${LINUX_ARCH}" in
+        "aarch64") LINUX_ARCH="arm64" ;;
+        "riscv64") LINUX_ARCH="riscv" ;;
+        "loongarch64") LINUX_ARCH="loongarch" ;;
+    esac
+    make ARCH=${LINUX_ARCH} headers_install
     find usr/include -type f ! -name *.h -delete
 }
 

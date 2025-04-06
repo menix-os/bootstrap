@@ -1,6 +1,7 @@
 # IDE Files
 .vscode/
 .idea/
+*.code-workspace
 
 # Jinx
 .jinx-cache/
