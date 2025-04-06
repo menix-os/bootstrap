@@ -12,10 +12,10 @@ index df90720..fff9901 100755
      x86_64-*-mingw32* | \
 diff --git gcc-workdir/gcc/config/aarch64/aarch64-menix.h gcc-workdir/gcc/config/aarch64/aarch64-menix.h
 new file mode 100644
-index 0000000..3526dc0
+index 0000000..c21c141
 --- /dev/null
 +++ gcc-workdir/gcc/config/aarch64/aarch64-menix.h
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,49 @@
 +#undef GCC_AARCH64_MENIX
 +#define GCC_AARCH64_MENIX 1
 +
@@ -60,6 +60,11 @@ index 0000000..3526dc0
 +#define ENDFILE_SPEC   \
 +  GNU_USER_TARGET_MATHFILE_SPEC " " \
 +  GNU_USER_TARGET_ENDFILE_SPEC
++
++#define TARGET_OS_CPP_BUILTINS()       \
++  do {                                 \
++    GNU_USER_TARGET_OS_CPP_BUILTINS(); \
++  } while (0)
 diff --git gcc-workdir/gcc/config/aarch64/t-aarch64-menix gcc-workdir/gcc/config/aarch64/t-aarch64-menix
 new file mode 100644
 index 0000000..33d112f
@@ -117,10 +122,10 @@ index 0000000..4fb747d
 +  } while (0);
 diff --git gcc-workdir/gcc/config/riscv/menix.h gcc-workdir/gcc/config/riscv/menix.h
 new file mode 100644
-index 0000000..020e31c
+index 0000000..8ef60e7
 --- /dev/null
 +++ gcc-workdir/gcc/config/riscv/menix.h
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,33 @@
 +#undef GCC_RISCV_MENIX
 +#define GCC_RISCV_MENIX 1
 +
@@ -149,6 +154,11 @@ index 0000000..020e31c
 +    %{rdynamic:-export-dynamic} \
 +    -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
 +    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
++
++#define TARGET_OS_CPP_BUILTINS()       \
++  do {                                 \
++    GNU_USER_TARGET_OS_CPP_BUILTINS(); \
++  } while (0)
 diff --git gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
 index 95c91ee..6d2e278 100644
 --- gcc-clean/gcc/config.gcc
@@ -261,7 +271,7 @@ index f640029..c03a550 100644
        aarch64*-*-*)
  	host_extra_gcc_objs="driver-aarch64.o"
 diff --git gcc-clean/libgcc/config.host gcc-workdir/libgcc/config.host
-index e75a7af..0b4ee19 100644
+index e75a7af..34846b8 100644
 --- gcc-clean/libgcc/config.host
 +++ gcc-workdir/libgcc/config.host
 @@ -103,7 +103,7 @@ arm*-*-*)
@@ -285,11 +295,12 @@ index e75a7af..0b4ee19 100644
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-@@ -439,6 +444,13 @@ aarch64*-*-fuchsia*)
+@@ -439,6 +444,14 @@ aarch64*-*-fuchsia*)
  	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
  	tmake_file="${tmake_file} t-dfprules"
  	;;
 +aarch64*-*-menix*)
++	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
 +	extra_parts="$extra_parts crtfastmath.o"
 +	md_unwind_header=aarch64/aarch64-unwind.h
 +	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
@@ -299,7 +310,7 @@ index e75a7af..0b4ee19 100644
  aarch64*-*-linux*)
  	extra_parts="$extra_parts crtfastmath.o"
  	md_unwind_header=aarch64/linux-unwind.h
-@@ -941,6 +953,10 @@ x86_64-*-mingw*)
+@@ -941,6 +954,10 @@ x86_64-*-mingw*)
  		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
  	fi
  	;;
@@ -310,7 +321,7 @@ index e75a7af..0b4ee19 100644
  ia64*-*-elf*)
  	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
  	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat"
-@@ -998,6 +1014,11 @@ loongarch*-elf*)
+@@ -998,6 +1015,11 @@ loongarch*-elf*)
  	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
  	tmake_file="${tmake_file} t-slibgcc-libgcc"
  	;;
@@ -322,7 +333,7 @@ index e75a7af..0b4ee19 100644
  m32r-*-elf*)
  	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
  	extra_parts="$extra_parts crtinit.o crtfini.o"
-@@ -1347,6 +1368,10 @@ pru-*-*)
+@@ -1347,6 +1369,10 @@ pru-*-*)
  	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
  	tm_file="$tm_file pru/pru-abi.h"
  	;;
