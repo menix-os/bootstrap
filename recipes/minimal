@@ -1,0 +1,5 @@
+#! /bin/sh
+
+name=minimal
+revision=1
+deps="base-files menix menix-debug limine openrc busybox core-libs"

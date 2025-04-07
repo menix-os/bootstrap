@@ -143,3 +143,12 @@ cmake_configure_noflags() {
         -GNinja \
         "$@"
 }
+
+cargo_build() {
+    cp -rpf "${source_dir}"/. ./
+
+        RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
+        CARGO_HOME="${JINX_CACHE_DIR}/.cargo" \
+    cargo build \
+        "$@"
+}

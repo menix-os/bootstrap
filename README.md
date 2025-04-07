@@ -25,22 +25,22 @@ To run the built image you will also need QEMU for the target architecture.
 The easiest way to get a bootable image is to run
 
 ```sh
-make install-all
-make image
+make
 ```
 
-in the root of the repository. This will build the kernel and the distribution and create a
+in the root of the repository.
+This will build the kernel and the distribution and create a
 bootable image named `menix.img` in the current directory.
 
-You can also build separate packages by running `$bootstrap/jinx build <package>`
+You can also build separate packages by running `../jinx build <package>`
 inside the respective build directory for the target architecture.
 
-For example,
-to build the `bash` package for the x86_64 architecture, you would run the following commands, assuming you are in the root of the repository:
+For example, to build the `menix` package for the x86_64 architecture,
+you would run the following commands, assuming you are in the root of the repository:
 
 ```sh
-$ cd build-x86_64 # Switch to the x86_64 build directory
-$ ../jinx build bash # Build the bash package
+$ cd build-x86_64     # Switch to the x86_64 build directory
+$ ../jinx build menix # Build the menix package
 ```
 
 The built package will be located in the `pkgs` directory.
@@ -50,11 +50,12 @@ The built package will be located in the `pkgs` directory.
 To run the image, you can use the provided make target:
 
 ```sh
-$ make run-image
+$ make qemu
 ```
 
-This will run the image using QEMU with the appropriate options for the target architecture. If you want to pass your own QEMU flags, you can do so by setting the `QEMUFLAGS` variable:
+This will run the image using QEMU with the appropriate options for the target architecture.
+If you want to pass your own QEMU flags, you can do so by setting the `QEMUFLAGS` variable:
 
 ```sh
-$ make run-image QEMUFLAGS="-m 512M -smp 4"
+$ make qemu QEMUFLAGS="-m 512M -smp 4"
 ```
