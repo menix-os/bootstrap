@@ -5,7 +5,7 @@ version=0.0
 revision=1
 git_url=https://github.com/menix-os/menix.git
 branch=rust
-imagedeps="rustup"
+imagedeps="rustup git"
 allow_network=yes
 
 prepare() {
@@ -14,4 +14,6 @@ prepare() {
 
         RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
     rustup default nightly
+
+    git submodule update --init --recursive
 }
