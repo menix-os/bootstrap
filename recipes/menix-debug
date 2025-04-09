@@ -4,6 +4,8 @@ name=menix-debug
 from_source=menix
 imagedeps="build-essential rustup"
 allow_network=yes
+hostdeps="llvm"
+builddeps="mlibc-headers"
 
 build() {
     cargo_build \
