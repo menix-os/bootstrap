@@ -6,19 +6,22 @@ imagedeps="build-essential rustup"
 allow_network=yes
 hostdeps="llvm"
 builddeps="mlibc-headers"
+allow_source_writes="yes"
 
 build() {
     cargo_build \
-        --target=toolchain/${ARCH}-kernel.json \
-        --release
+        --release \
+        --target="${source_dir}/toolchain/${ARCH}-kernel.json" \
+        -Zbuild-std=core,alloc \
+        -Zbuild-std-features=compiler-builtins-mem
 }
 
 package() {
     mkdir -p "${dest_dir}${prefix}/share/menix/"
     mkdir -p "${dest_dir}${prefix}/lib/modules/"
 
-    install -m644 target/${ARCH}-kernel/release/menix.kso "${dest_dir}${prefix}/share/menix/menix"
-    install -m644 target/${ARCH}-kernel/release/*.kso "${dest_dir}${prefix}/lib/modules/"
+    install -m644 ${ARCH}-kernel/release/menix.kso "${dest_dir}${prefix}/share/menix/menix"
+    install -m644 ${ARCH}-kernel/release/*.kso "${dest_dir}${prefix}/lib/modules/"
 
     rm "${dest_dir}${prefix}/lib/modules/menix.kso"
 }
