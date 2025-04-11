@@ -16,5 +16,10 @@ build() {
 
 package() {
     mkdir -p "${dest_dir}${prefix}/share/menix/"
+    mkdir -p "${dest_dir}${prefix}/lib/modules/"
+
     install -m644 ${ARCH}-kernel/debug/menix.kso "${dest_dir}${prefix}/share/menix/menix-debug"
+    install -m644 ${ARCH}-kernel/debug/*.kso "${dest_dir}${prefix}/lib/modules/"
+
+    rm "${dest_dir}${prefix}/lib/modules/menix.kso"
 }
