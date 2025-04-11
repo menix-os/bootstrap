@@ -11,8 +11,7 @@ allow_source_writes="yes"
 build() {
     cargo_build \
         --target="${source_dir}/toolchain/${ARCH}-kernel.json" \
-        -Zbuild-std=core,alloc \
-        -Zbuild-std-features=compiler-builtins-mem
+        --config="${source_dir}/.cargo/config.toml"
 }
 
 package() {
