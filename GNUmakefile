@@ -31,7 +31,7 @@ install-minimal: jinx build-$(ARCH)/jinx-config
 
 jinx:
 	git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	git -C jinx-repo checkout 2a34864dad25088b41d0b0ac3b1eff1404aedb54
+	git -C jinx-repo checkout 047b6a3111f92ab4f3509e353fa6800e00940a86
 	mv jinx-repo/jinx ./
 	rm -rf jinx-repo
 
