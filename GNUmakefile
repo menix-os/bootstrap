@@ -50,7 +50,7 @@ image: jinx build-$(ARCH)/jinx-config menix.img
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh build-$(ARCH)/sysroot menix.img $(ARCH)
 
 menix.img:
-	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 2G 100M
+	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 1G 100M
 
 # --------------
 # QEMU Emulation
