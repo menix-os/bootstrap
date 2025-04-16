@@ -11,5 +11,10 @@ jinx
 
 # Other files
 ovmf/
+
+# Build results
 menix.img
 menix.iso
+
+# Allow debug config
+!.vscode/launch.json

@@ -58,6 +58,7 @@ menix.img:
 
 SMP ?= 4
 MEM ?= 2G
+KVM ?= 1
 QEMUFLAGS ?=
 
 override QEMUFLAGS += -m $(MEM) -serial stdio -smp $(SMP) \
@@ -68,8 +69,12 @@ override QEMUFLAGS += -m $(MEM) -serial stdio -smp $(SMP) \
 	-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-$(ARCH).fd,readonly=on \
 	-device virtio-gpu
 
+ifeq ($(KVM), 1)
 ifeq ($(shell test -r /dev/kvm && echo $(ARCH)),$(shell uname -m))
 override QEMUFLAGS += -cpu host -accel kvm
+else
+override QEMUFLAGS += -cpu max -accel tcg
+endif
 else
 override QEMUFLAGS += -cpu max -accel tcg
 endif

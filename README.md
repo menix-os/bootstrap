@@ -1,6 +1,7 @@
 # bootstrap
 
-This repository builds a fully bootable distribution for the [menix](https://github.com/menix-os/menix) kernel.
+This repository builds a fully bootable distribution for the
+[Menix](https://github.com/menix-os/menix) kernel.
 
 It also includes several ports of popular apps and tools.
 
@@ -25,18 +26,18 @@ To run the built image you will also need QEMU for the target architecture.
 The easiest way to get a bootable image is to run
 
 ```sh
-make
+$ make
 ```
 
 in the root of the repository.
-This will build the kernel and the distribution and create a
-bootable image named `menix.img` in the current directory.
+This will build the __entire__ distribution and create a bootable image named
+`menix.img` in the current directory.
 
 You can also build separate packages by running `../jinx build <package>`
 inside the respective build directory for the target architecture.
 
-For example, to build the `menix` package for the x86_64 architecture,
-you would run the following commands, assuming you are in the root of the repository:
+For example, to build the `menix` package for the x86_64 architecture, you would
+run the following commands (assuming you are in the root of the repository):
 
 ```sh
 $ cd build-x86_64     # Switch to the x86_64 build directory
@@ -53,9 +54,29 @@ To run the image, you can use the provided make target:
 $ make qemu
 ```
 
-This will run the image using QEMU with the appropriate options for the target architecture.
-If you want to pass your own QEMU flags, you can do so by setting the `QEMUFLAGS` variable:
+This will run the image using QEMU with the appropriate options for the
+target architecture. If you want to pass your own QEMU flags,
+you can do so by setting the `QEMUFLAGS` variable, e.g.:
 
 ```sh
 $ make qemu QEMUFLAGS="-m 512M -smp 4"
 ```
+
+## Debugging
+
+To debug Menix, build a normal image, but make sure to also build the package
+`menix-debug`.
+The binary is unstripped and contains debuginfo.
+
+Run QEMU with:
+
+```sh
+$ make qemu QEMUFLAGS="-s -S" KVM=0
+```
+
+and then attach your debugger.
+For convenicence, there is a debugging configuration using CodeLLDB for VS Code.
+Simply select Run > Start Debugging and use `.vscode/launch.json` as the config.
+
+Finally, start the `menix-debug` kernel in the bootloader and make sure KASLR
+has been disabled or you have provided the debugger with the load offset.

@@ -1,0 +1,17 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug x86_64",
+			"targetCreateCommands": [
+				"settings set target.source-map /base_dir ${workspaceFolder}",
+				"target create ${workspaceFolder}/build-x86_64/builds/menix-debug/x86_64-kernel/debug/menix.kso"
+			],
+			"processCreateCommands": [
+				"gdb-remote localhost:1234"
+			]
+		}
+	]
+}
