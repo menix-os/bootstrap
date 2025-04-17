@@ -4,6 +4,7 @@ name=base-files
 version=0.0
 revision=1
 source_dir="extras/base-files"
+skip_pkg_check=yes
 
 package() {
     mkdir -pv "${dest_dir}/dev"

@@ -3,3 +3,4 @@
 name=core-libs
 revision=1
 deps="mlibc libgcc libstdc++ libintl libiconv tzdata"
+skip_pkg_check=yes

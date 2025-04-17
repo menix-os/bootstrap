@@ -3,3 +3,4 @@
 name=minimal
 revision=1
 deps="base-files menix menix-debug limine openrc busybox core-libs"
+skip_pkg_check=yes

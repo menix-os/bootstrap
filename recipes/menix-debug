@@ -7,6 +7,7 @@ allow_network=yes
 hostdeps="llvm"
 builddeps="mlibc-headers"
 allow_source_writes="yes"
+skip_pkg_check=yes
 
 build() {
     cargo_build \
