@@ -7,6 +7,7 @@ git_url=https://github.com/menix-os/menix.git
 branch=main
 imagedeps="rustup git"
 allow_network=yes
+shallow=no
 
 prepare() {
         RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
