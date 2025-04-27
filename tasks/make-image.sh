@@ -42,7 +42,9 @@ sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 sudo cp "$BUILD_DIR/pkgs/menix/usr/share/menix/menix" "$tmpdir/root/boot/"
 sudo cp "$BUILD_DIR/pkgs/menix-debug/usr/share/menix-debug/menix" "$tmpdir/root/boot/menix-debug"
 sudo mkdir -p "$tmpdir/root/boot/modules"
+sudo mkdir -p "$tmpdir/root/boot/modules-debug"
 sudo cp "$BUILD_DIR/pkgs/menix/usr/share/menix/modules/"*.kso "$tmpdir/root/boot/modules/"
+sudo cp "$BUILD_DIR/pkgs/menix-debug/usr/share/menix-debug/modules/"*.kso "$tmpdir/root/boot/modules-debug/"
 
 # Install bootloader
 sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"
