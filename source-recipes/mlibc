@@ -3,4 +3,4 @@
 name=mlibc
 version=6.0.0
 git_url="https://github.com/managarm/mlibc.git"
-tag="v$version"
+branch="v$version"
