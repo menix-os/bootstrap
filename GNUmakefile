@@ -71,7 +71,7 @@ override QEMUFLAGS += -m $(MEM) -serial stdio -smp $(SMP) \
 
 ifeq ($(KVM), 1)
 ifeq ($(shell test -r /dev/kvm && echo $(ARCH)),$(shell uname -m))
-override QEMUFLAGS += -cpu host -accel kvm
+override QEMUFLAGS += -cpu host,migratable=off -accel kvm
 else
 override QEMUFLAGS += -cpu max -accel tcg
 endif
