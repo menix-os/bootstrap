@@ -2,7 +2,7 @@
 
 JINX_MAJOR_VER=0.5
 
-OS_TRIPLET=$ARCH-menix-mlibc
+OS_TRIPLET=${JINX_ARCH}-menix-mlibc
 
 HOST_CFLAGS="-O2 -pipe -fPIC -fPIE"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
@@ -15,7 +15,7 @@ TARGET_LDFLAGS="$HOST_LDFLAGS"
 TARGET_CC="${OS_TRIPLET}-gcc"
 TARGET_CXX="${OS_TRIPLET}-g++"
 
-case "$ARCH" in
+case "${JINX_ARCH}" in
     x86_64)
         TARGET_CFLAGS="$TARGET_CFLAGS -march=x86-64 -mtune=generic -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
         TARGET_CXXFLAGS="$TARGET_CXXFLAGS -march=x86-64 -mtune=generic -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
@@ -95,8 +95,9 @@ meson_configure_noflags() {
         meson_source_dir="${source_dir}"
     fi
 
-        ARCH=${ARCH} \
-		sysroot_dir=${sysroot_dir} \
+        JINX_ARCH=${JINX_ARCH} \
+        OS_TRIPLET=${OS_TRIPLET} \
+        sysroot_dir=${sysroot_dir} \
     envsubst < "${base_dir}/support/meson.cross-file" > ./cross-file.txt
 
     meson setup "${meson_source_dir}" \
@@ -125,8 +126,8 @@ cmake_configure_noflags() {
         cmake_source_dir="${source_dir}"
     fi
 
-		OS_TRIPLET=${OS_TRIPLET} \
-		sysroot_dir=${sysroot_dir} \
+        OS_TRIPLET=${OS_TRIPLET} \
+        sysroot_dir=${sysroot_dir} \
     envsubst < "${base_dir}/support/CMakeToolchain.txt" > ./cross-file.txt
 
     cmake "${cmake_source_dir}"  \

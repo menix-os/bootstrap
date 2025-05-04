@@ -11,7 +11,7 @@ deps="linux-headers mlibc-headers"
 configure() {
         CFLAGS="$TARGET_CFLAGS" \
         CXXFLAGS="$TARGET_CXXFLAGS" \
-        LDFLAGS="$TARGET_LDFLAGS -Wl,/usr/local/libgcc-binaries/libgcc-${ARCH}.a" \
+        LDFLAGS="$TARGET_LDFLAGS -Wl,/usr/local/libgcc-binaries/libgcc-${JINX_ARCH}.a" \
     meson_configure_noflags \
         -Dno_headers=true \
         -Dlinux_kernel_headers=${sysroot_dir}${prefix}/include \

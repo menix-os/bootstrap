@@ -1,4 +1,4 @@
 #! /bin/sh
 
-ARCH=${ARCH}
+JINX_ARCH=${ARCH}
 . "${base_dir}/jinx-config"

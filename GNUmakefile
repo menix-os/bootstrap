@@ -22,11 +22,13 @@ clean:
 # Build all packages
 .PHONY: install-all
 install-all: jinx build-$(ARCH)/jinx-config
+	@cd build-$(ARCH) && ../jinx build '*'
 	@cd build-$(ARCH) && ../jinx install sysroot '*'
 
 # Build only a minimal selection of packages (kernel + bootloader + init + shell)
 .PHONY: install-minimal
 install-minimal: jinx build-$(ARCH)/jinx-config
+	@cd build-$(ARCH) && ../jinx build minimal
 	@cd build-$(ARCH) && ../jinx install sysroot minimal
 
 jinx:

@@ -1,18 +1,18 @@
 [binaries]
-c = '${ARCH}-menix-mlibc-gcc'
-cpp = '${ARCH}-menix-mlibc-g++'
-ar = '${ARCH}-menix-mlibc-gcc-ar'
-nm = '${ARCH}-menix-mlibc-nm'
-objcopy = '${ARCH}-menix-mlibc-objcopy'
-ranlib = '${ARCH}-menix-mlibc-ranlib'
-strip = '${ARCH}-menix-mlibc-strip'
-pkg-config = '${ARCH}-menix-mlibc-pkg-config'
+c = '${OS_TRIPLET}-gcc'
+cpp = '${OS_TRIPLET}-g++'
+ar = '${OS_TRIPLET}-gcc-ar'
+nm = '${OS_TRIPLET}-nm'
+objcopy = '${OS_TRIPLET}-objcopy'
+ranlib = '${OS_TRIPLET}-ranlib'
+strip = '${OS_TRIPLET}-strip'
+pkg-config = '${OS_TRIPLET}-pkg-config'
 llvm-config = '/base_dir/support/llvm-config'
 
 [host_machine]
 system = 'menix'
-cpu_family = '${ARCH}'
-cpu = '${ARCH}'
+cpu_family = '${JINX_ARCH}'
+cpu = '${JINX_ARCH}'
 endian = 'little'
 
 [built-in options]

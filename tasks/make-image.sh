@@ -39,12 +39,9 @@ sudo mount -o uid=1000,gid=1000 "$ESP_PART" "$tmpdir/root/boot"
 sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
 # Install kernel and modules
-sudo cp "$BUILD_DIR/pkgs/menix/usr/share/menix/menix" "$tmpdir/root/boot/"
-sudo cp "$BUILD_DIR/pkgs/menix-debug/usr/share/menix-debug/menix" "$tmpdir/root/boot/menix-debug"
+sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/root/boot/"
 sudo mkdir -p "$tmpdir/root/boot/modules"
-sudo mkdir -p "$tmpdir/root/boot/modules-debug"
-sudo cp "$BUILD_DIR/pkgs/menix/usr/share/menix/modules/"*.kso "$tmpdir/root/boot/modules/"
-sudo cp "$BUILD_DIR/pkgs/menix-debug/usr/share/menix-debug/modules/"*.kso "$tmpdir/root/boot/modules-debug/"
+sudo cp "$BUILD_DIR/sysroot/usr/share/menix/modules/"*.kso "$tmpdir/root/boot/modules/"
 
 # Install bootloader
 sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"
@@ -61,5 +58,5 @@ case "${ARCH}" in
         ;;
 esac
 
-sudo cp "$BUILD_DIR/pkgs/limine/usr/share/limine/${efi_filename}" "$tmpdir/root/boot/EFI/BOOT/"
+sudo cp "$BUILD_DIR/sysroot/usr/share/limine/${efi_filename}" "$tmpdir/root/boot/EFI/BOOT/"
 sudo cp "$ROOT_DIR/support/limine.conf" "$tmpdir/root/boot/"

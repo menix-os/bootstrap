@@ -10,7 +10,7 @@ imagedeps="build-essential rsync"
 build() {
     cp -rp "${source_dir}"/. ./
 
-    LINUX_ARCH="${ARCH}"
+    LINUX_ARCH="${JINX_ARCH}"
     case "${LINUX_ARCH}" in
         "aarch64") LINUX_ARCH="arm64" ;;
         "riscv64") LINUX_ARCH="riscv" ;;
