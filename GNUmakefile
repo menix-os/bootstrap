@@ -22,18 +22,27 @@ clean:
 # Build all packages
 .PHONY: install-all
 install-all: jinx build-$(ARCH)/jinx-config
-	@cd build-$(ARCH) && ../jinx build '*'
+	@cd build-$(ARCH) && ../jinx build-if-needed '*'
 	@cd build-$(ARCH) && ../jinx install sysroot '*'
 
 # Build only a minimal selection of packages (kernel + bootloader + init + shell)
 .PHONY: install-minimal
 install-minimal: jinx build-$(ARCH)/jinx-config
-	@cd build-$(ARCH) && ../jinx build minimal
+	@cd build-$(ARCH) && ../jinx build-if-needed minimal
 	@cd build-$(ARCH) && ../jinx install sysroot minimal
+
+.PHONY: remake-kernel
+remake-kernel: jinx build-$(ARCH)/jinx-config
+	@cd build-$(ARCH) && ../jinx build menix
+	@cd build-$(ARCH) && ../jinx build menix-debug
+	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
+	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
+	@cd build-$(ARCH) && ../jinx reinstall sysroot menix-debug
+	@cd build-$(ARCH) && ../jinx reinstall sysroot menix-debug
 
 jinx:
 	git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	git -C jinx-repo checkout d74795608094bb780b094962c5b2b14b952f4e78
+	git -C jinx-repo checkout 4dff15d1d86ff82d7339f4403c92928e510e1b09
 	mv jinx-repo/jinx ./
 	rm -rf jinx-repo
 

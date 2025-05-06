@@ -3,5 +3,5 @@
 name=minimal
 version=0.0
 revision=1
-deps="base-files menix limine openrc busybox core-libs"
+deps="base-files core-libs menix limine openrc busybox"
 skip_pkg_check=yes
