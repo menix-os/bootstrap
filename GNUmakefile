@@ -33,12 +33,8 @@ install-minimal: jinx build-$(ARCH)/jinx-config
 
 .PHONY: remake-kernel
 remake-kernel: jinx build-$(ARCH)/jinx-config
-	@cd build-$(ARCH) && ../jinx build menix
-	@cd build-$(ARCH) && ../jinx build menix-debug
-	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
-	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
-	@cd build-$(ARCH) && ../jinx reinstall sysroot menix-debug
-	@cd build-$(ARCH) && ../jinx reinstall sysroot menix-debug
+	@cd build-$(ARCH) && ../jinx build menix menix-debug
+	@cd build-$(ARCH) && ../jinx reinstall sysroot menix menix-debug
 
 jinx:
 	git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
