@@ -146,15 +146,10 @@ cmake_configure_noflags() {
 }
 
 cargo_build() {
-    if [ "$allow_source_writes" != "yes" ]; then
-        echo "* cargo_build needs allow_source_writes!"
-        exit 1
-    fi
+    cp -frp "${source_dir}"/. ./
 
         RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
         CARGO_HOME="${JINX_CACHE_DIR}/.cargo" \
     cargo build \
-        --target-dir $(pwd) \
-        --manifest-path ${source_dir}/Cargo.toml \
         "$@"
 }
