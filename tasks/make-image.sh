@@ -40,13 +40,13 @@ sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
 # Install kernels
 sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/root/boot/menix"
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix-debug/menix" "$tmpdir/root/boot/menix-debug"
+sudo cp -f "$BUILD_DIR/sysroot/usr/share/menix-debug/menix" "$tmpdir/root/boot/menix-debug"
 
 # Install modules
 sudo mkdir -p "$tmpdir/root/boot/modules"
 sudo mkdir -p "$tmpdir/root/boot/modules-debug"
 sudo cp "$BUILD_DIR/sysroot/usr/share/menix/modules/"*.kso "$tmpdir/root/boot/modules/"
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix-debug/modules/"*.kso "$tmpdir/root/boot/modules-debug/"
+sudo cp -f "$BUILD_DIR/sysroot/usr/share/menix-debug/modules/"*.kso "$tmpdir/root/boot/modules-debug/"
 
 # Install bootloader
 sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"
