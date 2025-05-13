@@ -38,7 +38,7 @@ remake-kernel: jinx build-$(ARCH)/jinx-config
 
 jinx:
 	git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	git -C jinx-repo checkout 4dff15d1d86ff82d7339f4403c92928e510e1b09
+	git -C jinx-repo checkout a01dca718abb2355117759d0975a1b4d10fbc7f6
 	mv jinx-repo/jinx ./
 	rm -rf jinx-repo
 
