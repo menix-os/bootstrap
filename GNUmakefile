@@ -11,9 +11,11 @@ all: install-all image
 # Cleans up the entire build directory
 .PHONY: clean
 clean:
-	@rm -rf build-$(ARCH)
-	@rm -f jinx
-	@echo "Cleaned build directory for $(ARCH)"
+	rm -rf build-$(ARCH)
+	rm -rf .jinx-cache
+	rm -rf sources
+	rm -f jinx
+	@echo "Cleaned repository"
 
 # -------------
 # Jinx packages
@@ -37,10 +39,10 @@ remake-kernel: jinx build-$(ARCH)/jinx-config
 	@cd build-$(ARCH) && ../jinx reinstall sysroot menix menix-debug
 
 jinx:
-	git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	git -C jinx-repo checkout 7b83f8e8322bb388d310a6ff9b9f89d517369a28
-	mv jinx-repo/jinx ./
-	rm -rf jinx-repo
+	@git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
+	@git -C jinx-repo checkout 7b83f8e8322bb388d310a6ff9b9f89d517369a28
+	@mv jinx-repo/jinx ./
+	@rm -rf jinx-repo
 
 build-$(ARCH)/jinx-config:
 	@mkdir -p build-$(ARCH)
