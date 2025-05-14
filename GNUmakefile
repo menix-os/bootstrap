@@ -65,18 +65,25 @@ menix.img:
 # QEMU Emulation
 # --------------
 
+ovmf/ovmf-code-$(ARCH).fd:
+	mkdir -p ovmf
+	curl -Lo $@ https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-$(ARCH).fd
+	case "$(ARCH)" in \
+		aarch64) dd if=/dev/zero of=$@ bs=1 count=0 seek=67108864 2>/dev/null;; \
+		riscv64) dd if=/dev/zero of=$@ bs=1 count=0 seek=33554432 2>/dev/null;; \
+	esac
+
 SMP ?= 4
 MEM ?= 2G
 KVM ?= 1
 QEMUFLAGS ?=
 
-override QEMUFLAGS += -m $(MEM) -serial stdio -smp $(SMP) \
+override QEMUFLAGS += -serial stdio \
+	-m $(MEM) \
+	-smp $(SMP) \
 	-no-reboot \
 	-no-shutdown \
-	-netdev user,id=net0 \
-	-device virtio-net,disable-modern=on,netdev=net0 \
-	-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-$(ARCH).fd,readonly=on \
-	-device virtio-gpu
+	-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-$(ARCH).fd,readonly=on
 
 ifeq ($(KVM), 1)
 ifeq ($(shell test -r /dev/kvm && echo $(ARCH)),$(shell uname -m))
@@ -101,11 +108,3 @@ qemu: ovmf/ovmf-code-$(ARCH).fd
 	qemu-system-$(ARCH) $(QEMUFLAGS) \
 		-drive format=raw,file=menix.img,if=none,id=disk \
 		-device nvme,serial=FAKE_SERIAL_ID,drive=disk
-
-ovmf/ovmf-code-$(ARCH).fd:
-	mkdir -p ovmf
-	curl -Lo $@ https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-$(ARCH).fd
-	case "$(ARCH)" in \
-		aarch64) dd if=/dev/zero of=$@ bs=1 count=0 seek=67108864 2>/dev/null;; \
-		riscv64) dd if=/dev/zero of=$@ bs=1 count=0 seek=33554432 2>/dev/null;; \
-	esac
