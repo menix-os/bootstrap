@@ -21,7 +21,6 @@ configure() {
         -Dpkg_prefix=usr \
         -Dselinux=disabled \
         -Dshell="/bin/sh" \
-        -Dsysvinit=false \
         -Dzsh-completions=false
 }
 

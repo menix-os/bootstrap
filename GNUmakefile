@@ -21,6 +21,17 @@ clean:
 # Jinx packages
 # -------------
 
+jinx:
+	@git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
+	@git -C jinx-repo checkout ba224a99377554d60e95a5279717a5cda5a09e45
+	@mv jinx-repo/jinx ./
+	@rm -rf jinx-repo
+
+build-$(ARCH)/jinx-config:
+	@mkdir -p build-$(ARCH)
+	@ARCH=$(ARCH) envsubst '$${ARCH}' < support/jinx-config > build-$(ARCH)/jinx-config
+	@cp support/jinx-parameters build-$(ARCH)/jinx-parameters
+
 # Build all packages
 .PHONY: install-all
 install-all: jinx build-$(ARCH)/jinx-config
@@ -33,37 +44,31 @@ install-minimal: jinx build-$(ARCH)/jinx-config
 	@cd build-$(ARCH) && ../jinx build-if-needed minimal
 	@cd build-$(ARCH) && ../jinx install sysroot minimal
 
-.PHONY: remake-kernel
-remake-kernel: jinx build-$(ARCH)/jinx-config
-	@cd build-$(ARCH) && ../jinx build menix menix-debug
-	@cd build-$(ARCH) && ../jinx reinstall sysroot menix menix-debug
-
-jinx:
-	@git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	@git -C jinx-repo checkout 6a85560832f845a04d59f32acd3a3eb3a6f309c5
-	@mv jinx-repo/jinx ./
-	@rm -rf jinx-repo
-
-build-$(ARCH)/jinx-config:
-	@mkdir -p build-$(ARCH)
-	@ARCH=$(ARCH) envsubst '$${ARCH}' < support/jinx-config > build-$(ARCH)/jinx-config
-	@cp support/jinx-parameters build-$(ARCH)/jinx-parameters
-
 # --------------
 # Image creation
 # --------------
 
-# Build a disk image for direct use
-.PHONY: image
-image: jinx build-$(ARCH)/jinx-config menix.img
-	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh build-$(ARCH)/sysroot menix.img $(ARCH)
-
-menix.img:
+build-$(ARCH)/menix.img:
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 1G 100M
 
-# --------------
-# QEMU Emulation
-# --------------
+# Build a disk image for direct use
+.PHONY: image
+image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img
+	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh \
+		build-$(ARCH)/sysroot \
+		build-$(ARCH)/initrd \
+		build-$(ARCH)/menix.img \
+		$(ARCH)
+
+# -----------
+# Development
+# -----------
+
+# Shortcut to build and reinstall the kernel
+.PHONY: remake-kernel
+remake-kernel: jinx build-$(ARCH)/jinx-config
+	@cd build-$(ARCH) && ../jinx build menix
+	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
 
 ovmf/ovmf-code-$(ARCH).fd:
 	mkdir -p ovmf
@@ -104,7 +109,7 @@ override QEMUFLAGS += \
 endif
 
 .PHONY: qemu
-qemu: ovmf/ovmf-code-$(ARCH).fd
+qemu: ovmf/ovmf-code-$(ARCH).fd build-$(ARCH)/menix.img
 	qemu-system-$(ARCH) $(QEMUFLAGS) \
-		-drive format=raw,file=menix.img,if=none,id=disk \
+		-drive format=raw,file=build-$(ARCH)/menix.img,if=none,id=disk \
 		-device nvme,serial=FAKE_SERIAL_ID,drive=disk

@@ -3,8 +3,9 @@
 set -e
 
 SYSTEM_ROOT="$1"
-OUTPUT_IMAGE="$2"
-ARCH="$3"
+INITRD_PATH="$2"
+OUTPUT_IMAGE="$3"
+ARCH="$4"
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 ROOT_DIR="$(realpath "$SCRIPT_DIR/..")"
@@ -38,15 +39,12 @@ sudo mount -o uid=1000,gid=1000 "$ESP_PART" "$tmpdir/root/boot"
 # Copy system root
 sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
-# Install kernels
+# Install kernel
 sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/root/boot/menix"
-sudo cp -f "$BUILD_DIR/sysroot/usr/share/menix-debug/menix" "$tmpdir/root/boot/menix-debug"
 
-# Install modules
-sudo mkdir -p "$tmpdir/root/boot/modules"
-sudo mkdir -p "$tmpdir/root/boot/modules-debug"
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix/modules/"*.kso "$tmpdir/root/boot/modules/"
-sudo cp -f "$BUILD_DIR/sysroot/usr/share/menix-debug/modules/"*.kso "$tmpdir/root/boot/modules-debug/"
+# Build and install initrd
+$SCRIPT_DIR/make-initrd.sh $SYSTEM_ROOT $BUILD_DIR/initrd
+sudo cp "$BUILD_DIR/initrd" "$tmpdir/root/boot/initrd"
 
 # Install bootloader
 sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"

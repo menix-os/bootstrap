@@ -1,8 +1,7 @@
-diff --git openrc-clean/meson.build openrc-workdir/meson.build
-index fef9dcb..4a24432 100644
+diff -urN --no-dereference openrc-clean/meson.build openrc-workdir/meson.build
 --- openrc-clean/meson.build
 +++ openrc-workdir/meson.build
-@@ -48,7 +48,11 @@ endif
+@@ -48,7 +48,11 @@
  
  if os != 'Linux'
    cap_dep = []
@@ -15,7 +14,7 @@ index fef9dcb..4a24432 100644
  else
    cap_dep = dependency('libcap', version: '>=2.33')
    kvm_dep = []
-@@ -127,7 +131,7 @@ else
+@@ -127,7 +131,7 @@
    cc_debug_flags = []
  endif
  
@@ -24,11 +23,10 @@ index fef9dcb..4a24432 100644
    cc_os_flags = ['-D_DEFAULT_SOURCE']
  elif os == 'FreeBSD'
    cc_os_flags = ['-D_BSD_SOURCE']
-diff --git openrc-clean/meson_options.txt openrc-workdir/meson_options.txt
-index a814c18..27caaa6 100644
+diff -urN --no-dereference openrc-clean/meson_options.txt openrc-workdir/meson_options.txt
 --- openrc-clean/meson_options.txt
 +++ openrc-workdir/meson_options.txt
-@@ -10,7 +10,7 @@ option('newnet', type : 'boolean',
+@@ -10,7 +10,7 @@
    description : 'build and install our networking scripts')
  option('os', type : 'combo',
    choices :
@@ -37,8 +35,7 @@ index a814c18..27caaa6 100644
    description : 'Operating System (autodetected if not specified)')
  option('pam', type : 'boolean',
    description : 'enable PAM support')
-diff --git openrc-clean/src/fstabinfo/fstabinfo.c openrc-workdir/src/fstabinfo/fstabinfo.c
-index 43ee822..ed1c796 100644
+diff -urN --no-dereference openrc-clean/src/fstabinfo/fstabinfo.c openrc-workdir/src/fstabinfo/fstabinfo.c
 --- openrc-clean/src/fstabinfo/fstabinfo.c
 +++ openrc-workdir/src/fstabinfo/fstabinfo.c
 @@ -28,7 +28,7 @@
@@ -50,8 +47,7 @@ index 43ee822..ed1c796 100644
  #  define HAVE_GETMNTENT
  #  include <mntent.h>
  
-diff --git openrc-clean/src/librc/librc-daemon.c openrc-workdir/src/librc/librc-daemon.c
-index c70963e..3c09a25 100644
+diff -urN --no-dereference openrc-clean/src/librc/librc-daemon.c openrc-workdir/src/librc/librc-daemon.c
 --- openrc-clean/src/librc/librc-daemon.c
 +++ openrc-workdir/src/librc/librc-daemon.c
 @@ -32,7 +32,7 @@
@@ -63,8 +59,7 @@ index c70963e..3c09a25 100644
  static bool
  pid_is_exec(pid_t pid, const char *exec)
  {
-diff --git openrc-clean/src/mountinfo/mountinfo.c openrc-workdir/src/mountinfo/mountinfo.c
-index 001fe08..f225737 100644
+diff -urN --no-dereference openrc-clean/src/mountinfo/mountinfo.c openrc-workdir/src/mountinfo/mountinfo.c
 --- openrc-clean/src/mountinfo/mountinfo.c
 +++ openrc-workdir/src/mountinfo/mountinfo.c
 @@ -26,7 +26,7 @@
@@ -76,7 +71,7 @@ index 001fe08..f225737 100644
  #  include <mntent.h>
  #endif
  
-@@ -287,7 +287,7 @@ find_mounts(struct args *args)
+@@ -287,7 +287,7 @@
  }
  
  #elif defined(__linux__) || (defined(__FreeBSD_kernel__) && \
@@ -85,8 +80,7 @@ index 001fe08..f225737 100644
  static struct mntent *
  getmntfile(const char *file)
  {
-diff --git openrc-clean/src/openrc/rc-logger.c openrc-workdir/src/openrc/rc-logger.c
-index 128c79d..2c022cc 100644
+diff -urN --no-dereference openrc-clean/src/openrc/rc-logger.c openrc-workdir/src/openrc/rc-logger.c
 --- openrc-clean/src/openrc/rc-logger.c
 +++ openrc-workdir/src/openrc/rc-logger.c
 @@ -32,7 +32,7 @@
@@ -98,8 +92,16 @@ index 128c79d..2c022cc 100644
  #  include <pty.h>
  #elif defined(__NetBSD__) || defined(__OpenBSD__)
  #  include <util.h>
-diff --git openrc-clean/src/openrc-run/openrc-run.c openrc-workdir/src/openrc-run/openrc-run.c
-index 3157069..c09a18a 100644
+diff -urN --no-dereference openrc-clean/src/openrc-init/meson.build openrc-workdir/src/openrc-init/meson.build
+--- openrc-clean/src/openrc-init/meson.build
++++ openrc-workdir/src/openrc-init/meson.build
+@@ -1,4 +1,4 @@
+-if os == 'Linux'
++if os == 'Linux' or os == 'Menix'
+   executable('openrc-init',
+     ['openrc-init.c', plugin_c, wtmp_c, version_h],
+   c_args : cc_selinux_flags,
+diff -urN --no-dereference openrc-clean/src/openrc-run/openrc-run.c openrc-workdir/src/openrc-run/openrc-run.c
 --- openrc-clean/src/openrc-run/openrc-run.c
 +++ openrc-workdir/src/openrc-run/openrc-run.c
 @@ -37,7 +37,7 @@
@@ -111,11 +113,19 @@ index 3157069..c09a18a 100644
  #  include <pty.h>
  #elif defined(__NetBSD__) || defined(__OpenBSD__)
  #  include <util.h>
-diff --git openrc-clean/src/shared/misc.c openrc-workdir/src/shared/misc.c
-index e6d477d..108c537 100644
+diff -urN --no-dereference openrc-clean/src/openrc-shutdown/meson.build openrc-workdir/src/openrc-shutdown/meson.build
+--- openrc-clean/src/openrc-shutdown/meson.build
++++ openrc-workdir/src/openrc-shutdown/meson.build
+@@ -1,4 +1,4 @@
+-if os == 'Linux'
++if os == 'Linux' or os == 'Menix'
+   executable('openrc-shutdown',
+     ['openrc-shutdown.c', 'broadcast.c', 'sysvinit.c', misc_c,
+ 		usage_c, wtmp_c, version_h],
+diff -urN --no-dereference openrc-clean/src/shared/misc.c openrc-workdir/src/shared/misc.c
 --- openrc-clean/src/shared/misc.c
 +++ openrc-workdir/src/shared/misc.c
-@@ -605,7 +605,7 @@ cloexec_fds_from(int first)
+@@ -605,7 +605,7 @@
  {
  	int i;
  	if (close_range(first, UINT_MAX, CLOSE_RANGE_CLOEXEC) < 0) {
@@ -123,4 +133,15 @@ index e6d477d..108c537 100644
 +		for (i = sysconf(_SC_OPEN_MAX) - 1; i >= first; --i)
  			fcntl(i, F_SETFD, FD_CLOEXEC);
  	}
+ }
+diff -urN --no-dereference openrc-clean/src/shared/wtmp.c openrc-workdir/src/shared/wtmp.c
+--- openrc-clean/src/shared/wtmp.c
++++ openrc-workdir/src/shared/wtmp.c
+@@ -45,5 +45,7 @@
+ 	if (uname(&uname_buf) == 0)
+ 		strncpy(utmp.ut_host, uname_buf.release, sizeof(utmp.ut_host));
+ 
++#ifndef __menix__
+ 	updwtmp(WTMP_FILE, &utmp);
++#endif
  }
