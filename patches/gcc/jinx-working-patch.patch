@@ -107,7 +107,7 @@ new file mode 100644
 index 0000000..4fb747d
 --- /dev/null
 +++ gcc-workdir/gcc/config/menix.h
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,13 @@
 +#undef TARGET_MENIX
 +#define TARGET_MENIX 1
 +
@@ -115,6 +115,7 @@ index 0000000..4fb747d
 +#define GNU_USER_TARGET_OS_CPP_BUILTINS() \
 +  do {                                    \
 +    builtin_define ("__menix__");         \
++    builtin_define ("__mlibc__");         \
 +    builtin_define ("__unix__");          \
 +    builtin_assert ("system=menix");      \
 +    builtin_assert ("system=unix");       \
