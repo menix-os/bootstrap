@@ -51,6 +51,25 @@ post_package_strip() {
 #     done
 # }
 
+checked_subst() {
+    tmpfile="$2".checked_subst
+    sed -z -E -e "$1" "$2" >"$tmpfile"
+    if cmp -s "$2" "$tmpfile"; then
+        rm -f "$2".checked_subst
+        if [ "$3" = no_die ]; then
+            return 1
+        else
+            die "*** substitution '$1' failed for file '$2'"
+        fi
+    fi
+
+    #diff --color=auto -ur "$2" "$tmpfile" || true
+
+    touch -r "$2" "$2".checked_subst
+    chmod --reference="$2" "$2".checked_subst
+    mv -f "$2".checked_subst "$2"
+}
+
 autotools_recursive_regen() {
     for f in $(grep -rl 'GNU config.sub ($timestamp)'); do
         mv "$f" "$f".reference
