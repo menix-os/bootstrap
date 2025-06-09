@@ -1,0 +1,32 @@
+#! /bin/sh
+
+name=kmscon
+version=9.0.0
+revision=1
+tarball_url="https://github.com/Aetf/kmscon/releases/download/v${version}/kmscon-${version}.tar.xz"
+tarball_blake2b="a44a4b3739b1ed4a597713ca2ef7adb33f1ab7130322a419ee88517addfbf0edf01ef59f06c5626e95a7bc1708cf4cebe49d5853558aa3fedb3aa9c7c28a7dd7"
+imagedeps="build-essential"
+hostdeps="gcc pkg-config"
+deps="core-libs libxkbcommon libdrm libtsm systemd"
+
+configure() {
+    meson_configure \
+		--native-file \
+		"${base_dir}/support/meson.native-file" \
+        -Dsession_dummy=enabled \
+		-Dsession_terminal=enabled \
+		-Dmulti_seat=disabled
+}
+
+build() {
+    meson compile -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+
+	mkdir -pv ${dest_dir}/etc/
+	cp -rv ${base_dir}/support/kmscon.conf ${dest_dir}/etc/
+
+    post_package_strip
+}
