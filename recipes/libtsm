@@ -1,0 +1,23 @@
+#! /bin/sh
+
+name=libtsm
+version=4.0.2
+revision=1
+tarball_url="https://github.com/Aetf/libtsm/archive/refs/tags/v${version}.tar.gz"
+tarball_blake2b="4d81d5a19003ca1487e85bcea22604990e88770484a08a072105a2f193a0c7aa40832c9a81197c0fa26acc9c8d39d1ab796d4b92fa6af790f5ef803b8c68af05"
+hostdeps="gcc pkg-config cmake"
+deps="core-libs libxkbcommon"
+
+configure() {
+    cmake_configure
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}
