@@ -1,0 +1,240 @@
+diff -urN --no-dereference util-linux-clean/configure.ac util-linux-workdir/configure.ac
+--- util-linux-clean/configure.ac
++++ util-linux-workdir/configure.ac
+@@ -1394,7 +1394,7 @@
+   [], [UL_DEFAULT_ENABLE([mount], [check])]
+ )
+ UL_BUILD_INIT([mount])
+-UL_REQUIRES_LINUX([mount])
++dnl UL_REQUIRES_LINUX([mount])
+ UL_REQUIRES_BUILD([mount], [libmount])
+ AM_CONDITIONAL([BUILD_MOUNT], [test "x$build_mount" = xyes])
+ 
+@@ -1404,7 +1404,7 @@
+   [], [UL_DEFAULT_ENABLE([losetup], [check])]
+ )
+ UL_BUILD_INIT([losetup])
+-UL_REQUIRES_LINUX([losetup])
++dnl UL_REQUIRES_LINUX([losetup])
+ UL_REQUIRES_BUILD([losetup], [libsmartcols])
+ AM_CONDITIONAL([BUILD_LOSETUP], [test "x$build_losetup" = xyes])
+ 
+@@ -1431,7 +1431,7 @@
+   [], [UL_DEFAULT_ENABLE([partx], [check])]
+ )
+ UL_BUILD_INIT([partx])
+-UL_REQUIRES_LINUX([partx])
++dnl UL_REQUIRES_LINUX([partx])
+ UL_REQUIRES_BUILD([partx], [libblkid])
+ UL_REQUIRES_BUILD([partx], [libsmartcols])
+ AM_CONDITIONAL([BUILD_PARTX], [test "x$build_partx" = xyes])
+@@ -1506,7 +1506,7 @@
+   [], [UL_DEFAULT_ENABLE([fallocate], [check])]
+ )
+ UL_BUILD_INIT([fallocate])
+-UL_REQUIRES_LINUX([fallocate])
++dnl UL_REQUIRES_LINUX([fallocate])
+ UL_REQUIRES_SYSCALL_CHECK([fallocate], [UL_CHECK_SYSCALL([fallocate])])
+ AM_CONDITIONAL([BUILD_FALLOCATE], [test "x$build_fallocate" = xyes])
+ 
+@@ -1662,7 +1662,7 @@
+   [], [UL_DEFAULT_ENABLE([eject], [check])]
+ )
+ UL_BUILD_INIT([eject])
+-UL_REQUIRES_LINUX([eject])
++dnl UL_REQUIRES_LINUX([eject])
+ UL_REQUIRES_BUILD([eject], [libmount])
+ AM_CONDITIONAL([BUILD_EJECT], [test "x$build_eject" = xyes])
+ 
+@@ -1802,7 +1802,7 @@
+   [], [UL_DEFAULT_ENABLE([fstrim], [check])]
+ )
+ UL_BUILD_INIT([fstrim])
+-UL_REQUIRES_LINUX([fstrim])
++dnl UL_REQUIRES_LINUX([fstrim])
+ UL_REQUIRES_BUILD([fstrim], [libmount])
+ AM_CONDITIONAL([BUILD_FSTRIM], [test "x$build_fstrim" = xyes])
+ 
+@@ -1812,9 +1812,9 @@
+   [], [UL_DEFAULT_ENABLE([swapon], [check])]
+ )
+ UL_BUILD_INIT([swapon])
+-UL_REQUIRES_LINUX([swapon])
+-UL_REQUIRES_SYSCALL_CHECK([swapon], [UL_CHECK_SYSCALL([swapon])], [swapon])
+-UL_REQUIRES_SYSCALL_CHECK([swapon], [UL_CHECK_SYSCALL([swapoff])], [swapoff])
++dnl UL_REQUIRES_LINUX([swapon])
++dnl UL_REQUIRES_SYSCALL_CHECK([swapon], [UL_CHECK_SYSCALL([swapon])], [swapon])
++dnl UL_REQUIRES_SYSCALL_CHECK([swapon], [UL_CHECK_SYSCALL([swapoff])], [swapoff])
+ UL_REQUIRES_BUILD([swapon], [libblkid])
+ UL_REQUIRES_BUILD([swapon], [libmount])
+ UL_REQUIRES_BUILD([swapon], [libsmartcols])
+@@ -1970,7 +1970,7 @@
+ 
+ 
+ UL_BUILD_INIT([blockdev], [check])
+-UL_REQUIRES_LINUX([blockdev])
++dnl UL_REQUIRES_LINUX([blockdev])
+ AM_CONDITIONAL([BUILD_BLOCKDEV], [test "x$build_blockdev" = xyes])
+ 
+ 
+@@ -2039,7 +2039,7 @@
+   [], [UL_DEFAULT_ENABLE([lsmem], [check])]
+ )
+ UL_BUILD_INIT([lsmem])
+-UL_REQUIRES_LINUX([lsmem])
++dnl UL_REQUIRES_LINUX([lsmem])
+ UL_REQUIRES_BUILD([lsmem], [libsmartcols])
+ AM_CONDITIONAL([BUILD_LSMEM], [test "x$build_lsmem" = xyes])
+ 
+@@ -2049,7 +2049,7 @@
+   [], [UL_DEFAULT_ENABLE([chmem], [check])]
+ )
+ UL_BUILD_INIT([chmem])
+-UL_REQUIRES_LINUX([chmem])
++dnl UL_REQUIRES_LINUX([chmem])
+ AM_CONDITIONAL([BUILD_CHMEM], [test "x$build_chmem" = xyes])
+ 
+ 
+@@ -2143,7 +2143,7 @@
+ AM_CONDITIONAL([BUILD_READPROFILE], [test "x$build_readprofile" = xyes])
+ 
+ UL_BUILD_INIT([dmesg], [check])
+-UL_REQUIRES_LINUX([dmesg])
++dnl UL_REQUIRES_LINUX([dmesg])
+ AM_CONDITIONAL([BUILD_DMESG], [test "x$build_dmesg" = xyes])
+ 
+ UL_BUILD_INIT([ctrlaltdel], [check])
+@@ -2468,7 +2468,7 @@
+ )
+ UL_BUILD_INIT([more])
+ UL_REQUIRES_HAVE([more], [ncursesw, ncurses], [ncursesw or ncurses libraries])
+-UL_REQUIRES_LINUX([more])
++dnl UL_REQUIRES_LINUX([more])
+ AM_CONDITIONAL([BUILD_MORE], [test "x$build_more" = xyes])
+ 
+ 
+diff -urN --no-dereference util-linux-clean/disk-utils/blockdev.c util-linux-workdir/disk-utils/blockdev.c
+--- util-linux-clean/disk-utils/blockdev.c
++++ util-linux-workdir/disk-utils/blockdev.c
+@@ -17,6 +17,7 @@
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/ioctl.h>
++#include <linux/fs.h>
+ #include <errno.h>
+ #ifdef HAVE_LINUX_BLKZONED_H
+ #include <linux/blkzoned.h>
+diff -urN --no-dereference util-linux-clean/lib/Makemodule.am util-linux-workdir/lib/Makemodule.am
+--- util-linux-clean/lib/Makemodule.am
++++ util-linux-workdir/lib/Makemodule.am
+@@ -41,11 +41,11 @@
+ 	lib/ttyutils.c \
+ 	lib/xxhash.c
+ 
+-if LINUX
++#if LINUX
+ libcommon_la_SOURCES += \
+ 	lib/linux_version.c \
+ 	lib/loopdev.c
+-endif
++#endif
+ 
+ if !HAVE_LANGINFO_H
+ libcommon_la_SOURCES += lib/langinfo.c
+diff -urN --no-dereference util-linux-clean/libblkid/src/Makemodule.am util-linux-workdir/libblkid/src/Makemodule.am
+--- util-linux-clean/libblkid/src/Makemodule.am
++++ util-linux-workdir/libblkid/src/Makemodule.am
+@@ -107,7 +107,7 @@
+ 	libblkid/src/topology/topology.c \
+ 	libblkid/src/topology/topology.h
+ 
+-if LINUX
++#if LINUX
+ libblkid_la_SOURCES += \
+ 	libblkid/src/topology/dm.c \
+ 	libblkid/src/topology/evms.c \
+@@ -115,7 +115,7 @@
+ 	libblkid/src/topology/lvm.c \
+ 	libblkid/src/topology/md.c \
+ 	libblkid/src/topology/sysfs.c
+-endif
++#endif
+ 
+ libblkid_la_LIBADD = libcommon.la
+ if HAVE_ECONF
+diff -urN --no-dereference util-linux-clean/libblkid/src/topology/ioctl.c util-linux-workdir/libblkid/src/topology/ioctl.c
+--- util-linux-clean/libblkid/src/topology/ioctl.c
++++ util-linux-workdir/libblkid/src/topology/ioctl.c
+@@ -16,6 +16,8 @@
+ #include <unistd.h>
+ #include <errno.h>
+ 
++#include <linux/fs.h>
++
+ #include "topology.h"
+ 
+ /*
+diff -urN --no-dereference util-linux-clean/libmount/src/Makemodule.am util-linux-workdir/libmount/src/Makemodule.am
+--- util-linux-clean/libmount/src/Makemodule.am
++++ util-linux-workdir/libmount/src/Makemodule.am
+@@ -25,7 +25,7 @@
+ 	libmount/src/utils.c \
+ 	libmount/src/version.c
+ 
+-if LINUX
++# if LINUX
+ libmount_la_SOURCES += \
+ 	libmount/src/context.c \
+ 	libmount/src/context_mount.c \
+@@ -46,7 +46,7 @@
+ libmount_la_SOURCES += libmount/src/btrfs.c
+ endif
+ 
+-endif # LINUX
++# endif # LINUX
+ 
+ 
+ libmount_la_LIBADD = \
+@@ -55,6 +55,8 @@
+ 	$(SELINUX_LIBS) \
+ 	$(REALTIME_LIBS)
+ 
++libmount_la_LIBADD += -lintl
++
+ if HAVE_CRYPTSETUP
+ if CRYPTSETUP_VIA_DLOPEN
+ libmount_la_LIBADD += -ldl
+diff -urN --no-dereference util-linux-clean/libmount/src/hook_mount_legacy.c util-linux-workdir/libmount/src/hook_mount_legacy.c
+--- util-linux-clean/libmount/src/hook_mount_legacy.c
++++ util-linux-workdir/libmount/src/hook_mount_legacy.c
+@@ -15,6 +15,7 @@
+  * Please, see the comment in libmount/src/hooks.c to understand how hooks work.
+  */
+ 
++#include <sys/mount.h>
+ #include "mountP.h"
+ 
+ /* mount(2) flags for additional propagation changes etc. */
+diff -urN --no-dereference util-linux-clean/libmount/src/hook_subdir.c util-linux-workdir/libmount/src/hook_subdir.c
+--- util-linux-clean/libmount/src/hook_subdir.c
++++ util-linux-workdir/libmount/src/hook_subdir.c
+@@ -16,6 +16,7 @@
+  * Please, see the comment in libmount/src/hooks.c to understand how hooks work.
+  */
+ #include <sched.h>
++#include <sys/mount.h>
+ 
+ #include "mountP.h"
+ #include "fileutils.h"
+diff -urN --no-dereference util-linux-clean/misc-utils/lsblk.c util-linux-workdir/misc-utils/lsblk.c
+--- util-linux-clean/misc-utils/lsblk.c
++++ util-linux-workdir/misc-utils/lsblk.c
+@@ -39,6 +39,8 @@
+ 
+ #include <blkid.h>
+ 
++#include <linux/fs.h>
++
+ #include "c.h"
+ #include "pathnames.h"
+ #include "blkdev.h"
