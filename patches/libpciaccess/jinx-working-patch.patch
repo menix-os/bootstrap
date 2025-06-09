@@ -1,0 +1,46 @@
+diff -urN --no-dereference libpciaccess-clean/src/common_init.c libpciaccess-workdir/src/common_init.c
+--- libpciaccess-clean/src/common_init.c
++++ libpciaccess-workdir/src/common_init.c
+@@ -55,7 +55,7 @@
+ {
+     int err = ENOSYS;
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__menix__)
+     err = pci_system_linux_sysfs_create();
+ #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+     err = pci_system_freebsd_create();
+diff -urN --no-dereference libpciaccess-clean/src/common_interface.c libpciaccess-workdir/src/common_interface.c
+--- libpciaccess-clean/src/common_interface.c
++++ libpciaccess-workdir/src/common_interface.c
+@@ -90,12 +90,16 @@
+ 
+ #else
+ 
+-#include <sys/endian.h>
++#ifndef __mlibc__
++#include <sys/endan.h>
++#else
++#include <endian.h>
++#endif
+ 
+ #define HTOLE_16(x)	htole16(x)
+ #define HTOLE_32(x)	htole32(x)
+ 
+-#if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__)
++#if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__mlibc__)
+ #define LETOH_16(x)	le16toh(x)
+ #define LETOH_32(x)	le32toh(x)
+ #else
+diff -urN --no-dereference libpciaccess-clean/src/meson.build libpciaccess-workdir/src/meson.build
+--- libpciaccess-clean/src/meson.build
++++ libpciaccess-workdir/src/meson.build
+@@ -20,7 +20,7 @@
+ 
+ host = host_machine.system()
+ _pci_access_host_files = []
+-if host == 'linux'
++if host == 'linux' or host == 'menix'
+   _pci_access_host_files += ['linux_sysfs.c', 'linux_devmem.c', 'common_vgaarb.c']
+ elif host == 'freebsd'
+   _pci_access_host_files += ['freebsd_pci.c', 'common_vgaarb_stub.c']
