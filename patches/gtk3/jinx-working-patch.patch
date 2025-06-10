@@ -1,0 +1,32 @@
+diff -urN --no-dereference gtk3-clean/gdk/wayland/gdkdisplay-wayland.c gtk3-workdir/gdk/wayland/gdkdisplay-wayland.c
+--- gtk3-clean/gdk/wayland/gdkdisplay-wayland.c
++++ gtk3-workdir/gdk/wayland/gdkdisplay-wayland.c
+@@ -28,7 +28,9 @@
+ #endif
+ 
+ #include <sys/mman.h>
++#ifdef __linux__
+ #include <sys/syscall.h>
++#endif
+ 
+ #include <glib.h>
+ #include "gdkwayland.h"
+@@ -1306,13 +1308,16 @@
+   static gboolean force_shm_open = FALSE;
+   int ret = -1;
+ 
+-#if !defined (__NR_memfd_create)
++#ifdef __mlibc__
++  ret = memfd_create("gdk-wayland", MFD_CLOEXEC);
++#endif
++#if !defined (__NR_memfd_create) && !defined(__mlibc__)
+   force_shm_open = TRUE;
+ #endif
+ 
+   do
+     {
+-#if defined (__NR_memfd_create)
++#if defined (__NR_memfd_create) && !defined(__mlibc__)
+       if (!force_shm_open)
+         {
+           ret = syscall (__NR_memfd_create, "gdk-wayland", MFD_CLOEXEC);
