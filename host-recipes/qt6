@@ -11,6 +11,7 @@ hostdeps="cmake"
 configure() {
 	cmake  \
         "${source_dir}/" \
+        s-DCMAKE_INSTALL_PREFIX=/usr \
         -DQT_BUILD_EXAMPLES=OFF \
         -DQT_BUILD_TESTS=OFF \
         -DFEATURE_xkbcommon=ON \
