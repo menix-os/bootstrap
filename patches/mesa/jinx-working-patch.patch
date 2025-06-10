@@ -1,3 +1,15 @@
+diff -urN --no-dereference mesa-clean/include/drm-uapi/dma-buf.h mesa-workdir/include/drm-uapi/dma-buf.h
+--- mesa-clean/include/drm-uapi/dma-buf.h
++++ mesa-workdir/include/drm-uapi/dma-buf.h
+@@ -20,7 +20,7 @@
+ #ifndef _DMA_BUF_UAPI_H_
+ #define _DMA_BUF_UAPI_H_
+ 
+-#if defined(__linux__) || defined(__managarm__)
++#if defined(__linux__) || defined(__managarm__) || defined(__menix__)
+ 
+ #include <linux/types.h>
+ 
 diff -urN --no-dereference mesa-clean/include/drm-uapi/drm.h mesa-workdir/include/drm-uapi/drm.h
 --- mesa-clean/include/drm-uapi/drm.h
 +++ mesa-workdir/include/drm-uapi/drm.h
