@@ -3,7 +3,7 @@
 name=gcc
 version=14.2.0
 tarball_url="https://ftpmirror.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
-tarball_blake2b="87baf2a06dfa75d8fb6cd62c747ef1f57d3b9bbbe33a360d9ed3de4b4dbeaa8d920504c67e409bd9863414202c14fd854b46108e984418171205119216d03d3b"
+tarball_blake2b="e79bfd539e942f171f7ea20ef8be761156e8c6865cc16363b37d98e3766de1341f1d347d89bbb5bdb02c929b9050c51d084ffd91b9f316f7883f6e6314c49aed"
 hostdeps="automake autoconf-2.69 libtool pkg-config"
 imagedeps="git"
 allow_network="yes"
