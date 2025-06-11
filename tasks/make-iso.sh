@@ -20,15 +20,14 @@ trap 'cleanup' EXIT
 # Setup iso root
 tmpdir=$(sudo mktemp -d)
 sudo mkdir -p "$tmpdir"
-sudo mkdir -p "$tmpdir/boot/limine"
 sudo mkdir -p "$tmpdir/EFI/BOOT"
 
 # Install kernel
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/boot/menix"
+sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/menix"
 
 # Build and install initrd
 $SCRIPT_DIR/make-initrd.sh $SYSTEM_ROOT $BUILD_DIR/initrd
-sudo cp "$BUILD_DIR/initrd" "$tmpdir/boot/initrd"
+sudo cp "$BUILD_DIR/initrd" "$tmpdir/initrd"
 
 # Install bootloader
 efi_filename=""
@@ -44,9 +43,9 @@ case "${ARCH}" in
 esac
 
 sudo cp "$BUILD_DIR/sysroot/usr/share/limine/${efi_filename}" "$tmpdir/EFI/BOOT/"
-sudo cp "$BUILD_DIR/sysroot/usr/share/limine/limine-uefi-cd.bin" "$tmpdir/boot/limine/"
-sudo cp "$ROOT_DIR/support/limine.conf" "$tmpdir/boot/limine/"
+sudo cp "$BUILD_DIR/sysroot/usr/share/limine/limine-uefi-cd.bin" "$tmpdir/"
+sudo cp "$ROOT_DIR/support/limine.conf" "$tmpdir/"
 
 # Build the ISO file
-sudo xorriso -as mkisofs -R -r -J --efi-boot boot/limine/limine-uefi-cd.bin \
+sudo xorriso -as mkisofs -R -r -J --efi-boot limine-uefi-cd.bin \
     -efi-boot-part --efi-boot-image "$tmpdir" -o "$OUTPUT_IMAGE"
