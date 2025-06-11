@@ -2,11 +2,11 @@
 
 name=qtbase6
 version=6.8.1
-revision=1
+revision=2
 git_url="https://code.qt.io/qt/qtbase.git"
 commit=0db4321f2f13c6870283f3fcc0f1a462fd7cf663
 hostdeps="gcc pkg-config cmake qt6"
-deps="core-libs pcre2 sqlite glib2 systemd icu mesa zlib zstd pcre2 double-conversion libxkbcommon libinput libevdev mtdev freetype2 fontconfig libpng harfbuzz libx11 libjpeg-turbo libsm libice libdrm libxcb xcb-util-image xcb-util-keysyms xcb-util-wm xcb-util-render-util xcb-util-cursor openssl wayland wayland-protocols libxcursor libxinerama libxrender libxi brotli dbus at-spi2-core"
+deps="core-libs pcre2 sqlite glib2 systemd icu mesa zlib zstd pcre2 double-conversion libxkbcommon libinput libevdev mtdev freetype2 fontconfig libpng harfbuzz libx11 libjpeg-turbo libsm libice libdrm libxcb xcb-util-image xcb-util-keysyms xcb-util-wm xcb-util-renderutil xcb-util-cursor openssl wayland wayland-protocols libxcursor libxinerama libxrender libxi brotli dbus at-spi2-core"
 
 configure() {
     cmake_configure \
