@@ -1,0 +1,27 @@
+#! /bin/sh
+
+name=qtimageformats6
+version=6.8.1
+revision=1
+git_url="https://code.qt.io/qt/qtimageformats.git"
+commit=0d0f0a08bc3ae8caa670499c266c35f2e9c41894
+hostdeps="gcc pkg-config cmake qt6"
+deps="core-libs qtbase6 mesa libjpeg-turbo libwebp libtiff zlib"
+
+configure() {
+    cmake_configure \
+        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+        -DINPUT_webp=system \
+        -DINPUT_tiff=system \
+		-Wno-dev
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}
