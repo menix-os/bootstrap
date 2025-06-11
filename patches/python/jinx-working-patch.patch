@@ -1,0 +1,109 @@
+diff -urN --no-dereference python-clean/Modules/fcntlmodule.c python-workdir/Modules/fcntlmodule.c
+--- python-clean/Modules/fcntlmodule.c
++++ python-workdir/Modules/fcntlmodule.c
+@@ -591,6 +591,11 @@
+ #endif
+ #endif
+ 
++#ifdef __mlibc__
++#define F_OWNER_PID 1
++#define F_OWNER_PGRP 2
++#endif
++
+ #ifdef F_GETOWN_EX
+     // since Linux 2.6.32
+     if (PyModule_AddIntMacro(m, F_GETOWN_EX)) return -1;
+diff -urN --no-dereference python-clean/Modules/timemodule.c python-workdir/Modules/timemodule.c
+--- python-clean/Modules/timemodule.c
++++ python-workdir/Modules/timemodule.c
+@@ -185,7 +185,7 @@
+ static int
+ time_clockid_converter(PyObject *obj, clockid_t *p)
+ {
+-#ifdef _AIX
++#if defined(_AIX)
+     long long clk_id = PyLong_AsLongLong(obj);
+ #elif defined(__DragonFly__)
+     long clk_id = PyLong_AsLong(obj);
+diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python-workdir/Objects/mimalloc/prim/unix/prim.c
+--- python-clean/Objects/mimalloc/prim/unix/prim.c
++++ python-workdir/Objects/mimalloc/prim/unix/prim.c
+@@ -29,6 +29,10 @@
+ #include <unistd.h>    // sysconf
+ #include <fcntl.h>     // open, close, read, access
+ 
++#if defined(__menix__) && !defined MADV_DONTNEED
++  #define MADV_DONTNEED 1
++#endif
++
+ #if defined(__linux__)
+   #include <features.h>
+   #include <fcntl.h>
+@@ -156,6 +160,9 @@
+ static int unix_madvise(void* addr, size_t size, int advice) {
+   #if defined(__sun)
+   return madvise((caddr_t)addr, size, advice);  // Solaris needs cast (issue #520)
++  #elif defined(__ironclad__)
++  (void)addr; (void)size; (void)advice;
++  return 0;
+   #else
+   return madvise(addr, size, advice);
+   #endif
+diff -urN --no-dereference python-clean/configure python-workdir/configure
+--- python-clean/configure
++++ python-workdir/configure
+@@ -4067,6 +4067,9 @@
+ 	*-*-wasi*)
+ 	    ac_sys_system=WASI
+ 	    ;;
++	*-*-mlibc*)
++	    ac_sys_system=Mlibc
++	    ;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+ 		MACHDEP="unknown"
+@@ -4491,7 +4494,7 @@
+ 
+ if test "$cross_compiling" = yes; then
+ 	case "$host" in
+-	*-*-linux*)
++	*-*-linux*|*-*-mlibc*)
+ 		case "$host_cpu" in
+ 		arm*)
+ 			_host_ident=arm
+@@ -7587,7 +7590,7 @@
+         PY3LIBRARY=libpython3.so
+       fi
+       ;;
+-    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*)
++    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*|Mlibc*)
+       LDLIBRARY='libpython$(LDVERSION).so'
+       BLDLIBRARY='-L. -lpython$(LDVERSION)'
+       RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+@@ -12983,7 +12986,7 @@
+ 	Emscripten*|WASI*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+-	Linux*|GNU*|QNX*|VxWorks*|Haiku*)
++	Linux*|GNU*|QNX*|VxWorks*|Haiku*|Mlibc*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+ 	FreeBSD*)
+@@ -13068,7 +13071,7 @@
+ 		 then CCSHARED="-fPIC";
+ 		 else CCSHARED="+z";
+ 		 fi;;
+-	Linux*|GNU*) CCSHARED="-fPIC";;
++	Linux*|GNU*|Mlibc*) CCSHARED="-fPIC";;
+ 	Emscripten*|WASI*)
+ 		if test "x$enable_wasm_dynamic_linking" = xyes
+ then :
+@@ -13106,7 +13109,7 @@
+ 	    LINKFORSHARED="-Wl,-E -Wl,+s";;
+ #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
+ 	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
+-	Linux*|GNU*) LINKFORSHARED="-Xlinker -export-dynamic";;
++	Linux*|GNU*|Mlibc*) LINKFORSHARED="-Xlinker -export-dynamic";;
+ 	# -u libsys_s pulls in all symbols in libsys
+ 	Darwin/*|iOS/*)
+ 		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
