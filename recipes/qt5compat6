@@ -1,0 +1,25 @@
+#! /bin/sh
+
+name=qt5compat6
+version=6.8.1
+revision=1
+git_url="https://code.qt.io/qt/qt5compat.git"
+commit=abd8782455a0d09c807a4a3d9ee02c1d4e253846
+hostdeps="gcc pkg-config cmake qt6"
+deps="core-libs qtbase6 qtdeclarative6 qtshadertools6 icu"
+
+configure() {
+    cmake_configure \
+        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+		-Wno-dev
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}
