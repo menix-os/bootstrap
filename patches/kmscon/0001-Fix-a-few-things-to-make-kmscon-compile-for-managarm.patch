@@ -1,0 +1,155 @@
+From 5827826d39bc9553802ea4e8e417599bb280bffd Mon Sep 17 00:00:00 2001
+From: qookie <kacper.slominski72@gmail.com>
+Date: Sun, 23 Jun 2019 19:02:21 +0200
+Subject: [PATCH 1/2] Fix a few things to make kmscon compile for managarm
+
+Signed-off-by: Dennis Bonke <admin@dennisbonke.com>
+---
+ docs/kmscon.service.in |  1 +
+ kmscon.target          |  8 ++++++++
+ src/conf.c             |  1 +
+ src/pty.c              |  1 +
+ src/uterm_drm_shared.c |  3 ++-
+ src/uterm_monitor.c    | 24 +++++++++++++++++-------
+ src/uterm_vt.c         |  1 +
+ 7 files changed, 31 insertions(+), 8 deletions(-)
+ create mode 100644 kmscon.target
+
+diff --git a/docs/kmscon.service.in b/docs/kmscon.service.in
+index c29fe92..398469e 100644
+--- a/docs/kmscon.service.in
++++ b/docs/kmscon.service.in
+@@ -3,6 +3,7 @@ Description=KMS System Console
+ Documentation=man:kmscon(1)
+ 
+ [Service]
++ExecStartPre=@bindir@/wait-for-devices --want-graphics --want-keyboard
+ ExecStart=@bindir@/kmscon -l /bin/login
+ 
+ [Install]
+diff --git a/kmscon.target b/kmscon.target
+new file mode 100644
+index 0000000..92c9b6e
+--- /dev/null
++++ b/kmscon.target
+@@ -0,0 +1,8 @@
++[Unit]
++Description=Graphical Interface (KMSCON)
++Documentation=man:systemd.special(7)
++Requires=multi-user.target
++Wants=kmscon.service
++Conflicts=rescue.service rescue.target
++After=multi-user.target rescue.service rescue.target kmscon.service
++AllowIsolate=yes
+diff --git a/src/conf.c b/src/conf.c
+index 890e599..4f245e0 100644
+--- a/src/conf.c
++++ b/src/conf.c
+@@ -36,6 +36,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ #include <unistd.h>
+ #include <xkbcommon/xkbcommon.h>
+ #include "conf.h"
+diff --git a/src/pty.c b/src/pty.c
+index 1443f4a..e9c817a 100644
+--- a/src/pty.c
++++ b/src/pty.c
+@@ -23,6 +23,7 @@
+  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  */
+ 
++#include <asm/ioctls.h>
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <inttypes.h>
+diff --git a/src/uterm_drm_shared.c b/src/uterm_drm_shared.c
+index ec486ab..a406d39 100644
+--- a/src/uterm_drm_shared.c
++++ b/src/uterm_drm_shared.c
+@@ -340,7 +340,8 @@ int uterm_drm_display_swap(struct uterm_display *disp, uint32_t fb,
+ 	int ret;
+ 	drmModeModeInfo *mode;
+ 
+-	if (disp->dpms != UTERM_DPMS_ON)
++	/* assume that displays without DPMS are always on */
++	if (disp->dpms != UTERM_DPMS_ON && disp->dpms != UTERM_DPMS_UNKNOWN)
+ 		return -EINVAL;
+ 
+ 	if (immediate) {
+diff --git a/src/uterm_monitor.c b/src/uterm_monitor.c
+index c6e0a6d..53f31c2 100644
+--- a/src/uterm_monitor.c
++++ b/src/uterm_monitor.c
+@@ -34,7 +34,9 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <libudev.h>
++#ifdef BUILD_ENABLE_VIDEO_FBDEV
+ #include <linux/fb.h>
++#endif
+ #include <stdbool.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -408,6 +410,7 @@ static int get_fb_id(struct udev_device *dev)
+ 
+ static unsigned int get_fbdev_flags(struct uterm_monitor *mon, const char *node)
+ {
++#ifdef BUILD_ENABLE_VIDEO_FBDEV
+ 	int fd, ret, len;
+ 	struct fb_fix_screeninfo finfo;
+ 	unsigned int flags = UTERM_MONITOR_DRM_BACKED;
+@@ -446,6 +449,9 @@ static unsigned int get_fbdev_flags(struct uterm_monitor *mon, const char *node)
+ out_close:
+ 	close(fd);
+ 	return flags;
++#else
++  return UTERM_MONITOR_DRM_BACKED | UTERM_MONITOR_PRIMARY;
++#endif
+ }
+ 
+ static bool is_drm_primary(struct uterm_monitor *mon, struct udev_device *dev,
+@@ -624,15 +630,19 @@ static void monitor_udev_add(struct uterm_monitor *mon,
+ 		}
+ 		p = udev_device_get_parent_with_subsystem_devtype(dev,
+ 								"input", NULL);
+-		if (!p) {
++		/* parent devices are only required for multiseat */
++		if (p) {
++			if (mon->sd && udev_device_has_tag(p, "seat") != 1) {
++				log_debug("adding non-seat'ed device %s", name);
++				return;
++			}
++			sname = udev_device_get_property_value(p, "ID_SEAT");
++		}else{
+ 			log_debug("adding device without parent %s", name);
+-			return;
+-		}
+-		if (mon->sd && udev_device_has_tag(p, "seat") != 1) {
+-			log_debug("adding non-seat'ed device %s", name);
+-			return;
++			if(mon->sd)
++				return;
++			sname = NULL;
+ 		}
+-		sname = udev_device_get_property_value(p, "ID_SEAT");
+ 		type = UTERM_MONITOR_INPUT;
+ 		flags = 0;
+ 	} else {
+diff --git a/src/uterm_vt.c b/src/uterm_vt.c
+index fbe9e76..203350b 100644
+--- a/src/uterm_vt.c
++++ b/src/uterm_vt.c
+@@ -38,6 +38,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/ioctl.h>
++#include <sys/sysmacros.h>
+ #include <sys/signalfd.h>
+ #include <sys/stat.h>
+ #include <sys/sysmacros.h>
+-- 
+2.47.2
+

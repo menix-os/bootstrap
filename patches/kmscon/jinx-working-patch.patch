@@ -1,0 +1,12 @@
+diff -urN --no-dereference kmscon-clean/src/meson.build kmscon-workdir/src/meson.build
+--- kmscon-clean/src/meson.build
++++ kmscon-workdir/src/meson.build
+@@ -147,6 +147,8 @@
+   dependencies: uterm_dep
+ )
+ 
++add_languages('c', native: true)
++
+ #
+ # Unifont Generator
+ # This generates the unifont sources from raw hex-encoded font data.

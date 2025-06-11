@@ -1,19 +1,16 @@
-diff --git gcc-clean/fixincludes/mkfixinc.sh gcc-workdir/fixincludes/mkfixinc.sh
-index df90720..fff9901 100755
+diff -urN --no-dereference gcc-clean/fixincludes/mkfixinc.sh gcc-workdir/fixincludes/mkfixinc.sh
 --- gcc-clean/fixincludes/mkfixinc.sh
 +++ gcc-workdir/fixincludes/mkfixinc.sh
-@@ -11,6 +11,7 @@ target=fixinc.sh
+@@ -11,6 +11,7 @@
  
  # Check for special fix rules for particular targets
  case $machine in
-+    *-*-*-mlibc | \
++    *-mlibc* | \
      i?86-*-cygwin* | \
      i?86-*-mingw32* | \
      x86_64-*-mingw32* | \
-diff --git gcc-workdir/gcc/config/aarch64/aarch64-menix.h gcc-workdir/gcc/config/aarch64/aarch64-menix.h
-new file mode 100644
-index 0000000..c21c141
---- /dev/null
+diff -urN --no-dereference gcc-clean/gcc/config/aarch64/aarch64-menix.h gcc-workdir/gcc/config/aarch64/aarch64-menix.h
+--- gcc-clean/gcc/config/aarch64/aarch64-menix.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/aarch64/aarch64-menix.h
 @@ -0,0 +1,49 @@
 +#undef GCC_AARCH64_MENIX
@@ -65,19 +62,15 @@ index 0000000..c21c141
 +  do {                                 \
 +    GNU_USER_TARGET_OS_CPP_BUILTINS(); \
 +  } while (0)
-diff --git gcc-workdir/gcc/config/aarch64/t-aarch64-menix gcc-workdir/gcc/config/aarch64/t-aarch64-menix
-new file mode 100644
-index 0000000..33d112f
---- /dev/null
+diff -urN --no-dereference gcc-clean/gcc/config/aarch64/t-aarch64-menix gcc-workdir/gcc/config/aarch64/t-aarch64-menix
+--- gcc-clean/gcc/config/aarch64/t-aarch64-menix	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/aarch64/t-aarch64-menix
 @@ -0,0 +1,3 @@
 +
 +LIB1ASMSRC   = aarch64/lib1funcs.asm
 +LIB1ASMFUNCS = _aarch64_sync_cache_range
-diff --git gcc-workdir/gcc/config/i386/menix.h gcc-workdir/gcc/config/i386/menix.h
-new file mode 100644
-index 0000000..fbf165c
---- /dev/null
+diff -urN --no-dereference gcc-clean/gcc/config/i386/menix.h gcc-workdir/gcc/config/i386/menix.h
+--- gcc-clean/gcc/config/i386/menix.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/i386/menix.h
 @@ -0,0 +1,10 @@
 +#undef GCC_I386_MENIX
@@ -90,10 +83,8 @@ index 0000000..fbf165c
 +#define GNU_USER_DYNAMIC_LINKER64 "/lib/x86_64-menix/ld.so"
 +#define GNU_USER_DYNAMIC_LINKER32 "/lib/i386-menix/ld.so"
 +#define GNU_USER_DYNAMIC_LINKERX32 "/lib/x86_32-menix/ld.so"
-diff --git gcc-workdir/gcc/config/loongarch/menix.h gcc-workdir/gcc/config/loongarch/menix.h
-new file mode 100644
-index 0000000..65d3cda
---- /dev/null
+diff -urN --no-dereference gcc-clean/gcc/config/loongarch/menix.h gcc-workdir/gcc/config/loongarch/menix.h
+--- gcc-clean/gcc/config/loongarch/menix.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/loongarch/menix.h
 @@ -0,0 +1,6 @@
 +#undef GCC_LOONGARCH_MENIX
@@ -102,12 +93,10 @@ index 0000000..65d3cda
 +#undef GNU_USER_DYNAMIC_LINKER
 +#define GNU_USER_DYNAMIC_LINKER "/lib/loongarch" ABI_GRLEN_SPEC "-menix/ld.so"
 +#define GNU_USER_LINK_EMULATION "elf" ABI_GRLEN_SPEC "loongarch"
-diff --git gcc-workdir/gcc/config/menix.h gcc-workdir/gcc/config/menix.h
-new file mode 100644
-index 0000000..4fb747d
---- /dev/null
+diff -urN --no-dereference gcc-clean/gcc/config/menix.h gcc-workdir/gcc/config/menix.h
+--- gcc-clean/gcc/config/menix.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/menix.h
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,13 @@
 +#undef TARGET_MENIX
 +#define TARGET_MENIX 1
 +
@@ -115,15 +104,14 @@ index 0000000..4fb747d
 +#define GNU_USER_TARGET_OS_CPP_BUILTINS() \
 +  do {                                    \
 +    builtin_define ("__menix__");         \
++    builtin_define ("__mlibc__");         \
 +    builtin_define ("__unix__");          \
 +    builtin_assert ("system=menix");      \
 +    builtin_assert ("system=unix");       \
 +    builtin_assert ("system=posix");      \
 +  } while (0);
-diff --git gcc-workdir/gcc/config/riscv/menix.h gcc-workdir/gcc/config/riscv/menix.h
-new file mode 100644
-index 0000000..8ef60e7
---- /dev/null
+diff -urN --no-dereference gcc-clean/gcc/config/riscv/menix.h gcc-workdir/gcc/config/riscv/menix.h
+--- gcc-clean/gcc/config/riscv/menix.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/riscv/menix.h
 @@ -0,0 +1,33 @@
 +#undef GCC_RISCV_MENIX
@@ -159,8 +147,19 @@ index 0000000..8ef60e7
 +  do {                                 \
 +    GNU_USER_TARGET_OS_CPP_BUILTINS(); \
 +  } while (0)
-diff --git gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
-index 95c91ee..6d2e278 100644
+diff -urN --no-dereference gcc-clean/gcc/config.build gcc-workdir/gcc/config.build
+--- gcc-clean/gcc/config.build
++++ gcc-workdir/gcc/config.build
+@@ -45,7 +45,7 @@
+ build_xm_file=
+ build_xm_defines=
+ build_exeext=
+-build_install_headers_dir=install-headers-tar
++build_install_headers_dir=install-headers-cp
+ build_file_translate=
+ 
+ # System-specific settings.
+diff -urN --no-dereference gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
 --- gcc-clean/gcc/config.gcc
 +++ gcc-workdir/gcc/config.gcc
 @@ -187,7 +187,7 @@
@@ -172,7 +171,7 @@ index 95c91ee..6d2e278 100644
  # 			The default character to be used for formatting
  #			the attribute in a
  #			.type symbol_name, ${t_t_f_c}<property>
-@@ -884,6 +884,15 @@ case ${target} in
+@@ -884,6 +884,15 @@
    rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
    ;;
@@ -188,7 +187,7 @@ index 95c91ee..6d2e278 100644
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    extra_options="$extra_options gnu-user.opt"
    gas=yes
-@@ -1239,6 +1248,11 @@ aarch64*-*-netbsd*)
+@@ -1239,6 +1248,11 @@
  	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-netbsd"
  	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
  	;;
@@ -200,7 +199,7 @@ index 95c91ee..6d2e278 100644
  aarch64*-*-linux*)
  	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h"
  	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-linux.h"
-@@ -2284,6 +2298,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
+@@ -2284,6 +2298,9 @@
  			;;
  	esac
  	;;
@@ -210,7 +209,7 @@ index 95c91ee..6d2e278 100644
  x86_64-*-fuchsia*)
  	tmake_file="${tmake_file} i386/t-x86_64-elf"
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
-@@ -2483,6 +2500,13 @@ microblaze*-*-elf)
+@@ -2483,6 +2500,13 @@
  	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
  	tmake_file="${tmake_file} microblaze/t-microblaze"
          ;;
@@ -224,7 +223,7 @@ index 95c91ee..6d2e278 100644
  riscv*-*-linux*)
  	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
  	case "x${enable_multilib}" in
-@@ -2564,6 +2588,15 @@ loongarch*-*-linux*)
+@@ -2564,6 +2588,15 @@
  	gcc_cv_initfini_array=yes
  	;;
  
@@ -240,7 +239,7 @@ index 95c91ee..6d2e278 100644
  loongarch*-*-elf*)
  	tm_file="elfos.h newlib-stdint.h ${tm_file}"
  	tm_file="${tm_file} loongarch/elf.h loongarch/linux.h loongarch/loongarch-driver.h"
-@@ -5062,6 +5095,7 @@ case "${target}" in
+@@ -5062,6 +5095,7 @@
  		esac
  
  		case ${target} in
@@ -248,8 +247,7 @@ index 95c91ee..6d2e278 100644
  		  *-linux-gnu*) triplet_os="linux-gnu";;
  		  *-linux-musl*) triplet_os="linux-musl";;
  		  *-elf*) triplet_os="elf";;
-diff --git gcc-clean/gcc/config.host gcc-workdir/gcc/config.host
-index f640029..c03a550 100644
+diff -urN --no-dereference gcc-clean/gcc/config.host gcc-workdir/gcc/config.host
 --- gcc-clean/gcc/config.host
 +++ gcc-workdir/gcc/config.host
 @@ -61,7 +61,7 @@
@@ -261,7 +259,7 @@ index f640029..c03a550 100644
  # set it in both places.
  
  # Default settings.
-@@ -100,7 +100,7 @@ esac
+@@ -100,7 +100,7 @@
  
  case ${host} in
    aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia* |\
@@ -270,11 +268,47 @@ index f640029..c03a550 100644
      case ${target} in
        aarch64*-*-*)
  	host_extra_gcc_objs="driver-aarch64.o"
-diff --git gcc-clean/libgcc/config.host gcc-workdir/libgcc/config.host
-index e75a7af..34846b8 100644
+diff -urN --no-dereference gcc-clean/libatomic/configure.tgt gcc-workdir/libatomic/configure.tgt
+--- gcc-clean/libatomic/configure.tgt
++++ gcc-workdir/libatomic/configure.tgt
+@@ -151,7 +151,7 @@
+   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
+   | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly* \
+   | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \
+-  | *-*-darwin* | *-*-aix* | *-*-cygwin*)
++  | *-*-darwin* | *-*-aix* | *-*-cygwin* | *-*-mlibc*)
+ 	# POSIX system.  The OS is supported.
+ 	config_path="${config_path} posix"
+ 	;;
+diff -urN --no-dereference gcc-clean/libcpp/Makefile.in gcc-workdir/libcpp/Makefile.in
+--- gcc-clean/libcpp/Makefile.in
++++ gcc-workdir/libcpp/Makefile.in
+@@ -32,10 +32,10 @@
+ AUTOHEADER = @AUTOHEADER@
+ CATALOGS = $(patsubst %,po/%,@CATALOGS@)
+ CC = @CC@
+-CFLAGS = @CFLAGS@
++override CFLAGS := @CFLAGS@
+ WARN_CFLAGS = @warn@ @c_warn@ @WARN_PEDANTIC@ @WERROR@
+ CXX = @CXX@
+-CXXFLAGS = @CXXFLAGS@
++override CXXFLAGS := @CXXFLAGS@
+ WARN_CXXFLAGS = @warn@ @WARN_PEDANTIC@ @WERROR@
+ CPP = @CPP@
+ CPPFLAGS = @CPPFLAGS@
+@@ -45,7 +45,7 @@
+ INSTALL_DATA = @INSTALL_DATA@
+ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+ INSTALL_SCRIPT = @INSTALL_SCRIPT@
+-LDFLAGS = @LDFLAGS@
++override LDFLAGS := @LDFLAGS@
+ LIBICONV = @LIBICONV@
+ LIBINTL = @LIBINTL@
+ PACKAGE = @PACKAGE@
+diff -urN --no-dereference gcc-clean/libgcc/config.host gcc-workdir/libgcc/config.host
 --- gcc-clean/libgcc/config.host
 +++ gcc-workdir/libgcc/config.host
-@@ -103,7 +103,7 @@ arm*-*-*)
+@@ -103,7 +103,7 @@
  	;;
  avr-*-*)
  	cpu_type=avr
@@ -283,7 +317,7 @@ index e75a7af..34846b8 100644
  bfin*-*)
  	cpu_type=bfin
  	;;
-@@ -304,6 +304,11 @@ case ${host} in
+@@ -304,6 +304,11 @@
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
    ;;
@@ -295,7 +329,7 @@ index e75a7af..34846b8 100644
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-@@ -439,6 +444,14 @@ aarch64*-*-fuchsia*)
+@@ -439,6 +444,14 @@
  	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
  	tmake_file="${tmake_file} t-dfprules"
  	;;
@@ -310,18 +344,19 @@ index e75a7af..34846b8 100644
  aarch64*-*-linux*)
  	extra_parts="$extra_parts crtfastmath.o"
  	md_unwind_header=aarch64/linux-unwind.h
-@@ -941,6 +954,10 @@ x86_64-*-mingw*)
+@@ -941,6 +954,11 @@
  		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
  	fi
  	;;
 +x86_64-*-*-mlibc)
 +	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 +	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
++	tmake_file="$tmake_file i386/t-linux"
 +	;;
  ia64*-*-elf*)
  	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
  	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat"
-@@ -998,6 +1015,11 @@ loongarch*-elf*)
+@@ -998,6 +1016,11 @@
  	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
  	tmake_file="${tmake_file} t-slibgcc-libgcc"
  	;;
@@ -333,7 +368,7 @@ index e75a7af..34846b8 100644
  m32r-*-elf*)
  	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
  	extra_parts="$extra_parts crtinit.o crtfini.o"
-@@ -1347,6 +1369,10 @@ pru-*-*)
+@@ -1347,6 +1370,10 @@
  	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
  	tm_file="$tm_file pru/pru-abi.h"
  	;;
@@ -344,25 +379,15 @@ index e75a7af..34846b8 100644
  riscv*-*-linux*)
  	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
  	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
-diff --git gcc-clean/libstdc++-v3/crossconfig.m4 gcc-workdir/libstdc++-v3/crossconfig.m4
-index b3269cb..957cfac 100644
---- gcc-clean/libstdc++-v3/crossconfig.m4
-+++ gcc-workdir/libstdc++-v3/crossconfig.m4
-@@ -190,6 +190,17 @@ case "${host}" in
-     AC_CHECK_FUNCS(secure_getenv)
-     AM_ICONV
+diff -urN --no-dereference gcc-clean/libstdc++-v3/configure gcc-workdir/libstdc++-v3/configure
+--- gcc-clean/libstdc++-v3/configure
++++ gcc-workdir/libstdc++-v3/configure
+@@ -38822,7 +38822,7 @@
+ 
+   fi
      ;;
-+  *-mlibc*)
-+    GLIBCXX_CHECK_COMPILER_FEATURES
-+    GLIBCXX_CHECK_LINKER_FEATURES
-+    GLIBCXX_CHECK_MATH_SUPPORT
-+    GLIBCXX_CHECK_STDLIB_SUPPORT
-+    AC_DEFINE(_GLIBCXX_USE_DEV_RANDOM)
-+    AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1)
-+    GCC_CHECK_TLS
-+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
-+    AC_CHECK_FUNCS(timespec_get)
-+    ;;
-   *-mingw32*)
-     GLIBCXX_CHECK_LINKER_FEATURES
-     GLIBCXX_CHECK_MATH_SUPPORT
+-  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
++  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris* | *-mlibc*)
+ 
+   # All these tests are for C++; save the language and the compiler flags.
+   # The CXXFLAGS thing is suspicious, but based on similar bits previously

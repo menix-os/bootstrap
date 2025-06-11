@@ -1,0 +1,11 @@
+diff -urN --no-dereference weston-clean/tools/zunitc/src/zunitc_impl.c weston-workdir/tools/zunitc/src/zunitc_impl.c
+--- weston-clean/tools/zunitc/src/zunitc_impl.c
++++ weston-workdir/tools/zunitc/src/zunitc_impl.c
+@@ -37,6 +37,7 @@
+ #include <sys/wait.h>
+ #include <time.h>
+ #include <unistd.h>
++#include <signal.h>
+ 
+ #include "zunitc/zunitc_impl.h"
+ #include "zunitc/zunitc.h"

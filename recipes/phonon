@@ -1,0 +1,26 @@
+#! /bin/sh
+
+name=phonon
+version=4.12.0
+revision=1
+tarball_url="https://download.kde.org/stable/phonon/${version}/phonon-${version}.tar.xz"
+tarball_blake2b="568af4aec5247759e49db2137978b9f1828256f817bcb321f02e69d597d78e97c9ce437e89cd63b5a8b15c312f74ccee11b34270e74be2dc24c2af9ee97490f0"
+hostdeps="gcc pkg-config cmake qt6 ecm"
+deps="core-libs qtbase6 glib2 ecm qt5compat6"
+
+configure() {
+    cmake_configure \
+        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+        -DPHONON_BUILD_QT5=OFF \
+		-Wno-dev
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

@@ -1,0 +1,26 @@
+#! /bin/sh
+
+name=qtshadertools6
+version=6.8.1
+revision=1
+git_url="https://code.qt.io/qt/qtshadertools.git"
+commit=3057f2b17724e68afbda2f84441b1e63672c5595
+hostdeps="gcc pkg-config cmake qt6"
+deps="core-libs qtbase6 mesa libxkbcommon"
+
+configure() {
+    cmake_configure \
+        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+		-DQT_FORCE_BUILD_TOOLS=ON \
+		-Wno-dev
+}
+
+build() {
+    cmake --build . -j${parallelism}
+}
+
+package() {
+    DESTDIR="${dest_dir}" cmake --install .
+
+    post_package_strip
+}

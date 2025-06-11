@@ -18,5 +18,5 @@ build() {
 package() {
     DESTDIR=${dest_dir} make install
     # Usually, you can use ${version} here, but CMake calls the current release 4.0.0
-    ln -sf ${base_dir}/support/Menix.cmake ${dest_dir}${prefix}/share/cmake-4.0/Modules/Platform/Menix.cmake
+    cp -v ${base_dir}/support/Menix.cmake ${dest_dir}${prefix}/share/cmake-4.0/Modules/Platform/Menix.cmake
 }

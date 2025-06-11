@@ -3,7 +3,7 @@
 name=readline
 _patch=13
 version=8.2p${_patch}
-revision=1
+revision=2
 tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-8.2.tar.gz"
 tarball_blake2b="7974322b9c092a756a79e537df08e8532f8e0fcb598f77732e28287c33ebec9e9837ed88b43334c310892d56a871b423903f0f564def2fbe700a1004f2ae7b18"
 source_allow_network="yes"
@@ -30,6 +30,11 @@ build() {
 
 package() {
     make install DESTDIR="${dest_dir}"
+
+    ln -svn libhistory.so.8.2 ${dest_dir}${prefix}/lib/libhistory.so.8
+    ln -svn libreadline.so.8.2 ${dest_dir}${prefix}/lib/libreadline.so.8
+    ln -svn libhistory.so.8 ${dest_dir}${prefix}/lib/libhistory.so
+    ln -svn libreadline.so.8 ${dest_dir}${prefix}/lib/libreadline.so
 
     post_package_strip
 }

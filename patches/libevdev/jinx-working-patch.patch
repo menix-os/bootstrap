@@ -1,0 +1,18 @@
+diff -urN --no-dereference libevdev-clean/include/linux/input.h libevdev-workdir/include/linux/input.h
+--- libevdev-clean/include/linux/input.h
++++ libevdev-workdir/include/linux/input.h
+@@ -1,4 +1,4 @@
+-#ifdef __linux__
++#if defined __linux__ || defined __menix__
+ #include "linux/input.h"
+ #elif __FreeBSD__
+ #include "freebsd/input.h"
+diff -urN --no-dereference libevdev-clean/include/linux/uinput.h libevdev-workdir/include/linux/uinput.h
+--- libevdev-clean/include/linux/uinput.h
++++ libevdev-workdir/include/linux/uinput.h
+@@ -1,4 +1,4 @@
+-#ifdef __linux__
++#if defined __linux__ || defined __menix__
+ #include "linux/uinput.h"
+ #elif __FreeBSD__
+ #include "freebsd/uinput.h"

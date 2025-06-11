@@ -1,0 +1,12 @@
+diff -urN --no-dereference dbus-clean/dbus/dbus-pollable-set-epoll.c dbus-workdir/dbus/dbus-pollable-set-epoll.c
+--- dbus-clean/dbus/dbus-pollable-set-epoll.c
++++ dbus-workdir/dbus/dbus-pollable-set-epoll.c
+@@ -30,7 +30,7 @@
+ #include <dbus/dbus-internals.h>
+ #include <dbus/dbus-sysdeps.h>
+ 
+-#ifndef __linux__
++#if !defined(__linux__) && !defined(__menix__)
+ # error This file is for Linux epoll(4)
+ #endif
+ 
