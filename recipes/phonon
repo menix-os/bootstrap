@@ -6,7 +6,7 @@ revision=1
 tarball_url="https://download.kde.org/stable/phonon/${version}/phonon-${version}.tar.xz"
 tarball_blake2b="568af4aec5247759e49db2137978b9f1828256f817bcb321f02e69d597d78e97c9ce437e89cd63b5a8b15c312f74ccee11b34270e74be2dc24c2af9ee97490f0"
 hostdeps="gcc pkg-config cmake qt6 ecm"
-deps="core-libs qtbase6 glib2"
+deps="core-libs qtbase6 glib2 ecm qt5compat6"
 
 configure() {
     cmake_configure \
