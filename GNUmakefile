@@ -60,6 +60,15 @@ image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img
 		build-$(ARCH)/menix.img \
 		$(ARCH)
 
+# Build an ISO image
+.PHONY: image
+iso: jinx build-$(ARCH)/jinx-config
+	./tasks/make-iso.sh \
+		build-$(ARCH)/sysroot \
+		build-$(ARCH)/initrd \
+		build-$(ARCH)/menix.iso \
+		$(ARCH)
+
 # -----------
 # Development
 # -----------
@@ -113,3 +122,7 @@ qemu: ovmf/ovmf-code-$(ARCH).fd build-$(ARCH)/menix.img
 	qemu-system-$(ARCH) $(QEMUFLAGS) \
 		-drive format=raw,file=build-$(ARCH)/menix.img,if=none,id=disk \
 		-device nvme,serial=FAKE_SERIAL_ID,drive=disk
+
+.PHONY: qemu-iso
+qemu-iso: ovmf/ovmf-code-$(ARCH).fd build-$(ARCH)/menix.iso
+	qemu-system-$(ARCH) $(QEMUFLAGS) -cdrom build-$(ARCH)/menix.iso

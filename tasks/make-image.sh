@@ -35,20 +35,21 @@ sudo mount "$ROOT_PART" "$tmpdir/root"
 sudo mkdir -p "$tmpdir/root/boot"
 # FAT has no UIDs, so simulate a user, otherwise cp will complain.
 sudo mount -o uid=1000,gid=1000 "$ESP_PART" "$tmpdir/root/boot"
+# Create ESP directory layout
+sudo mkdir -p "$tmpdir/root/boot/boot/limine"
+sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"
 
 # Copy system root
 sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
 # Install kernel
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/root/boot/menix"
+sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/root/boot/boot/menix"
 
 # Build and install initrd
 $SCRIPT_DIR/make-initrd.sh $SYSTEM_ROOT $BUILD_DIR/initrd
-sudo cp "$BUILD_DIR/initrd" "$tmpdir/root/boot/initrd"
+sudo cp "$BUILD_DIR/initrd" "$tmpdir/root/boot/boot/initrd"
 
 # Install bootloader
-sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"
-
 efi_filename=""
 case "${ARCH}" in
     x86_64) efi_filename="BOOTX64.EFI" ;;
@@ -62,4 +63,4 @@ case "${ARCH}" in
 esac
 
 sudo cp "$BUILD_DIR/sysroot/usr/share/limine/${efi_filename}" "$tmpdir/root/boot/EFI/BOOT/"
-sudo cp "$ROOT_DIR/support/limine.conf" "$tmpdir/root/boot/"
+sudo cp "$ROOT_DIR/support/limine.conf" "$tmpdir/root/boot/boot/limine/"
