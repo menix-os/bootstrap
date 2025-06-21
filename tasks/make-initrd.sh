@@ -18,4 +18,4 @@ FILES=(
     usr/sbin/openrc-init
 )
 echo $FILES
-tar --format=ustar -cf $INITRD_PATH "${FILES[@]}"
+tar --format=ustar --owner 0 --group 0 -cf $INITRD_PATH "${FILES[@]}"
