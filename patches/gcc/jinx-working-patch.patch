@@ -81,8 +81,8 @@ diff -urN --no-dereference gcc-clean/gcc/config/i386/menix.h gcc-workdir/gcc/con
 +#define GNU_USER_LINK_EMULATIONX32 "elf32_x86_64"
 +
 +#define GNU_USER_DYNAMIC_LINKER64 "/lib/x86_64-menix/ld.so"
-+#define GNU_USER_DYNAMIC_LINKER32 "/lib/i386-menix/ld.so"
-+#define GNU_USER_DYNAMIC_LINKERX32 "/lib/x86_32-menix/ld.so"
++#define GNU_USER_DYNAMIC_LINKER32 "/dev/null"
++#define GNU_USER_DYNAMIC_LINKERX32 "/dev/null"
 diff -urN --no-dereference gcc-clean/gcc/config/loongarch/menix.h gcc-workdir/gcc/config/loongarch/menix.h
 --- gcc-clean/gcc/config/loongarch/menix.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/loongarch/menix.h
