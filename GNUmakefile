@@ -56,7 +56,7 @@ build-$(ARCH)/menix.img:
 image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh \
 		build-$(ARCH)/sysroot \
-		build-$(ARCH)/initrd \
+		build-$(ARCH)/initramfs.tar \
 		build-$(ARCH)/menix.img \
 		$(ARCH)
 
@@ -65,7 +65,7 @@ image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img
 iso: jinx build-$(ARCH)/jinx-config
 	./tasks/make-iso.sh \
 		build-$(ARCH)/sysroot \
-		build-$(ARCH)/initrd \
+		build-$(ARCH)/initramfs.tar \
 		build-$(ARCH)/menix.iso \
 		$(ARCH)
 

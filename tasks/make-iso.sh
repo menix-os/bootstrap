@@ -3,7 +3,7 @@
 set -e
 
 SYSTEM_ROOT="$1"
-INITRD_PATH="$2"
+INITRAMFS_PATH="$2"
 OUTPUT_IMAGE="$3"
 ARCH="$4"
 
@@ -26,8 +26,8 @@ sudo mkdir -p "$tmpdir/EFI/BOOT"
 sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/menix"
 
 # Build and install initrd
-$SCRIPT_DIR/make-initrd.sh $SYSTEM_ROOT $BUILD_DIR/initrd
-sudo cp "$BUILD_DIR/initrd" "$tmpdir/initrd"
+$SCRIPT_DIR/make-initrd.sh $SYSTEM_ROOT $INITRAMFS_PATH
+sudo cp "$INITRAMFS_PATH" "$tmpdir/initramfs.tar"
 
 # Install bootloader
 efi_filename=""
