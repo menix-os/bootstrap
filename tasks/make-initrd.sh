@@ -22,6 +22,8 @@ FILES=(
     usr/sbin/openrc-init
     usr/lib/librc.so.1
     usr/lib/libeinfo.so.1
+    usr/lib/librc.so
+    usr/lib/libeinfo.so
 )
 echo "Installing:" ${FILES[@]}
 
