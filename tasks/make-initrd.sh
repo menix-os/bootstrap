@@ -19,6 +19,7 @@ FILES=(
     usr/share/menix/modules/*
     # Init
     init
+    lib
     usr/sbin/openrc-init
     usr/lib/librc.so.1
     usr/lib/libeinfo.so.1
@@ -29,5 +30,6 @@ echo "Installing:" ${FILES[@]}
 
 # Create a symlink to init.
 ln -fs usr/sbin/openrc-init init
+ln -fs usr/lib lib
 
 tar --format=ustar --owner 0 --group 0 -cf $INITRD_PATH "${FILES[@]}"
