@@ -169,6 +169,7 @@ meson_configure_noflags() {
         --libdir=lib \
         --sbindir=sbin \
         --bindir=bin \
+        --datadir=share \
         --buildtype=release \
         -Ddefault_library=shared \
         "$@"

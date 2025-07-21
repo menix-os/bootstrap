@@ -76,8 +76,8 @@ iso: jinx build-$(ARCH)/jinx-config
 # Shortcut to build and reinstall the kernel
 .PHONY: remake-kernel
 remake-kernel: jinx build-$(ARCH)/jinx-config
-	@cd build-$(ARCH) && ../jinx build menix menix-debug
-	@cd build-$(ARCH) && ../jinx reinstall sysroot menix menix-debug
+	@cd build-$(ARCH) && ../jinx build menix
+	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
 
 ovmf/ovmf-code-$(ARCH).fd:
 	mkdir -p ovmf
