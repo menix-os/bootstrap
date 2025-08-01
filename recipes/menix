@@ -3,12 +3,15 @@
 name=menix
 from_source=menix
 revision=1
-imagedeps="build-essential meson ninja-build"
+imagedeps="build-essential meson ninja-build python3-kconfiglib"
 hostdeps="binutils gcc pkg-config"
 skip_pkg_check=yes
 
 configure() {
-    meson_configure_noflags
+    srctree="${source_dir}" ARCH="${JINX_ARCH}" python3 -m alldefconfig
+
+    meson_configure_noflags \
+        -Dconfig="$(pwd)/.config"
 }
 
 build() {
