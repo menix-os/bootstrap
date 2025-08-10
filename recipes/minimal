@@ -1,7 +1,0 @@
-#! /bin/sh
-
-name=minimal
-version=0.0
-revision=1
-deps="base-files core-libs menix limine openrc coreutils bash"
-skip_pkg_check=yes

@@ -19,19 +19,34 @@ FILES=(
     # libc and loader
     usr/lib/ld.so
     usr/lib/libc.so
+    usr/lib/libpthread.so
+    usr/lib/libm.so
     # Kernel modules
     usr/share/menix/modules/*
-    # Init
+    # init
     init
     usr/sbin/openrc-init
     # Shell
     usr/bin/bash
+    # Test binary
+    usr/bin/test
     # Libraries
     lib
-    usr/lib/librc.so.1
-    usr/lib/libeinfo.so.1
     usr/lib/librc.so
+    usr/lib/librc.so.1
     usr/lib/libeinfo.so
+    usr/lib/libeinfo.so.1
+    usr/lib/libreadline.so
+    usr/lib/libreadline.so.8
+    usr/lib/libreadline.so.8.2
+    usr/lib/libintl.so
+    usr/lib/libintl.so.8
+    usr/lib/libintl.so.8.4.2
+    usr/lib/libiconv.so
+    usr/lib/libiconv.so.2
+    usr/lib/libiconv.so.2.7.0
+    usr/lib/libtinfo.so
+    usr/lib/libtinfow.so
 )
 echo "Installing:" ${FILES[@]}
 

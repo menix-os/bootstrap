@@ -4,9 +4,9 @@
 
 ARCH ?= x86_64
 
-# Prepares a full image with all available packages
+# Prepares an ISO with all packages
 .PHONY: all
-all: install-all image
+all: install-all iso
 
 # Cleans up the entire build directory
 .PHONY: clean
@@ -38,12 +38,6 @@ install-all: jinx build-$(ARCH)/jinx-config
 	@cd build-$(ARCH) && ../jinx build-if-needed '*'
 	@cd build-$(ARCH) && ../jinx install sysroot '*'
 
-# Build only a minimal selection of packages (kernel + bootloader + init + shell)
-.PHONY: install-minimal
-install-minimal: jinx build-$(ARCH)/jinx-config
-	@cd build-$(ARCH) && ../jinx build-if-needed minimal
-	@cd build-$(ARCH) && ../jinx install sysroot minimal
-
 # --------------
 # Image creation
 # --------------
@@ -51,9 +45,13 @@ install-minimal: jinx build-$(ARCH)/jinx-config
 build-$(ARCH)/menix.img:
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 1G 100M
 
+.PHONY: build-$(ARCH)/initramfs.tar
+build-$(ARCH)/initramfs.tar:
+	./tasks/make-initrd.sh build-$(ARCH)/sysroot $@
+
 # Build a disk image for direct use
 .PHONY: image
-image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img
+image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img build-$(ARCH)/initramfs.tar
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
@@ -61,8 +59,8 @@ image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img
 		$(ARCH)
 
 # Build an ISO image
-.PHONY: image
-iso: jinx build-$(ARCH)/jinx-config
+.PHONY: iso
+iso: jinx build-$(ARCH)/jinx-config build-$(ARCH)/initramfs.tar
 	./tasks/make-iso.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
