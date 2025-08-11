@@ -42,7 +42,7 @@ sudo mkdir -p "$tmpdir/root/boot/EFI/BOOT"
 sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
 # Install kernel
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/root/boot/menix"
+sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix.elf" "$tmpdir/root/boot/menix.elf"
 
 # Install initrd
 sudo cp $INITRAMFS_PATH "$tmpdir/root/boot/initramfs.tar"
