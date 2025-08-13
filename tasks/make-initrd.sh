@@ -21,8 +21,8 @@ FILES=(
     usr/lib/libc.so
     usr/lib/libpthread.so
     usr/lib/libm.so
-    # Kernel modules
-    usr/share/menix/modules/*
+    # Servers
+    usr/share/menix/servers/*
     # init
     init
     usr/sbin/openrc-init
