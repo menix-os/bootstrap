@@ -10,7 +10,7 @@ skip_pkg_check=yes
 
 configure() {
     meson_configure_noflags \
-        --buildtype=debug
+        --buildtype=debugoptimized
 }
 
 build() {
