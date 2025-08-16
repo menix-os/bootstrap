@@ -1,6 +1,6 @@
 #! /bin/sh
 
-JINX_MAJOR_VER=0.5
+JINX_MAJOR_VER=0.6
 
 OS_TRIPLET=${JINX_ARCH}-menix-mlibc
 

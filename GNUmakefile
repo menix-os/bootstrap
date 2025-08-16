@@ -23,18 +23,17 @@ clean:
 
 jinx:
 	@git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	@git -C jinx-repo checkout ba224a99377554d60e95a5279717a5cda5a09e45
+	@git -C jinx-repo checkout e8604fdeb88e172af55b05c7302ee2740805c8c5
 	@mv jinx-repo/jinx ./
 	@rm -rf jinx-repo
 
-build-$(ARCH)/jinx-config:
+build-$(ARCH)/.jinx-parameters:
 	@mkdir -p build-$(ARCH)
-	@ARCH=$(ARCH) envsubst '$${ARCH}' < support/jinx-config > build-$(ARCH)/jinx-config
-	@cp support/jinx-parameters build-$(ARCH)/jinx-parameters
+	@cd build-$(ARCH) && ../jinx init .. ARCH=$(ARCH)
 
 # Build all packages
 .PHONY: install-all
-install-all: jinx build-$(ARCH)/jinx-config
+install-all: jinx build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx build-if-needed '*'
 	@cd build-$(ARCH) && ../jinx install sysroot '*'
 
@@ -51,7 +50,7 @@ build-$(ARCH)/initramfs.tar:
 
 # Build a disk image for direct use
 .PHONY: image
-image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img build-$(ARCH)/initramfs.tar
+image: jinx build-$(ARCH)/.jinx-parameters build-$(ARCH)/menix.img build-$(ARCH)/initramfs.tar
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
@@ -60,7 +59,7 @@ image: jinx build-$(ARCH)/jinx-config build-$(ARCH)/menix.img build-$(ARCH)/init
 
 # Build an ISO image
 .PHONY: iso
-iso: jinx build-$(ARCH)/jinx-config build-$(ARCH)/initramfs.tar
+iso: jinx build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
 	./tasks/make-iso.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
@@ -73,7 +72,7 @@ iso: jinx build-$(ARCH)/jinx-config build-$(ARCH)/initramfs.tar
 
 # Shortcut to build and reinstall the kernel
 .PHONY: remake-kernel
-remake-kernel: jinx build-$(ARCH)/jinx-config
+remake-kernel: jinx build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx build menix
 	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
 

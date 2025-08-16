@@ -9,7 +9,8 @@ deps="core-libs"
 skip_pkg_check=yes
 
 configure() {
-    meson_configure_noflags
+    meson_configure_noflags \
+        --buildtype=debug
 }
 
 build() {
