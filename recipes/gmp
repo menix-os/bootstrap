@@ -16,6 +16,7 @@ prepare() {
 
 configure() {
     autotools_configure \
+	CFLAGS="$TARGET_CFLAGS -std=gnu17" \
         --enable-cxx
 }
 

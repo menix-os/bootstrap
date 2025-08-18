@@ -10,7 +10,7 @@ deps="core-libs pcre2 sqlite glib2 systemd icu mesa zlib zstd pcre2 double-conve
 
 configure() {
     cmake_configure \
-        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+        -DQT_HOST_PATH="${build_dir}/host-pkgs/qt6/usr/local" \
         -DINSTALL_BINDIR=bin \
         -DINSTALL_INCLUDEDIR=include/qt6 \
         -DINSTALL_LIBDIR=lib \
