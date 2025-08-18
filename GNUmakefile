@@ -6,7 +6,7 @@ ARCH ?= x86_64
 
 # Prepares an ISO with all packages
 .PHONY: all
-all: install-all iso
+all: minimal-install iso
 
 # Cleans up the entire build directory
 .PHONY: clean
@@ -32,10 +32,18 @@ build-$(ARCH)/.jinx-parameters:
 	@cd build-$(ARCH) && ../jinx init .. ARCH=$(ARCH)
 
 # Build all packages
-.PHONY: install-all
-install-all: jinx build-$(ARCH)/.jinx-parameters
+.PHONY: full-install
+full-install: jinx build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx build-if-needed '*'
 	@cd build-$(ARCH) && ../jinx install sysroot '*'
+
+MINIMAL_PKGS = menix limine mlibc openrc bash test
+
+# Build only a minimal selection of packages
+.PHONY: minimal-install
+minimal-install: jinx build-$(ARCH)/.jinx-parameters
+	@cd build-$(ARCH) && ../jinx build-if-needed $(MINIMAL_PKGS)
+	@cd build-$(ARCH) && ../jinx install sysroot $(MINIMAL_PKGS)
 
 # --------------
 # Image creation
