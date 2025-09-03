@@ -30,6 +30,7 @@ FILES=(
     usr/bin/bash
     # Test binary
     usr/bin/test
+    usr/bin/fastfetch
     # Libraries
     lib
     usr/lib/librc.so
