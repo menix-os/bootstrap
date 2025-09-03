@@ -10,7 +10,7 @@ deps="core-libs qtbase6 zlib"
 
 configure() {
     cmake_configure \
-        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+        -DQT_HOST_PATH="${build_dir}/host-pkgs/qt6/usr/local" \
 		-Wno-dev
 }
 

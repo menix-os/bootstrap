@@ -2,6 +2,7 @@
 
 name=gcc
 from_source=gcc
+revision=1
 hostdeps="gcc pkg-config"
 deps="core-libs binutils zlib gmp mpfr mpc"
 imagedeps="build-essential"

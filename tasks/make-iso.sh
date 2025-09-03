@@ -25,8 +25,7 @@ sudo mkdir -p "$tmpdir/EFI/BOOT"
 # Install kernel
 sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/menix"
 
-# Build and install initrd
-$SCRIPT_DIR/make-initrd.sh $SYSTEM_ROOT $INITRAMFS_PATH
+# Install initrd
 sudo cp "$INITRAMFS_PATH" "$tmpdir/initramfs.tar"
 
 # Install bootloader

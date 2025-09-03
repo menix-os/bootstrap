@@ -30,8 +30,8 @@ $ make
 ```
 
 in the root of the repository.
-This will build the __entire__ distribution and create a bootable image named
-`menix.img` in the current directory.
+This will build a small subset of the distribution and create a bootable ISO
+named `menix.iso` in the build directory.
 
 You can also build separate packages by running `../jinx build <package>`
 inside the respective build directory for the target architecture.
@@ -46,12 +46,17 @@ $ ../jinx build menix # Build the menix package
 
 The built package will be located in the `pkgs` directory.
 
-## Running the image
+If you want a build of the **ENTIRE** distribution, you will need a lot of
+free disk space (>20GB) and patience.
 
-To run the image, you can use the provided make target:
+
+## Running the ISO/image
+
+To run the ISO/image in qemu, you can use the provided make targets:
 
 ```sh
-$ make qemu
+$ make qemu     # For menix.img
+$ make qemu-iso # For menix.iso
 ```
 
 This will run the image using QEMU with the appropriate options for the
@@ -79,4 +84,4 @@ For convenicence, there is a debugging configuration using CodeLLDB for VS Code.
 Simply select Run > Start Debugging and use `.vscode/launch.json` as the config.
 
 Finally, start the `menix-debug` kernel in the bootloader and make sure KASLR
-has been disabled or you have provided the debugger with the load offset.
+has been disabled or you have provided the debugger with the base address.

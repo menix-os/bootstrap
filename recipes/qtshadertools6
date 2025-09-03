@@ -10,7 +10,7 @@ deps="core-libs qtbase6 mesa libxkbcommon"
 
 configure() {
     cmake_configure \
-        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+        -DQT_HOST_PATH="${build_dir}/host-pkgs/qt6/usr/local" \
 		-DQT_FORCE_BUILD_TOOLS=ON \
 		-Wno-dev
 }

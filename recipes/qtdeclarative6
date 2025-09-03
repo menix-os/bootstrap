@@ -12,7 +12,7 @@ deps="core-libs qtbase6 qtimageformats6 qtlanguageserver6 qtshadertools6 qtsvg6 
 
 configure() {
     cmake_configure \
-        -DQT_HOST_PATH=${build_dir}/host-pkgs/qt6/usr \
+        -DQT_HOST_PATH="${build_dir}/host-pkgs/qt6/usr/local" \
 		-Wno-dev
 }
 

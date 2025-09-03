@@ -7,8 +7,8 @@ diff -urN --no-dereference gcc-clean/fixincludes/mkfixinc.sh gcc-workdir/fixincl
  case $machine in
 +    *-mlibc* | \
      i?86-*-cygwin* | \
-     i?86-*-mingw32* | \
-     x86_64-*-mingw32* | \
+     *-mingw32* | \
+     powerpc-*-eabisim* | \
 diff -urN --no-dereference gcc-clean/gcc/config/aarch64/aarch64-menix.h gcc-workdir/gcc/config/aarch64/aarch64-menix.h
 --- gcc-clean/gcc/config/aarch64/aarch64-menix.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-workdir/gcc/config/aarch64/aarch64-menix.h
@@ -171,7 +171,7 @@ diff -urN --no-dereference gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
  # 			The default character to be used for formatting
  #			the attribute in a
  #			.type symbol_name, ${t_t_f_c}<property>
-@@ -884,6 +884,15 @@
+@@ -885,6 +885,15 @@
    rust_target_objs="${rust_target_objs} fuchsia-rust.o"
    target_has_targetrustm=yes
    ;;
@@ -187,7 +187,7 @@ diff -urN --no-dereference gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    extra_options="$extra_options gnu-user.opt"
    gas=yes
-@@ -1239,6 +1248,11 @@
+@@ -1236,6 +1245,11 @@
  	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-netbsd"
  	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
  	;;
@@ -199,7 +199,7 @@ diff -urN --no-dereference gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
  aarch64*-*-linux*)
  	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h"
  	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-linux.h"
-@@ -2284,6 +2298,9 @@
+@@ -2320,6 +2334,9 @@
  			;;
  	esac
  	;;
@@ -209,7 +209,7 @@ diff -urN --no-dereference gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
  x86_64-*-fuchsia*)
  	tmake_file="${tmake_file} i386/t-x86_64-elf"
  	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
-@@ -2483,6 +2500,13 @@
+@@ -2519,6 +2536,13 @@
  	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
  	tmake_file="${tmake_file} microblaze/t-microblaze"
          ;;
@@ -223,7 +223,7 @@ diff -urN --no-dereference gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
  riscv*-*-linux*)
  	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
  	case "x${enable_multilib}" in
-@@ -2564,6 +2588,15 @@
+@@ -2600,6 +2624,15 @@
  	gcc_cv_initfini_array=yes
  	;;
  
@@ -239,7 +239,7 @@ diff -urN --no-dereference gcc-clean/gcc/config.gcc gcc-workdir/gcc/config.gcc
  loongarch*-*-elf*)
  	tm_file="elfos.h newlib-stdint.h ${tm_file}"
  	tm_file="${tm_file} loongarch/elf.h loongarch/linux.h loongarch/loongarch-driver.h"
-@@ -5062,6 +5095,7 @@
+@@ -5108,6 +5141,7 @@
  		esac
  
  		case ${target} in
@@ -308,7 +308,7 @@ diff -urN --no-dereference gcc-clean/libcpp/Makefile.in gcc-workdir/libcpp/Makef
 diff -urN --no-dereference gcc-clean/libgcc/config.host gcc-workdir/libgcc/config.host
 --- gcc-clean/libgcc/config.host
 +++ gcc-workdir/libgcc/config.host
-@@ -103,7 +103,7 @@
+@@ -106,7 +106,7 @@
  	;;
  avr-*-*)
  	cpu_type=avr
@@ -317,19 +317,19 @@ diff -urN --no-dereference gcc-clean/libgcc/config.host gcc-workdir/libgcc/confi
  bfin*-*)
  	cpu_type=bfin
  	;;
-@@ -304,6 +304,11 @@
+@@ -310,6 +310,11 @@
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
    extra_parts="crtbegin.o crtend.o"
    ;;
 +*-*-*-mlibc)
-+  extra_parts="$extra_parts crtbegin.o crtbeginS.o crtend.o crtendS.o"
++  extra_parts="$extra_parts crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 +  tmake_file="$tmake_file t-crtstuff-pic"
 +  tmake_file="$tmake_file t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-libgcc-pic"
 +  ;;
  *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
    tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
    extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-@@ -439,6 +444,14 @@
+@@ -435,6 +440,14 @@
  	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
  	tmake_file="${tmake_file} t-dfprules"
  	;;
@@ -343,8 +343,8 @@ diff -urN --no-dereference gcc-clean/libgcc/config.host gcc-workdir/libgcc/confi
 +	;;
  aarch64*-*-linux*)
  	extra_parts="$extra_parts crtfastmath.o"
- 	md_unwind_header=aarch64/linux-unwind.h
-@@ -941,6 +954,11 @@
+ 	md_unwind_def_header=aarch64/aarch64-unwind-def.h
+@@ -956,6 +969,11 @@
  		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
  	fi
  	;;
@@ -356,7 +356,7 @@ diff -urN --no-dereference gcc-clean/libgcc/config.host gcc-workdir/libgcc/confi
  ia64*-*-elf*)
  	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
  	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat"
-@@ -998,6 +1016,11 @@
+@@ -1013,6 +1031,11 @@
  	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
  	tmake_file="${tmake_file} t-slibgcc-libgcc"
  	;;
@@ -368,7 +368,7 @@ diff -urN --no-dereference gcc-clean/libgcc/config.host gcc-workdir/libgcc/confi
  m32r-*-elf*)
  	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
  	extra_parts="$extra_parts crtinit.o crtfini.o"
-@@ -1347,6 +1370,10 @@
+@@ -1349,6 +1372,10 @@
  	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
  	tm_file="$tm_file pru/pru-abi.h"
  	;;
@@ -382,7 +382,7 @@ diff -urN --no-dereference gcc-clean/libgcc/config.host gcc-workdir/libgcc/confi
 diff -urN --no-dereference gcc-clean/libstdc++-v3/configure gcc-workdir/libstdc++-v3/configure
 --- gcc-clean/libstdc++-v3/configure
 +++ gcc-workdir/libstdc++-v3/configure
-@@ -38822,7 +38822,7 @@
+@@ -38856,7 +38856,7 @@
  
    fi
      ;;

@@ -1,0 +1,45 @@
+#! /bin/sh
+
+name=test
+version=0.1
+revision=1
+hostdeps="gcc pkg-config"
+deps="core-libs"
+
+build() {
+    echo '
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <sched.h>
+#include <sys/utsname.h>
+
+int main() {
+    printf("Hello, world!\n");
+    char cwd[1024];
+    getcwd(cwd, 1024);
+    printf("%s\n", cwd);
+
+    for (int i = 0; i < 1024; i++) {
+        int forked = fork();
+        if (forked) {
+            printf("I am parent for %i\n", forked);
+        } else {
+            break;
+        }
+    }
+
+    while(1);
+    return 0;
+}
+' > main.c
+
+    ${OS_TRIPLET}-gcc -o test main.c
+}
+
+package() {
+    mkdir -p ${dest_dir}/usr/bin
+    cp test ${dest_dir}/usr/bin/test
+}

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-JINX_MAJOR_VER=0.5
+JINX_MAJOR_VER=0.6
 
 OS_TRIPLET=${JINX_ARCH}-menix-mlibc
 
@@ -169,6 +169,7 @@ meson_configure_noflags() {
         --libdir=lib \
         --sbindir=sbin \
         --bindir=bin \
+        --datadir=share \
         --buildtype=release \
         -Ddefault_library=shared \
         "$@"

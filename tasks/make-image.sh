@@ -43,10 +43,8 @@ sudo rsync -avr --checksum "$SYSTEM_ROOT/" "$tmpdir/root"
 
 # Install kernel
 sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/root/boot/menix"
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix-debug/menix" "$tmpdir/root/boot/menix-debug"
 
-# Build and install initrd
-$SCRIPT_DIR/make-initrd.sh $SYSTEM_ROOT $INITRAMFS_PATH
+# Install initrd
 sudo cp $INITRAMFS_PATH "$tmpdir/root/boot/initramfs.tar"
 
 # Install bootloader
