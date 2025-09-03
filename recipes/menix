@@ -3,22 +3,24 @@
 name=menix
 from_source=menix
 revision=1
-imagedeps="build-essential meson ninja-build"
-hostdeps="binutils gcc pkg-config"
-deps="core-libs"
+imagedeps="build-essential rustup"
+allow_network=yes
+hostdeps="llvm"
+builddeps="mlibc-headers"
 skip_pkg_check=yes
 
-configure() {
-    meson_configure_noflags \
-        --buildtype=debugoptimized
-}
-
 build() {
-    meson compile -j${parallelism}
+    cargo_build \
+        --release \
+        --target="toolchain/${JINX_ARCH}-kernel.json"
 }
 
 package() {
-    DESTDIR="${dest_dir}" meson install --no-rebuild
+    mkdir -p "${dest_dir}${prefix}/share/menix/"
+    mkdir -p "${dest_dir}${prefix}/share/menix/modules"
 
-    post_package_strip
+    cp "target/${JINX_ARCH}-kernel/release/menix.kso" "${dest_dir}${prefix}/share/menix/menix"
+    strip "${dest_dir}${prefix}/share/menix/menix" -R .rustc
+    install -m644 "target/${JINX_ARCH}-kernel/release/"*.kso "${dest_dir}${prefix}/share/menix/modules"
+    rm "${dest_dir}${prefix}/share/menix/modules/menix.kso"
 }

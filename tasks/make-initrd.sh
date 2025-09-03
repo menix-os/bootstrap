@@ -16,13 +16,13 @@ ln -fs usr/lib lib
 
 # Create the initrd with the following files:
 FILES=(
+    # Modules
+    usr/share/menix/modules/*
     # libc and loader
     usr/lib/ld.so
     usr/lib/libc.so
     usr/lib/libpthread.so
     usr/lib/libm.so
-    # Servers
-    usr/share/menix/servers/*
     # init
     init
     usr/sbin/openrc-init

@@ -1,13 +1,19 @@
 #! /bin/sh
 
 name=menix
-version=0.0.1
+version=0.1.0
 git_url=https://github.com/menix-os/menix.git
-commit=375d1257a9af9e0900a9806ef19c712233fab6c4
-imagedeps="git"
+commit=978bb77023743ad9d9d53ed5c3b563fdc38f4023
+imagedeps="rustup git"
 allow_network=yes
 shallow=no
 
 prepare() {
+        RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
+    rustup toolchain install nightly --component rust-src
+
+        RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
+    rustup default nightly
+
     git submodule update --init --recursive
 }
