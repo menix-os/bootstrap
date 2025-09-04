@@ -1,24 +1,7 @@
-From e6bd30952c0cd18841d407704f628add8ae8bfb5 Mon Sep 17 00:00:00 2001
-From: Marvin Friedrich <contact@marvinf.com>
-Date: Wed, 26 Mar 2025 00:59:18 +0100
-Subject: [PATCH] Add Menix support
-
----
- CMakeLists.txt                      | 83 +++++++++++++++++++++++++++++
- src/detection/os/os_menix.c         |  7 +++
- src/logo/ascii/menix.txt            | 21 ++++++++
- src/options/general.h               |  2 +-
- src/util/FFstrbuf.h                 |  1 +
- src/util/platform/FFPlatform_unix.c |  2 +-
- 6 files changed, 114 insertions(+), 2 deletions(-)
- create mode 100644 src/detection/os/os_menix.c
- create mode 100644 src/logo/ascii/menix.txt
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 71c0e886..10ab631d 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -30,6 +30,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
+diff -urN --no-dereference fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
+--- fastfetch-clean/CMakeLists.txt
++++ fastfetch-workdir/CMakeLists.txt
+@@ -30,6 +30,8 @@
      set(DragonFly TRUE CACHE BOOL "..." FORCE)
  elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "SunOS")
      set(SunOS TRUE CACHE BOOL "..." FORCE)
@@ -27,7 +10,7 @@ index 71c0e886..10ab631d 100644
  elseif(NOT APPLE AND NOT WIN32)
      message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
  endif()
-@@ -1079,6 +1081,85 @@ elseif(SunOS)
+@@ -1079,6 +1081,85 @@
          src/util/platform/FFPlatform_unix.c
          src/util/binary_linux.c
      )
@@ -113,7 +96,7 @@ index 71c0e886..10ab631d 100644
  endif()
  
  if(ENABLE_DIRECTX_HEADERS)
-@@ -1189,6 +1270,8 @@ elseif(NetBSD)
+@@ -1189,6 +1270,8 @@
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-char-subscripts")
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
@@ -122,11 +105,9 @@ index 71c0e886..10ab631d 100644
  endif()
  
  if(FreeBSD OR OpenBSD OR NetBSD)
-diff --git a/src/detection/os/os_menix.c b/src/detection/os/os_menix.c
-new file mode 100644
-index 00000000..f27f0876
---- /dev/null
-+++ b/src/detection/os/os_menix.c
+diff -urN --no-dereference fastfetch-clean/src/detection/os/os_menix.c fastfetch-workdir/src/detection/os/os_menix.c
+--- fastfetch-clean/src/detection/os/os_menix.c	1970-01-01 01:00:00.000000000 +0100
++++ fastfetch-workdir/src/detection/os/os_menix.c
 @@ -0,0 +1,7 @@
 +#include "os.h"
 +
@@ -135,11 +116,9 @@ index 00000000..f27f0876
 +    ffStrbufSetStatic(&os->name, "Menix");
 +    ffStrbufSet(&os->version, &instance.state.platform.sysinfo.release);
 +}
-diff --git a/src/logo/ascii/menix.txt b/src/logo/ascii/menix.txt
-new file mode 100644
-index 00000000..1a271f4d
---- /dev/null
-+++ b/src/logo/ascii/menix.txt
+diff -urN --no-dereference fastfetch-clean/src/logo/ascii/menix.txt fastfetch-workdir/src/logo/ascii/menix.txt
+--- fastfetch-clean/src/logo/ascii/menix.txt	1970-01-01 01:00:00.000000000 +0100
++++ fastfetch-workdir/src/logo/ascii/menix.txt
 @@ -0,0 +1,21 @@
 +**************************************
 +**.................****             **
@@ -162,11 +141,30 @@ index 00000000..1a271f4d
 +**         *********................**
 +**         *********................**
 +**************************************
-diff --git a/src/options/general.h b/src/options/general.h
-index 8cb0d488..3f9c0dd6 100644
---- a/src/options/general.h
-+++ b/src/options/general.h
-@@ -16,7 +16,7 @@ typedef struct FFOptionsGeneral
+diff -urN --no-dereference fastfetch-clean/src/logo/builtin.c fastfetch-workdir/src/logo/builtin.c
+--- fastfetch-clean/src/logo/builtin.c
++++ fastfetch-workdir/src/logo/builtin.c
+@@ -2809,6 +2809,16 @@
+             FF_COLOR_FG_CYAN,
+         },
+     },
++    // Menix
++    {
++        .names = {"Menix"},
++        .lines = FASTFETCH_DATATEXT_LOGO_MENIX,
++        .colors = {
++            FF_COLOR_FG_RED,
++        },
++        .colorKeys = FF_COLOR_FG_RED,
++        .colorTitle = FF_COLOR_FG_YELLOW,
++    },
+     // Meowix
+     {
+         .names = {"Meowix"},
+diff -urN --no-dereference fastfetch-clean/src/options/general.h fastfetch-workdir/src/options/general.h
+--- fastfetch-clean/src/options/general.h
++++ fastfetch-workdir/src/options/general.h
+@@ -16,7 +16,7 @@
      bool detectVersion;
  
      // Module options that cannot be put in module option structure
@@ -175,10 +173,9 @@ index 8cb0d488..3f9c0dd6 100644
      FFstrbuf playerName;
      bool escapeBedrock;
      FFDsForceDrmType dsForceDrm;
-diff --git a/src/util/FFstrbuf.h b/src/util/FFstrbuf.h
-index 1c754b10..35120387 100644
---- a/src/util/FFstrbuf.h
-+++ b/src/util/FFstrbuf.h
+diff -urN --no-dereference fastfetch-clean/src/util/FFstrbuf.h fastfetch-workdir/src/util/FFstrbuf.h
+--- fastfetch-clean/src/util/FFstrbuf.h
++++ fastfetch-workdir/src/util/FFstrbuf.h
 @@ -7,6 +7,7 @@
  #include <stdbool.h>
  #include <stdio.h>
@@ -187,10 +184,9 @@ index 1c754b10..35120387 100644
  #include <stdlib.h>
  #include <assert.h>
  
-diff --git a/src/util/platform/FFPlatform_unix.c b/src/util/platform/FFPlatform_unix.c
-index b0d0ac1b..a1e8b7b6 100644
---- a/src/util/platform/FFPlatform_unix.c
-+++ b/src/util/platform/FFPlatform_unix.c
+diff -urN --no-dereference fastfetch-clean/src/util/platform/FFPlatform_unix.c fastfetch-workdir/src/util/platform/FFPlatform_unix.c
+--- fastfetch-clean/src/util/platform/FFPlatform_unix.c
++++ fastfetch-workdir/src/util/platform/FFPlatform_unix.c
 @@ -19,7 +19,7 @@
  static void getExePath(FFPlatform* platform)
  {
@@ -200,6 +196,3 @@ index b0d0ac1b..a1e8b7b6 100644
          ssize_t exePathLen = readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
          exePath[exePathLen] = '\0';
      #elif defined(__APPLE__)
--- 
-2.49.0
-
