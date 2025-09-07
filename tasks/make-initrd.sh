@@ -13,9 +13,15 @@ cd $SYSROOT_DIR
 # Create a symlink to init.
 ln -fs usr/sbin/openrc-init init
 ln -fs usr/lib lib
+ln -fs usr/bin bin
 
 # Create the initrd with the following files:
 FILES=(
+    # Common symlinks
+    bin
+    lib
+    # Supporting files
+    etc/passwd
     # Modules
     usr/share/menix/modules/*
     # libc and loader
@@ -23,20 +29,24 @@ FILES=(
     usr/lib/libc.so
     usr/lib/libpthread.so
     usr/lib/libm.so
-    # init
+    # OpenRC
     init
+    usr/sbin/openrc
     usr/sbin/openrc-init
-    # Shell
-    usr/bin/bash
-    # Test binary
-    usr/bin/test
-    usr/bin/fastfetch
-    # Libraries
-    lib
+    usr/sbin/openrc-run
+    usr/sbin/openrc-shutdown
+    usr/sbin/rc-service
+    usr/sbin/rc-update
+    usr/sbin/start-stop-daemon
+    usr/sbin/supervise-daemon
     usr/lib/librc.so
     usr/lib/librc.so.1
     usr/lib/libeinfo.so
     usr/lib/libeinfo.so.1
+    usr/libexec/rc/*
+    # Shell
+    usr/bin/bash
+    usr/bin/sh
     usr/lib/libreadline.so
     usr/lib/libreadline.so.8
     usr/lib/libreadline.so.8.2
@@ -48,6 +58,9 @@ FILES=(
     usr/lib/libiconv.so.2.7.0
     usr/lib/libtinfo.so
     usr/lib/libtinfow.so
+    # Test binaries
+    usr/bin/test
+    usr/bin/fastfetch
 )
 echo "Installing:" ${FILES[@]}
 

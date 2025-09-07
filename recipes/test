@@ -18,20 +18,17 @@ build() {
 
 int main() {
     printf("Hello, world!\n");
-    char cwd[1024];
-    getcwd(cwd, 1024);
-    printf("%s\n", cwd);
 
-    for (int i = 0; i < 1024; i++) {
-        int forked = fork();
-        if (forked) {
-            printf("I am parent for %i\n", forked);
-        } else {
-            break;
-        }
+    int forked = fork();
+    if (forked) {
+        printf("I am the parent for %i\n", forked);
+    } else {
+        execl("/usr/bin/fastfetch", "/usr/bin/fastfetch", NULL);
     }
 
-    while(1);
+    int error;
+    waitpid(forked, &error, 0);
+    printf("Child exited with code %i\n", WEXITSTATUS(error));
     return 0;
 }
 ' > main.c

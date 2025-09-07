@@ -6,9 +6,10 @@
 			"request": "launch",
 			"name": "Debug x86_64",
 			"targetCreateCommands": [
-				"settings set target.source-map /base_dir ${workspaceFolder}",
-				"target create ${workspaceFolder}/build-x86_64/builds/menix/kernel/menix",
-				//"target modules load --file menix.kso --slide 0xffffffff80000000"
+				"settings set target.source-map /build_dir/builds/menix ${workspaceFolder}/sources/menix",
+				"target create ${workspaceFolder}/build-x86_64/builds/menix/target/x86_64-kernel/release/menix.kso",
+				"target modules load --file menix.kso --slide 0xffffffff80000000"
+
 			],
 			"processCreateCommands": [
 				"gdb-remote localhost:1234"
