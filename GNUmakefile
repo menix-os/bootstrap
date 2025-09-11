@@ -37,7 +37,7 @@ full-install: jinx build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx build-if-needed '*'
 	@cd build-$(ARCH) && ../jinx install sysroot '*'
 
-MINIMAL_PKGS = menix limine mlibc openrc bash test
+MINIMAL_PKGS = base-files menix limine mlibc openrc bash test
 
 # Build only a minimal selection of packages
 .PHONY: minimal-install
