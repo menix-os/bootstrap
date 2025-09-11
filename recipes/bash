@@ -23,6 +23,7 @@ prepare() {
 }
 
 configure() {
+        bash_cv_getcwd_malloc=yes \
     autotools_configure \
         CFLAGS="$TARGET_CFLAGS \
             -std=gnu17 \
