@@ -23,7 +23,7 @@ clean:
 
 jinx:
 	@git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	@git -C jinx-repo checkout 61a1a6f6d4e3351319283db475166a6b1f2768b4
+	@git -C jinx-repo checkout 191ec856c8470208a501e61898b1d792ef0d0c98
 	@mv jinx-repo/jinx ./
 	@rm -rf jinx-repo
 
@@ -34,15 +34,15 @@ build-$(ARCH)/.jinx-parameters:
 # Build all packages
 .PHONY: full-install
 full-install: jinx build-$(ARCH)/.jinx-parameters
-	@cd build-$(ARCH) && ../jinx build-if-needed '*'
+	@cd build-$(ARCH) && ../jinx update '*'
 	@cd build-$(ARCH) && ../jinx install sysroot '*'
 
-MINIMAL_PKGS = base-files menix limine mlibc openrc bash test
+MINIMAL_PKGS = base-files menix limine mlibc openrc bash test fastfetch
 
 # Build only a minimal selection of packages
 .PHONY: minimal-install
 minimal-install: jinx build-$(ARCH)/.jinx-parameters
-	@cd build-$(ARCH) && ../jinx build-if-needed $(MINIMAL_PKGS)
+	@cd build-$(ARCH) && ../jinx update $(MINIMAL_PKGS)
 	@cd build-$(ARCH) && ../jinx install sysroot $(MINIMAL_PKGS)
 
 # --------------

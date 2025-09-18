@@ -1,6 +1,6 @@
 #! /bin/sh
 
-JINX_MAJOR_VER=0.6
+JINX_MAJOR_VER=0.7
 
 OS_TRIPLET=${JINX_ARCH}-menix-mlibc
 
@@ -210,8 +210,8 @@ cmake_configure_noflags() {
 cargo_build() {
     cp -frp "${source_dir}"/. ./
 
-        RUSTUP_HOME="${JINX_CACHE_DIR}/.rustup" \
-        CARGO_HOME="${JINX_CACHE_DIR}/.cargo" \
+        RUSTUP_HOME="${build_dir}/.rustup" \
+        CARGO_HOME="${build_dir}/.cargo" \
     cargo build \
         "$@"
 }
