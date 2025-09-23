@@ -10,6 +10,7 @@ builddeps="mlibc-headers"
 skip_pkg_check=yes
 
 build() {
+        TARGET_CC="clang" \
     cargo_build \
         --release \
         --target="toolchain/${JINX_ARCH}-kernel.json"
