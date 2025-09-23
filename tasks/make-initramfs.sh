@@ -3,10 +3,10 @@
 set -e
 
 SYSROOT_DIR="$1"
-INITRD_PATH="$(realpath $2)"
+INITRAMFS_PATH="$(realpath $2)"
 
 # Make sure the initrd doesn't already exist.
-rm -f $INITRD_PATH
+rm -f $INITRAMFS_PATH
 # `tar` operates on the CWD.
 cd $SYSROOT_DIR
 
@@ -64,4 +64,4 @@ FILES=(
 )
 echo "Installing:" ${FILES[@]}
 
-tar --format=ustar --owner 0 --group 0 -cf $INITRD_PATH "${FILES[@]}"
+tar --format=ustar --owner 0 --group 0 -cf $INITRAMFS_PATH "${FILES[@]}"

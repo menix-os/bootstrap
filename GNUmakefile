@@ -50,11 +50,11 @@ minimal-install: jinx build-$(ARCH)/.jinx-parameters
 # --------------
 
 build-$(ARCH)/menix.img:
-	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 1G 100M
+	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 2G 256M
 
 .PHONY: build-$(ARCH)/initramfs.tar
 build-$(ARCH)/initramfs.tar:
-	./tasks/make-initrd.sh build-$(ARCH)/sysroot $@
+	./tasks/make-initramfs.sh build-$(ARCH)/sysroot $@
 
 # Build a disk image for direct use
 .PHONY: image
@@ -102,6 +102,7 @@ override QEMUFLAGS += -serial stdio \
 	-smp $(SMP) \
 	-no-reboot \
 	-no-shutdown \
+	-device virtio-gpu \
 	-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-$(ARCH).fd,readonly=on
 
 ifeq ($(KVM), 1)
