@@ -16,7 +16,6 @@ prepare() {
 
 configure() {
     autotools_configure \
-        TOOLCHAIN_FOR_TARGET=llvm \
         --enable-all
 }
 
@@ -27,6 +26,5 @@ build() {
 package() {
     DESTDIR="${dest_dir}" make install
 
-        strip_command=strip \
     post_package_strip
 }
