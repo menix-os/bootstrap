@@ -6,7 +6,7 @@ revision=1
 tarball_url="https://github.com/limine-bootloader/limine/releases/download/v${version}/limine-${version}.tar.gz"
 tarball_blake2b="f3085f67d6ba41eef2e5f34de671a307e6034339d16ce5f0e09b08c5d3a32e332a0cdc55fd78872d92e60797d5a03905c06aa4094930b96be8fc7ca504acee84"
 imagedeps="clang build-essential lld llvm mtools nasm"
-hostdeps="gcc autoconf automake"
+hostdeps="gcc binutils autoconf automake"
 deps="core-libs"
 source_hostdeps="automake autoconf"
 
