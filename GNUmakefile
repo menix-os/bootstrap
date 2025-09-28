@@ -118,9 +118,11 @@ endif
 ifeq ($(ARCH),x86_64)
 override QEMUFLAGS += \
 	-machine q35,smm=off
-else
+endif
+
+ifeq ($(ARCH),riscv64)
 override QEMUFLAGS += \
-	-machine virt
+	-machine virt,acpi=off
 endif
 
 .PHONY: qemu
