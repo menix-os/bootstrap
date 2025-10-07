@@ -208,10 +208,14 @@ cmake_configure_noflags() {
 }
 
 cargo_build() {
-    cp -frp "${source_dir}"/. ./
+    TARGET_DIR=$(pwd -P)
+    cd "${source_dir}"
 
         RUSTUP_HOME="${build_dir}/.rustup" \
         CARGO_HOME="${build_dir}/.cargo" \
+        CARGO_TARGET_DIR="${TARGET_DIR}" \
     cargo build \
+        -Z unstable-options \
+        --lockfile-path ${TARGET_DIR}/Cargo.lock \
         "$@"
 }

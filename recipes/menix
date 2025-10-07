@@ -25,8 +25,8 @@ package() {
     mkdir -p "${dest_dir}${prefix}/share/menix/"
     mkdir -p "${dest_dir}${prefix}/share/menix/modules"
 
-    cp "target/${MENIX_ARCH}-kernel/release/menix.kso" "${dest_dir}${prefix}/share/menix/menix"
+    cp "${MENIX_ARCH}-kernel/release/menix.kso" "${dest_dir}${prefix}/share/menix/menix"
     post_package_strip "${dest_dir}${prefix}/share/menix/menix" -R .rustc
-    install -m644 "target/${MENIX_ARCH}-kernel/release/"*.kso "${dest_dir}${prefix}/share/menix/modules"
+    install -m644 "${MENIX_ARCH}-kernel/release/"*.kso "${dest_dir}${prefix}/share/menix/modules"
     rm "${dest_dir}${prefix}/share/menix/modules/menix.kso"
 }
