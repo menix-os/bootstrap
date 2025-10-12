@@ -11,7 +11,7 @@ HISTCONTROL=ignoredups
 HISTSIZE=-1
 HISTFILESIZE=-1
 
-PS1='[\u@\h \W]\$ '
+PS1='\[\e[38;5;45m\]\u\[\e[0m\]@\[\e[38;5;41m\]\h\[\e[0m\] \w> '
 
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
