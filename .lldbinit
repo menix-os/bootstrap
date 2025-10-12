@@ -1,0 +1,4 @@
+settings set target.source-map /build_dir/builds/menix sources/menix
+target create build-x86_64/builds/menix/x86_64-kernel/release/menix.kso
+target modules load --file menix.kso --slide 0xffffffff80000000
+gdb-remote 1234
