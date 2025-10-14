@@ -17,13 +17,13 @@ ln -fs usr/bin bin
 
 # Create the initrd with the following files:
 FILES=(
+    # Menix components
+    usr/bin/posix
     # Common symlinks
     bin
     lib
     # Supporting files
     etc/passwd
-    # Modules
-    usr/share/menix/modules/*
     # libc and loader
     usr/lib/ld.so
     usr/lib/libc.so
