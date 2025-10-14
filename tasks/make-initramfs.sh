@@ -39,23 +39,17 @@ FILES=(
     usr/sbin/rc-update
     usr/sbin/start-stop-daemon
     usr/sbin/supervise-daemon
-    usr/lib/librc.so
-    usr/lib/librc.so.1
-    usr/lib/libeinfo.so
-    usr/lib/libeinfo.so.1
+    usr/lib/librc.so*
+    usr/lib/libeinfo.so*
     usr/libexec/rc/*
     # Shell
     usr/bin/bash
     usr/bin/sh
-    usr/lib/libreadline.so
-    usr/lib/libreadline.so.8
-    usr/lib/libreadline.so.8.2
-    usr/lib/libintl.so
-    usr/lib/libintl.so.8
-    usr/lib/libintl.so.8.4.2
-    usr/lib/libiconv.so
-    usr/lib/libiconv.so.2
-    usr/lib/libiconv.so.2.7.0
+    etc/bash.bashrc
+    etc/bash.bash_logout
+    usr/lib/libreadline.so*
+    usr/lib/libintl.so*
+    usr/lib/libiconv.so*
     usr/lib/libtinfo.so
     usr/lib/libtinfow.so
     # Test binaries
