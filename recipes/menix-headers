@@ -1,15 +1,15 @@
 #! /bin/sh
 
-name=menix
+name=menix-headers
 from_source=menix
 revision=1
 imagedeps="build-essential meson ninja-build"
-hostdeps="gcc binutils"
-builddeps="mlibc-headers mlibc"
+hostdeps="gcc"
 skip_pkg_check=yes
 
 configure() {
-    meson_configure
+    meson_configure \
+        -Dheaders_only=true
 }
 
 build() {
