@@ -5,7 +5,7 @@ from_source=menix
 revision=1
 imagedeps="build-essential meson ninja-build"
 hostdeps="gcc binutils"
-builddeps="mlibc-headers mlibc"
+deps="mlibc"
 skip_pkg_check=yes
 
 configure() {
