@@ -42,6 +42,9 @@ FILES=(
     usr/lib/librc.so*
     usr/lib/libeinfo.so*
     usr/libexec/rc/*
+    etc/rc.conf
+    etc/init.d/*
+    etc/conf.d/*
     # Shell
     usr/bin/bash
     usr/bin/sh

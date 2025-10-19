@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=openrc
-version=0.61
+version=0.63
 revision=1
-tarball_url="https://github.com/OpenRC/openrc/archive/refs/tags/0.61.tar.gz"
-tarball_blake2b="d009680e4c18981ff46218836abd9a8662b511c06d9856e994d403a89fe7bc2557f0bba8c8a13128f084895c0bc71c7646d13aa978fbfe76ba8b23d58bb0ac7e"
+tarball_url="https://github.com/OpenRC/openrc/archive/refs/tags/${version}.tar.gz"
+tarball_blake2b="70800a0115966ca20ec2fb245e0039cff33696a5ae0fdc314b032f29fbd54c5b246e01890d752daaefd41d3ba08ce2f91adb02d327d595c3fcb3d71d59357ed5"
 imagedeps="build-essential meson ninja-build"
 hostdeps="binutils gcc pkg-config"
 deps="core-libs"
@@ -16,7 +16,6 @@ configure() {
         -Dbranding=\"Menix\" \
         -Dlocal_prefix=usr/local \
         -Dnewnet=false \
-        -Dos=Menix \
         -Dpam=false \
         -Dpkg_prefix=usr \
         -Dselinux=disabled \
