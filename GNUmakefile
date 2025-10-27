@@ -27,7 +27,7 @@ jinx:
 	@mv jinx-repo/jinx ./
 	@rm -rf jinx-repo
 
-build-$(ARCH)/.jinx-parameters:
+build-$(ARCH)/.jinx-parameters: jinx
 	@mkdir -p build-$(ARCH)
 	@cd build-$(ARCH) && ../jinx init .. ARCH=$(ARCH)
 
