@@ -23,7 +23,7 @@ clean:
 
 jinx:
 	@git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	@git -C jinx-repo checkout d29a3561dc90a7c0b42f62ae9521885f152fc877
+	@git -C jinx-repo checkout 0605a4c50d26316ef7a6c6324bdae3853cbc8cbf
 	@mv jinx-repo/jinx ./
 	@rm -rf jinx-repo
 
