@@ -1,18 +1,18 @@
 #! /bin/sh
 
 name=readline
-_patch=13
-version=8.2p${_patch}
-revision=2
-tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-8.2.tar.gz"
-tarball_blake2b="7974322b9c092a756a79e537df08e8532f8e0fcb598f77732e28287c33ebec9e9837ed88b43334c310892d56a871b423903f0f564def2fbe700a1004f2ae7b18"
+_patch=01
+version=8.3p${_patch}
+revision=1
+tarball_url="https://ftpmirror.gnu.org/gnu/readline/readline-8.3.tar.gz"
+tarball_blake2b="45d6fe7e34c56d309102a94aa776a7f5284201e844450e14ff818df9fa84a72154bdca70f11828c94954b080cbbe4666fa0b00ffa8460118ec8f3ea551b73dad"
 source_allow_network="yes"
 hostdeps="gcc pkg-config"
 deps="core-libs ncurses"
 
 prepare() {
     for p in $(seq -w 0${_patch}); do
-        curl -L https://ftpmirror.gnu.org/gnu/readline/readline-8.2-patches/readline82-$p | patch -p0
+        curl -L https://ftpmirror.gnu.org/gnu/readline/readline-8.3-patches/readline83-$p | patch -p0
     done
 
     autotools_recursive_regen
@@ -31,8 +31,8 @@ build() {
 package() {
     make install DESTDIR="${dest_dir}"
 
-    ln -svn libhistory.so.8.2 ${dest_dir}${prefix}/lib/libhistory.so.8
-    ln -svn libreadline.so.8.2 ${dest_dir}${prefix}/lib/libreadline.so.8
+    ln -svn libhistory.so.8.3 ${dest_dir}${prefix}/lib/libhistory.so.8
+    ln -svn libreadline.so.8.3 ${dest_dir}${prefix}/lib/libreadline.so.8
     ln -svn libhistory.so.8 ${dest_dir}${prefix}/lib/libhistory.so
     ln -svn libreadline.so.8 ${dest_dir}${prefix}/lib/libreadline.so
 
