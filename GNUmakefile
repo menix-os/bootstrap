@@ -14,36 +14,29 @@ clean:
 	rm -rf build-$(ARCH)
 	rm -rf .jinx-cache
 	rm -rf sources
-	rm -f jinx
 	@echo "Cleaned repository"
 
 # -------------
 # Jinx packages
 # -------------
 
-jinx:
-	@git clone https://codeberg.org/mintsuki/jinx.git jinx-repo
-	@git -C jinx-repo checkout 2b2e0f51716532ec5bbd1a268392a1448ce516de
-	@mv jinx-repo/jinx ./
-	@rm -rf jinx-repo
-
-build-$(ARCH)/.jinx-parameters: jinx
+build-$(ARCH)/.jinx-parameters:
 	@mkdir -p build-$(ARCH)
-	@cd build-$(ARCH) && ../jinx init .. ARCH=$(ARCH)
+	@cd build-$(ARCH) && ../jinx/jinx init .. ARCH=$(ARCH)
 
 # Build all packages
 .PHONY: full-install
-full-install: jinx build-$(ARCH)/.jinx-parameters
-	@cd build-$(ARCH) && ../jinx update '*'
-	@cd build-$(ARCH) && ../jinx install sysroot '*'
+full-install: build-$(ARCH)/.jinx-parameters
+	@cd build-$(ARCH) && ../jinx/jinx update '*'
+	@cd build-$(ARCH) && ../jinx/jinx install sysroot '*'
 
 MINIMAL_PKGS = base-files menix limine mlibc openrc bash test fastfetch
 
 # Build only a minimal selection of packages
 .PHONY: minimal-install
-minimal-install: jinx build-$(ARCH)/.jinx-parameters
-	@cd build-$(ARCH) && ../jinx update $(MINIMAL_PKGS)
-	@cd build-$(ARCH) && ../jinx install sysroot $(MINIMAL_PKGS)
+minimal-install: build-$(ARCH)/.jinx-parameters
+	@cd build-$(ARCH) && ../jinx/jinx update $(MINIMAL_PKGS)
+	@cd build-$(ARCH) && ../jinx/jinx install sysroot $(MINIMAL_PKGS)
 
 # --------------
 # Image creation
@@ -58,7 +51,7 @@ build-$(ARCH)/initramfs.tar:
 
 # Build a disk image for direct use
 .PHONY: image
-image: jinx build-$(ARCH)/.jinx-parameters build-$(ARCH)/menix.img build-$(ARCH)/initramfs.tar
+image: build-$(ARCH)/.jinx-parameters build-$(ARCH)/menix.img build-$(ARCH)/initramfs.tar
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
@@ -67,7 +60,7 @@ image: jinx build-$(ARCH)/.jinx-parameters build-$(ARCH)/menix.img build-$(ARCH)
 
 # Build an ISO image
 .PHONY: iso
-iso: jinx build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
+iso: build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
 	./tasks/make-iso.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
@@ -80,9 +73,9 @@ iso: jinx build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
 
 # Shortcut to build and reinstall the kernel
 .PHONY: remake-kernel
-remake-kernel: jinx build-$(ARCH)/.jinx-parameters
-	@cd build-$(ARCH) && ../jinx build menix
-	@cd build-$(ARCH) && ../jinx reinstall sysroot menix
+remake-kernel: build-$(ARCH)/.jinx-parameters
+	@cd build-$(ARCH) && ../jinx/jinx build menix
+	@cd build-$(ARCH) && ../jinx/jinx reinstall sysroot menix
 
 ovmf/ovmf-code-$(ARCH).fd:
 	mkdir -p ovmf

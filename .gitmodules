@@ -1,0 +1,3 @@
+[submodule "jinx"]
+	path = jinx
+	url = https://codeberg.org/mintsuki/jinx.git
