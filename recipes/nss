@@ -1,10 +1,10 @@
 #! /bin/sh
 
 name=nss
-version=3.112
+version=3.117
 revision=1
-tarball_url="https://archive.mozilla.org/pub/security/nss/releases/NSS_3_112_RTM/src/nss-${version}.tar.gz"
-tarball_blake2b="0de17bfe86ac9e752c4f0c5a4f6db217a74e460850bf79d9bf1fc1b1b2279ad80fb8c4591bea0642d23fa532e71fdb8382ae1dbc797a3a14303439d1aa4868a6"
+tarball_url="https://archive.mozilla.org/pub/security/nss/releases/NSS_$(echo ${version} | sed 's/\./_/g')_RTM/src/nss-${version}.tar.gz"
+tarball_blake2b="cf078cb1d48fbbf39e2661b6cdb9d610db3d0c13bcec68bacaf7cce8165cbf91229f9931008d1bfd28a561cc1fca994fbf3a174ddb7de2cf10ad4208926764a0"
 imagedeps="build-essential gcc libnspr4-dev"
 hostdeps="gcc pkg-config"
 deps="core-libs nspr p11-kit sqlite zlib"
@@ -21,7 +21,7 @@ build() {
     # First, build a host version of nsinstall.
         CC=gcc \
         BUILD_OPT=1 \
-        NSPR_INCLUDE_DIR=${prefix}/include/nspr \
+        NSPR_INCLUDE_DIR=/usr/include/nspr \
         USE_SYSTEM_ZLIB=1 \
         ZLIB_LIBS=-lz \
         NSS_ENABLE_WERROR=0 \
@@ -55,12 +55,14 @@ build() {
         export SOURCE_PREFIX=${build_dir}/builds/${name}/nss/dist
         export CC=${OS_TRIPLET}-gcc
         export CXX=${OS_TRIPLET}-g++
+        export XCFLAGS="${TARGET_CFLAGS}"
+        export LDFLAGS="${TARGET_LDFLAGS}"
 
         # Then, build some configuration items courtesy of BLFS (see the patches).
-        make V=1 -C config NSINSTALL=${nsinstall} -j${parallelism}
+        make V=1 -C config OS_TEST=${JINX_ARCH} NSINSTALL=${nsinstall} -j${parallelism}
 
         # Then build the main libraries and binaries.
-        make V=1 NSINSTALL=${nsinstall} -j${parallelism}
+        make V=1 OS_TEST=${JINX_ARCH} NSINSTALL=${nsinstall} -j${parallelism}
     )
 }
 

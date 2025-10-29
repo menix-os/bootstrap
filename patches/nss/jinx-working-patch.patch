@@ -261,7 +261,7 @@ diff -urN --no-dereference nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/
  #include <unistd.h>
  #endif
 -#if defined(LINUX) && !defined(ANDROID)
-+#if defined(LINUX) && !defined(ANDROID) && !defined(__ironclad__)
++#if defined(LINUX) && !defined(ANDROID) && !defined(__menix__)
  #include <linux/magic.h>
  #include <sys/vfs.h>
  #endif
@@ -270,7 +270,7 @@ diff -urN --no-dereference nss-clean/nss/lib/softoken/sdb.c nss-workdir/nss/lib/
  
      if (checkFSType) {
 -#if defined(LINUX) && !defined(ANDROID)
-+#if defined(LINUX) && !defined(ANDROID) && !defined(__ironclad__)
++#if defined(LINUX) && !defined(ANDROID) && !defined(__menix__)
          struct statfs statfs_s;
          if (statfs(dbname, &statfs_s) == 0) {
              switch (statfs_s.f_type) {
