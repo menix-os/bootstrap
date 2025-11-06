@@ -7,7 +7,6 @@
 .jinx-cache/
 build-*/
 sources/
-jinx
 
 # Other files
 ovmf/

@@ -1,6 +1,8 @@
 #! /bin/sh
 
-JINX_MAJOR_VER=0.7
+JINX_MAJOR_VER=0.8
+JINX_DEBIAN_SNAPSHOT="20251020T082908Z"
+JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext m4 make mercurial meson ninja-build perl python3 texinfo w3m which xmlto xsltproc"
 
 OS_TRIPLET=${JINX_ARCH}-menix-mlibc
 
@@ -8,7 +10,7 @@ HOST_CFLAGS="-O2 -pipe -fPIC -fPIE"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
 HOST_LDFLAGS="-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,now"
 
-TARGET_CFLAGS="$HOST_CFLAGS"
+TARGET_CFLAGS="$HOST_CFLAGS -g"
 TARGET_CXXFLAGS="$HOST_CXXFLAGS"
 TARGET_LDFLAGS="$HOST_LDFLAGS"
 
@@ -189,8 +191,9 @@ cmake_configure_noflags() {
     fi
 
         OS_TRIPLET=${OS_TRIPLET} \
+        JINX_ARCH=${JINX_ARCH} \
         sysroot_dir=${sysroot_dir} \
-    envsubst '$sysroot_dir $OS_TRIPLET' < "${base_dir}/support/CMakeToolchain.txt" > $(pwd -P)/cross-file.txt
+    envsubst '$OS_TRIPLET $JINX_ARCH $sysroot_dir' < "${base_dir}/support/CMakeToolchain.txt" > $(pwd -P)/cross-file.txt
 
     PKG_CONFIG="/usr/local/bin/$OS_TRIPLET-pkg-config" \
     cmake "${cmake_source_dir}"  \
@@ -207,6 +210,20 @@ cmake_configure_noflags() {
         "$@"
 }
 
+cargo_build_nolock() {
+    TARGET_DIR=$(pwd -P)
+    cd "${source_dir}"
+
+        RUSTUP_HOME="${build_dir}/.rustup" \
+        CARGO_HOME="${build_dir}/.cargo" \
+        CARGO_TARGET_DIR="${TARGET_DIR}" \
+    cargo build \
+        --release \
+        -Z unstable-options \
+        --lockfile-path ${TARGET_DIR}/Cargo.lock \
+        "$@"
+}
+
 cargo_build() {
     TARGET_DIR=$(pwd -P)
     cd "${source_dir}"
@@ -215,7 +232,6 @@ cargo_build() {
         CARGO_HOME="${build_dir}/.cargo" \
         CARGO_TARGET_DIR="${TARGET_DIR}" \
     cargo build \
-        -Z unstable-options \
-        --lockfile-path ${TARGET_DIR}/Cargo.lock \
+        --release \
         "$@"
 }
