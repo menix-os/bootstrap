@@ -55,7 +55,7 @@ build() {
         export SOURCE_PREFIX=${build_dir}/builds/${name}/nss/dist
         export CC=${OS_TRIPLET}-gcc
         export CXX=${OS_TRIPLET}-g++
-        export XCFLAGS="${TARGET_CFLAGS}"
+        export XCFLAGS="-O2 -pipe" # Using TARGET_CFLAGS here will cause linking errors.
         export LDFLAGS="${TARGET_LDFLAGS}"
 
         # Then, build some configuration items courtesy of BLFS (see the patches).
