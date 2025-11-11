@@ -47,12 +47,16 @@ build-$(ARCH)/menix.img:
 
 .PHONY: build-$(ARCH)/initramfs.tar
 build-$(ARCH)/initramfs.tar:
-	./tasks/make-initramfs.sh build-$(ARCH)/sysroot $@
+	./tasks/make-initramfs.sh \
+		jinx/jinx \
+		build-$(ARCH) \
+		$@
 
 # Build a disk image for direct use
 .PHONY: image
 image: build-$(ARCH)/.jinx-parameters build-$(ARCH)/menix.img build-$(ARCH)/initramfs.tar
-	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/make-image.sh \
+		@PATH=$$PATH:/usr/sbin:/sbin \
+	./tasks/make-image.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
 		build-$(ARCH)/menix.img \

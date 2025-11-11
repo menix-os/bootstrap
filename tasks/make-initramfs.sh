@@ -2,27 +2,47 @@
 
 set -e
 
-SYSROOT_DIR="$1"
-INITRAMFS_PATH="$(realpath $2)"
+JINX="$(realpath $1)"
+BUILD_DIR="$(realpath $2)"
+INITRAMFS_DIR="$BUILD_DIR/initramfs"
+INITRAMFS_PATH="$(realpath $3)"
 
-# Make sure the initrd doesn't already exist.
+# Make sure the initramfs doesn't already exist.
 rm -f $INITRAMFS_PATH
+mkdir -p $INITRAMFS_DIR
+
+# Install all the programs we want in the initrd to the directory.
+cd $BUILD_DIR
+
+# We want these packages in the initramfs.
+PKGS=(
+    base-files
+    menix
+    coreutils
+    bash
+    limine
+    mlibc
+    openrc
+    fastfetch
+)
+$JINX install $INITRAMFS_DIR "${PKGS[@]}"
+
 # `tar` operates on the CWD.
-cd $SYSROOT_DIR
+cd $INITRAMFS_DIR
 
 # Create a symlink to init.
 ln -fs usr/sbin/openrc-init init
 ln -fs usr/lib lib
 ln -fs usr/bin bin
 
-# Create the initrd with the following files:
+# From those packages, create the initramfs with the following files.
 FILES=(
-    # Common symlinks
+    # Compatibility symlinks
     bin
     lib
     # Supporting files
     etc/passwd
-    # Modules
+    # Kernel modules
     usr/share/menix/modules/*
     # libc and loader
     usr/lib/ld.so
@@ -55,9 +75,8 @@ FILES=(
     usr/lib/libiconv.so*
     usr/lib/libtinfo.so
     usr/lib/libtinfow.so
-    # Test binaries
-    usr/bin/test
-    usr/bin/fastfetch
+    # All other utils
+    usr/bin/*
 )
 echo "Installing:" ${FILES[@]}
 
