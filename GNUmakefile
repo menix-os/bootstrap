@@ -80,6 +80,7 @@ iso: build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
 remake-kernel: build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx/jinx build menix
 	@cd build-$(ARCH) && ../jinx/jinx reinstall sysroot menix
+	@cd build-$(ARCH) && ../jinx/jinx reinstall initramfs menix
 
 ovmf/ovmf-code-$(ARCH).fd:
 	mkdir -p ovmf
