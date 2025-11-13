@@ -1,0 +1,105 @@
+diff --git xorg-server-clean/hw/xfree86/common/xf86Config.c xorg-server-workdir/hw/xfree86/common/xf86Config.c
+index 8d8ebf1..87c2449 100644
+--- xorg-server-clean/hw/xfree86/common/xf86Config.c
++++ xorg-server-workdir/hw/xfree86/common/xf86Config.c
+@@ -49,6 +49,8 @@
+ #include <sys/types.h>
+ #include <grp.h>
+ 
++#include <sys/stat.h>
++
+ #include "xf86.h"
+ #include "xf86Modes.h"
+ #include "xf86Parser.h"
+diff --git xorg-server-clean/hw/xfree86/common/xf86Configure.c xorg-server-workdir/hw/xfree86/common/xf86Configure.c
+index 2b4105f..e6fbed9 100644
+--- xorg-server-clean/hw/xfree86/common/xf86Configure.c
++++ xorg-server-workdir/hw/xfree86/common/xf86Configure.c
+@@ -27,6 +27,8 @@
+ #include <xorg-config.h>
+ #endif
+ 
++#include <errno.h>
++
+ #include "xf86.h"
+ #include "xf86Config.h"
+ #include "xf86_OSlib.h"
+diff --git xorg-server-clean/hw/xfree86/common/xf86Events.c xorg-server-workdir/hw/xfree86/common/xf86Events.c
+index 395bbc7..4bf86cb 100644
+--- xorg-server-clean/hw/xfree86/common/xf86Events.c
++++ xorg-server-workdir/hw/xfree86/common/xf86Events.c
+@@ -53,6 +53,8 @@
+ #include <xorg-config.h>
+ #endif
+ 
++#include <errno.h>
++
+ #include <X11/X.h>
+ #include <X11/Xproto.h>
+ #include <X11/Xatom.h>
+diff --git xorg-server-clean/hw/xfree86/common/xf86Helper.c xorg-server-workdir/hw/xfree86/common/xf86Helper.c
+index 98dc372..9ddcbdb 100644
+--- xorg-server-clean/hw/xfree86/common/xf86Helper.c
++++ xorg-server-workdir/hw/xfree86/common/xf86Helper.c
+@@ -38,6 +38,8 @@
+ #include <xorg-config.h>
+ #endif
+ 
++#include <sys/stat.h>
++
+ #include <X11/X.h>
+ #include "mi.h"
+ #include "os.h"
+diff --git xorg-server-clean/hw/xfree86/common/xf86Init.c xorg-server-workdir/hw/xfree86/common/xf86Init.c
+index 5695e71..c9230aa 100644
+--- xorg-server-clean/hw/xfree86/common/xf86Init.c
++++ xorg-server-workdir/hw/xfree86/common/xf86Init.c
+@@ -34,6 +34,7 @@
+ #include <xorg-config.h>
+ #endif
+ 
++#include <sys/stat.h>
+ #include <stdlib.h>
+ #include <errno.h>
+ 
+diff --git xorg-server-clean/hw/xfree86/drivers/modesetting/driver.c xorg-server-workdir/hw/xfree86/drivers/modesetting/driver.c
+index fe3315a..275a9a9 100644
+--- xorg-server-clean/hw/xfree86/drivers/modesetting/driver.c
++++ xorg-server-workdir/hw/xfree86/drivers/modesetting/driver.c
+@@ -121,7 +121,7 @@ _X_EXPORT DriverRec modesetting = {
+     NULL,
+     0,
+     ms_driver_func,
+-    ms_device_match,
++    NULL,
+     ms_pci_probe,
+ #ifdef XSERVER_PLATFORM_BUS
+     ms_platform_probe,
+diff --git xorg-server-clean/hw/xfree86/os-support/shared/posix_tty.c xorg-server-workdir/hw/xfree86/os-support/shared/posix_tty.c
+index 0cb9788..e8cac5d 100644
+--- xorg-server-clean/hw/xfree86/os-support/shared/posix_tty.c
++++ xorg-server-workdir/hw/xfree86/os-support/shared/posix_tty.c
+@@ -56,6 +56,9 @@
+ #include <xorg-config.h>
+ #endif
+ 
++#include <termios.h>
++#include <errno.h>
++
+ #include <X11/X.h>
+ #include <xserver_poll.h>
+ #include "xf86.h"
+diff --git xorg-server-clean/hw/xfree86/os-support/shared/sigio.c xorg-server-workdir/hw/xfree86/os-support/shared/sigio.c
+index ad8af60..6f81278 100644
+--- xorg-server-clean/hw/xfree86/os-support/shared/sigio.c
++++ xorg-server-workdir/hw/xfree86/os-support/shared/sigio.c
+@@ -56,6 +56,9 @@
+ #include <xorg-config.h>
+ #endif
+ 
++#include <sys/stat.h>
++#include <errno.h>
++
+ #include <X11/X.h>
+ #include <xserver_poll.h>
+ #include "xf86.h"
