@@ -1,0 +1,20 @@
+diff --git thunar-clean/thunar/thunar-preferences.c thunar-workdir/thunar/thunar-preferences.c
+index 9633f6b..560f40c 100644
+--- thunar-clean/thunar/thunar-preferences.c
++++ thunar-workdir/thunar/thunar-preferences.c
+@@ -1498,6 +1498,7 @@ thunar_preferences_class_init (ThunarPreferencesClass *klass)
+                      THUNAR_FILE_DRAG_MODE_MENU_ALWAYS,
+                      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+ 
++#ifdef HAVE_VTE
+   /**              
+    * ThunarPreferences:terminal-height:
+    *
+@@ -1573,7 +1574,6 @@ thunar_preferences_class_init (ThunarPreferencesClass *klass)
+                         FALSE,
+                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+ 
+-#ifdef HAVE_VTE
+   /**
+    * ThunarPreferences:terminal-font-size:
+    *
