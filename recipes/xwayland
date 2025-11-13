@@ -5,8 +5,8 @@ version=24.1.6
 revision=1
 tarball_url="https://www.x.org/pub/individual/xserver/xwayland-${version}.tar.xz"
 tarball_blake2b="e29a349bd7bc815a4005c8d7fe26697dc6444a3d866cee9673b0f72dbeb377e21c09800f16468a46f9b8f3ae6a10907ef0625e928acf991174ffd65fd01748be"
-imagedeps="pkg-config libwayland-bin"
-hostdeps="gcc pkg-config"
+imagedeps="pkg-config"
+hostdeps="gcc pkg-config wayland"
 deps="core-libs libxcvt pixman wayland-protocols libepoxy mesa libgcrypt nettle xorg-xkbcomp libxfont2 systemd"
 
 regenerate() {

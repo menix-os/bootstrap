@@ -5,8 +5,8 @@ version=14.0.2
 revision=1
 tarball_url="https://gitlab.freedesktop.org/wayland/weston/-/releases/${version}/downloads/weston-${version}.tar.xz"
 tarball_blake2b="5ba3a563925d966adf1fdb5f7e00f90ad0b27b0fdb3781f055f17f01e75ff234f9103529bd8a24d440047ec654db91f8f264da6228410dd2b668138ad458f6ae"
-imagedeps="`#python3-mako python3-yaml glslang-tools`libwayland-bin pkg-config"
-hostdeps="gcc pkg-config"
+imagedeps="`#python3-mako python3-yaml glslang-tools`pkg-config"
+hostdeps="gcc pkg-config wayland"
 deps="core-libs cairo libinput libxkbcommon mesa wayland wayland-protocols libxcursor xwayland pango glib2 libjpeg-turbo seatd xcb-util-cursor libdisplay-info systemd"
 
 configure() {
