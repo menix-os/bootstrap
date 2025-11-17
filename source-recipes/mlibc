@@ -3,5 +3,5 @@
 name=mlibc
 version=6.3.0
 git_url="https://github.com/menix-os/mlibc.git"
-commit="78fb77ddab1ff902460699aa994925ccf5a8d275"
+commit="563e9b3750585d96d62c28942d8db3e3f4f42492"
 shallow=no

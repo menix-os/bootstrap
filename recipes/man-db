@@ -16,8 +16,6 @@ prepare() {
 configure() {
     autotools_configure \
         --disable-setuid \
-        --with-systemdtmpfilesdir=${prefix}/lib/tmpfiles.d \
-        --with-systemdsystemunitdir=${prefix}/lib/systemd/system \
         --with-pager=${prefix}/bin/less
 }
 

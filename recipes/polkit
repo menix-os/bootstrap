@@ -8,7 +8,7 @@ tarball_blake2b="2e86c8853edf29879d8367b77d210d3a891178297cb5f9eb204a953bfaa66f6
 # imagedeps="build-essential patchelf pkg-config"
 imagedeps="libglib2.0-dev-bin"
 hostdeps="gcc pkg-config"
-deps="core-libs duktape glib2 libxslt systemd dbus"
+deps="core-libs duktape glib2 libxslt dbus"
 
 configure() {
     meson_configure \
@@ -18,7 +18,6 @@ configure() {
         -Dsession_tracking=logind \
         -Dauthfw=shadow \
         -Dos_type=lfs \
-        -Dsystemdsystemunitdir=${prefix}/lib/systemd/system \
         -Dsysusers_dir=${prefix}/lib/sysusers.d \
         -Dtmpfiles_dir=${prefix}/lib/tmpfiles.d
 }

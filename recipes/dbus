@@ -6,13 +6,11 @@ revision=2
 git_url="https://gitlab.freedesktop.org/dbus/dbus.git"
 commit=958bf9db2100553bcd2fe2a854e1ebb42e886054
 hostdeps="gcc pkg-config"
-deps="core-libs libexpat libx11 systemd"
+deps="core-libs libexpat libx11"
 
 configure() {
     meson_configure \
         -Druntime_dir=/run \
-        -Dsystemd_system_unitdir=${prefix}/lib/systemd/system \
-        -Dsystemd_user_unitdir=${prefix}/lib/systemd/user \
         -Dsystem_pid_file=/run/dbus/pid \
         -Dsystem_socket=/run/dbus/system_bus_socket \
         -Dselinux=disabled \
@@ -20,7 +18,7 @@ configure() {
         -Dlibaudit=disabled \
         -Dkqueue=disabled \
         -Dlaunchd=disabled \
-        -Dsystemd=enabled \
+        -Dsystemd=disabled \
         -Dmodular_tests=disabled
 }
 
