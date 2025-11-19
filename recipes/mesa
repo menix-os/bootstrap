@@ -10,13 +10,11 @@ hostdeps="gcc pkg-config"
 deps="core-libs libdrm libexpat libglvnd libx11 libxcb libxext libxfixes libxrandr libxshmfence libxxf86vm llvm xcb-util-keysyms zlib zstd"
 
 configure() {
-# -Dgallium-drivers=r300,r600,nouveau,virgl,svga,i915,crocus,zink,softpipe,llvmpipe \
-# -Dvulkan-drivers=amd,swrast,virtio \
-#         -Dvulkan-layers=device-select,intel-nullhw,overlay \
     meson_configure \
         -Db_ndebug=true \
         -Dbuild-tests=false \
         -Dshared-glapi=enabled \
+        -Dplatforms=x11 \
         -Dexpat=enabled \
         -Dgbm=enabled \
         -Dgles1=enabled \
@@ -27,10 +25,8 @@ configure() {
         -Dzstd=enabled \
         -Dosmesa=false \
         -Dvideo-codecs=all_free \
-        -Dvulkan-drivers='' \
-        -Dgallium-drivers=softpipe,llvmpipe \
-        -Dgallium-extra-hud=true \
-        -Dgallium-rusticl=false
+        -Dvulkan-drivers=swrast \
+        -Dgallium-drivers=softpipe,llvmpipe
 }
 
 build() {
