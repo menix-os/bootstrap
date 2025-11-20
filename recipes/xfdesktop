@@ -7,7 +7,7 @@ tarball_url="https://archive.xfce.org/src/xfce/xfdesktop/4.20/xfdesktop-${versio
 tarball_blake2b="b9ce68433181221c20b15bab27d1652ef044b0a1524d9acfbff12b40034f629af8b99eebb6b8874816cc37f4db4874ceca03eec51c7cf091795f0b934d3fd20b"
 imagedeps="pkg-config"
 hostdeps="gcc glib2 pkg-config"
-deps="core-libs exo gtk3 gtk-layer-shell libwnck libxfce4ui libxfce4util libxfce4windowing libyaml"
+deps="core-libs exo gtk3 libwnck libxfce4ui libxfce4util libxfce4windowing libyaml"
 
 configure() {
     meson_configure \
