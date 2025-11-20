@@ -7,7 +7,7 @@ tarball_url="https://www.freedesktop.org/software/libevdev/libevdev-${version}.t
 tarball_blake2b="05560ddbbeab9aa8e7cf3964d5ea7cb692d5f4381d6ab458fc27b719e3df4e0ea239f688eeb0912987796800aa38c61ddbc320780a33c59e3b603d188e08be7b"
 imagedeps="python3"
 hostdeps="gcc pkg-config"
-deps="core-libs mtdev"
+deps="core-libs"
 
 prepare() {
     autotools_recursive_regen
