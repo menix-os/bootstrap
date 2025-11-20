@@ -16,6 +16,7 @@ configure() {
         -Dprint_backends=file \
         -Dintrospection=false \
         -Dx11_backend=true \
+        -Dwayland_backend=false \
         -Dbroadway_backend=true \
         -Dcolord=no
 }
