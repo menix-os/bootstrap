@@ -18,13 +18,14 @@ configure() {
 }
 
 build() {
-    # meson compile -j${parallelism}/
     make -j${parallelism}
 }
 
 package() {
-    # DESTDIR="${dest_dir}" meson install --no-rebuild
     DESTDIR="${dest_dir}" make install
+
+    mkdir -p "${dest_dir}/${prefix}/include/linux"
+    cp -r "${source_dir}/include/." "${dest_dir}/${prefix}/include"
 
     post_package_strip
 }

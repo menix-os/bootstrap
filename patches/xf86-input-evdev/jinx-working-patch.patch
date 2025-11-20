@@ -1,0 +1,13 @@
+diff --git xf86-input-evdev-clean/configure xf86-input-evdev-workdir/configure
+index 7fedea7..5002a84 100755
+--- xf86-input-evdev-clean/configure
++++ xf86-input-evdev-workdir/configure
+@@ -19417,7 +19417,7 @@ else
+         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ printf "%s\n" "yes" >&6; }
+ 
+-printf "%s\n" "#define HAVE_LIBUDEV 1" >>confdefs.h
++# printf "%s\n" "#define HAVE_LIBUDEV 1" >>confdefs.h
+ 
+ fi
+ 
