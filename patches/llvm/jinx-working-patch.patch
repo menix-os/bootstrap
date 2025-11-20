@@ -100,10 +100,10 @@ index 0268ec4..56bd18b 100644
    ToolChains/MSP430.cpp
 diff --git llvm-workdir/clang/lib/Driver/ToolChains/Menix.cpp llvm-workdir/clang/lib/Driver/ToolChains/Menix.cpp
 new file mode 100644
-index 0000000..b1b3b6c
+index 0000000..35e8280
 --- /dev/null
 +++ llvm-workdir/clang/lib/Driver/ToolChains/Menix.cpp
-@@ -0,0 +1,155 @@
+@@ -0,0 +1,153 @@
 +//===--- Menix.h - Menix ToolChain Implementations --------------*- C++ -*-===//
 +//
 +// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -111,16 +111,14 @@ index 0000000..b1b3b6c
 +// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 +//
 +//===----------------------------------------------------------------------===//
-++
++
 +#include "Menix.h"
-+#include "CommonArgs.h"
 +#include "clang/Config/config.h"
-+#include "clang/Driver/Distro.h"
++#include "clang/Driver/CommonArgs.h"
 +#include "clang/Driver/Driver.h"
 +#include "clang/Driver/Options.h"
 +#include "clang/Driver/SanitizerArgs.h"
 +#include "llvm/Option/ArgList.h"
-+#include "llvm/ProfileData/InstrProf.h"
 +#include "llvm/Support/Path.h"
 +
 +using namespace clang::driver;
