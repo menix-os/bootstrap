@@ -458,7 +458,7 @@ out_return:
 }
 ' > main.c
 
-    ${OS_TRIPLET}-gcc -I/usr/include/drm -o drm-test main.c
+    ${OS_TRIPLET}-gcc -I${sysroot_dir}/usr/include/libdrm -ldrm -o drm-test main.c
 }
 
 package() {
