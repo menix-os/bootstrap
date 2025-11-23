@@ -414,7 +414,7 @@ int main(int argc, char **argv)
     if (argc > 1)
         card = argv[1];
     else
-        card = "/dev/dri/card0";
+        card = DRM_DIR_NAME "/" DRM_PRIMARY_MINOR_NAME "0";
 
     fprintf(stderr, "using card '%s'\n", card);
 
