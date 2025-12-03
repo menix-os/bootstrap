@@ -91,6 +91,19 @@ index c5c25c0..80e78d6 100644
    executable('openrc-init', 'openrc-init.c',
      include_directories: incdir,
      dependencies: [rc, einfo, shared, dl_dep, selinux_dep],
+diff --git openrc-clean/src/openrc-init/openrc-init.c openrc-workdir/src/openrc-init/openrc-init.c
+index 8fc21ca..c9dd547 100644
+--- openrc-clean/src/openrc-init/openrc-init.c
++++ openrc-workdir/src/openrc-init/openrc-init.c
+@@ -33,7 +33,7 @@
+ #include <sys/types.h>
+ #include <sys/wait.h>
+ #include <poll.h>
+-#include <utmp.h>
++#include <utmpx.h>
+ 
+ #ifdef HAVE_SELINUX
+ #  include <selinux/selinux.h>
 diff --git openrc-clean/src/openrc-run/openrc-run.c openrc-workdir/src/openrc-run/openrc-run.c
 index 5dab4a5..d3d122c 100644
 --- openrc-clean/src/openrc-run/openrc-run.c
@@ -114,6 +127,19 @@ index 6bb7dd6..373ef6a 100644
    executable('openrc-shutdown',
      ['openrc-shutdown.c', 'broadcast.c', 'sysvinit.c'],
      include_directories: incdir,
+diff --git openrc-clean/src/openrc-shutdown/openrc-shutdown.c openrc-workdir/src/openrc-shutdown/openrc-shutdown.c
+index 8ffe5a7..0223fb2 100644
+--- openrc-clean/src/openrc-shutdown/openrc-shutdown.c
++++ openrc-workdir/src/openrc-shutdown/openrc-shutdown.c
+@@ -31,7 +31,7 @@
+ #include <strings.h>
+ #include <unistd.h>
+ #include <time.h>
+-#include <utmp.h>
++#include <utmpx.h>
+ 
+ #include "broadcast.h"
+ #include "einfo.h"
 diff --git openrc-clean/src/shared/meson.build openrc-workdir/src/shared/meson.build
 index 2241935..d7646db 100644
 --- openrc-clean/src/shared/meson.build
@@ -141,14 +167,54 @@ index e1f30a4..9020a56 100644
  	}
  }
 diff --git openrc-clean/src/shared/wtmp.c openrc-workdir/src/shared/wtmp.c
-index 286e539..120171c 100644
+index 286e539..44b1732 100644
 --- openrc-clean/src/shared/wtmp.c
 +++ openrc-workdir/src/shared/wtmp.c
-@@ -45,5 +45,7 @@ void log_wtmp(const char *user, const char *id, pid_t pid, int type,
+@@ -20,7 +20,7 @@
+ #include <sys/time.h>
+ #include <sys/types.h>
+ #include <sys/utsname.h>
+-#include <utmp.h>
++#include <utmpx.h>
+ 
+ #include "wtmp.h"
+ 
+@@ -28,7 +28,7 @@ void log_wtmp(const char *user, const char *id, pid_t pid, int type,
+ 		const char *line)
+ {
+ 	struct timeval tv;
+-	struct utmp utmp;
++	struct utmpx utmp;
+ 	struct utsname uname_buf;
+ 
+ 	memset(&utmp, 0, sizeof(utmp));
+@@ -37,7 +37,6 @@ void log_wtmp(const char *user, const char *id, pid_t pid, int type,
+ 	utmp.ut_tv.tv_usec = tv.tv_usec;
+ 	utmp.ut_pid  = pid;
+ 	utmp.ut_type = type;
+-	strncpy(utmp.ut_name, user, sizeof(utmp.ut_name));
+ 	strncpy(utmp.ut_id  , id  , sizeof(utmp.ut_id  ));
+ 	strncpy(utmp.ut_line, line, sizeof(utmp.ut_line));
+ 
+@@ -45,5 +44,7 @@ void log_wtmp(const char *user, const char *id, pid_t pid, int type,
  	if (uname(&uname_buf) == 0)
  		strncpy(utmp.ut_host, uname_buf.release, sizeof(utmp.ut_host));
  
+-	updwtmp(WTMP_FILE, &utmp);
 +#ifndef __menix__
- 	updwtmp(WTMP_FILE, &utmp);
++	updwtmpx(WTMP_FILE, &utmp);
 +#endif
  }
+diff --git openrc-clean/src/shared/wtmp.h openrc-workdir/src/shared/wtmp.h
+index 9691b67..0d5786e 100644
+--- openrc-clean/src/shared/wtmp.h
++++ openrc-workdir/src/shared/wtmp.h
+@@ -18,7 +18,7 @@
+ #ifndef __RC_WTMP_H__
+ #define __RC_WTMP_H__
+ 
+-#include <utmp.h>
++#include <utmpx.h>
+ #include <sys/types.h>
+ 
+ void log_wtmp(const char *user, const char *id, pid_t pid, int type,

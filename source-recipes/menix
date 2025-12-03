@@ -3,7 +3,7 @@
 name=menix
 version=0.1.0
 git_url=https://github.com/menix-os/menix.git
-commit=1d7846bcdc5bf58ff652943254fc85cb6dcceb87
+commit=eb30c7ca8bc28e38517ff83689e98b790b2f6156
 imagedeps="rustup git"
 allow_network=yes
 shallow=no

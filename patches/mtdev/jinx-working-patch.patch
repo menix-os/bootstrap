@@ -1,0 +1,13 @@
+diff --git mtdev-clean/src/common.h mtdev-workdir/src/common.h
+index 80a3d6e..56fd526 100644
+--- mtdev-clean/src/common.h
++++ mtdev-workdir/src/common.h
+@@ -33,7 +33,7 @@
+ 
+ #include <mtdev-mapping.h>
+ #include <mtdev-plumbing.h>
+-#include <malloc.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include <errno.h>
+ 

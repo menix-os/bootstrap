@@ -1,7 +1,8 @@
-diff -urN --no-dereference fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
+diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
+index 71c0e88..10ab631 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
-@@ -30,6 +30,8 @@
+@@ -30,6 +30,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
      set(DragonFly TRUE CACHE BOOL "..." FORCE)
  elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "SunOS")
      set(SunOS TRUE CACHE BOOL "..." FORCE)
@@ -10,7 +11,7 @@ diff -urN --no-dereference fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMak
  elseif(NOT APPLE AND NOT WIN32)
      message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
  endif()
-@@ -1079,6 +1081,85 @@
+@@ -1079,6 +1081,85 @@ elseif(SunOS)
          src/util/platform/FFPlatform_unix.c
          src/util/binary_linux.c
      )
@@ -96,7 +97,7 @@ diff -urN --no-dereference fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMak
  endif()
  
  if(ENABLE_DIRECTX_HEADERS)
-@@ -1189,6 +1270,8 @@
+@@ -1189,6 +1270,8 @@ elseif(NetBSD)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-char-subscripts")
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/X11R7/lib -Wl,-rpath,/usr/pkg/lib") # ditto
@@ -105,8 +106,56 @@ diff -urN --no-dereference fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMak
  endif()
  
  if(FreeBSD OR OpenBSD OR NetBSD)
-diff -urN --no-dereference fastfetch-clean/src/detection/os/os_menix.c fastfetch-workdir/src/detection/os/os_menix.c
---- fastfetch-clean/src/detection/os/os_menix.c	1970-01-01 01:00:00.000000000 +0100
+diff --git fastfetch-clean/src/detection/localip/localip_linux.c fastfetch-workdir/src/detection/localip/localip_linux.c
+index 7a85528..1e92fec 100644
+--- fastfetch-clean/src/detection/localip/localip_linux.c
++++ fastfetch-workdir/src/detection/localip/localip_linux.c
+@@ -6,7 +6,9 @@
+ #include <string.h>
+ #include <ctype.h>
+ #include <net/if.h>
++#ifndef __menix__
+ #include <ifaddrs.h>
++#endif
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <stdio.h>
+@@ -21,6 +23,7 @@
+ #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__NetBSD__)
+ #include <net/if_media.h>
+ #include <net/if_dl.h>
++#elif defined(__menix__)
+ #else
+ #include <netpacket/packet.h>
+ #endif
+@@ -120,6 +123,7 @@ static void addNewIp(FFlist* list, const char* name, const char* addr, int type,
+ 
+ const char* ffDetectLocalIps(const FFLocalIpOptions* options, FFlist* results)
+ {
++#ifndef __menix__
+     struct ifaddrs* ifAddrStruct = NULL;
+     if(getifaddrs(&ifAddrStruct) < 0)
+         return "getifaddrs(&ifAddrStruct) failed";
+@@ -202,6 +206,7 @@ const char* ffDetectLocalIps(const FFLocalIpOptions* options, FFlist* results)
+                         ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5]);
+             addNewIp(results, ifa->ifa_name, addressBuffer, -1, isDefaultRoute, flags, false);
+         }
++        #elif __menix__
+         #else
+         else if (ifa->ifa_addr->sa_family == AF_PACKET)
+         {
+@@ -631,6 +636,7 @@ const char* ffDetectLocalIps(const FFLocalIpOptions* options, FFlist* results)
+             }
+         }
+     }
++#endif
+ 
+     return NULL;
+ }
+diff --git fastfetch-workdir/src/detection/os/os_menix.c fastfetch-workdir/src/detection/os/os_menix.c
+new file mode 100644
+index 0000000..f27f087
+--- /dev/null
 +++ fastfetch-workdir/src/detection/os/os_menix.c
 @@ -0,0 +1,7 @@
 +#include "os.h"
@@ -116,8 +165,10 @@ diff -urN --no-dereference fastfetch-clean/src/detection/os/os_menix.c fastfetch
 +    ffStrbufSetStatic(&os->name, "Menix");
 +    ffStrbufSet(&os->version, &instance.state.platform.sysinfo.release);
 +}
-diff -urN --no-dereference fastfetch-clean/src/logo/ascii/menix.txt fastfetch-workdir/src/logo/ascii/menix.txt
---- fastfetch-clean/src/logo/ascii/menix.txt	1970-01-01 01:00:00.000000000 +0100
+diff --git fastfetch-workdir/src/logo/ascii/menix.txt fastfetch-workdir/src/logo/ascii/menix.txt
+new file mode 100644
+index 0000000..1a271f4
+--- /dev/null
 +++ fastfetch-workdir/src/logo/ascii/menix.txt
 @@ -0,0 +1,21 @@
 +**************************************
@@ -141,10 +192,11 @@ diff -urN --no-dereference fastfetch-clean/src/logo/ascii/menix.txt fastfetch-wo
 +**         *********................**
 +**         *********................**
 +**************************************
-diff -urN --no-dereference fastfetch-clean/src/logo/builtin.c fastfetch-workdir/src/logo/builtin.c
+diff --git fastfetch-clean/src/logo/builtin.c fastfetch-workdir/src/logo/builtin.c
+index b062be1..1a70be8 100644
 --- fastfetch-clean/src/logo/builtin.c
 +++ fastfetch-workdir/src/logo/builtin.c
-@@ -2809,6 +2809,16 @@
+@@ -2809,6 +2809,16 @@ static const FFlogo M[] = {
              FF_COLOR_FG_CYAN,
          },
      },
@@ -161,10 +213,11 @@ diff -urN --no-dereference fastfetch-clean/src/logo/builtin.c fastfetch-workdir/
      // Meowix
      {
          .names = {"Meowix"},
-diff -urN --no-dereference fastfetch-clean/src/options/general.h fastfetch-workdir/src/options/general.h
+diff --git fastfetch-clean/src/options/general.h fastfetch-workdir/src/options/general.h
+index 8cb0d48..3f9c0dd 100644
 --- fastfetch-clean/src/options/general.h
 +++ fastfetch-workdir/src/options/general.h
-@@ -16,7 +16,7 @@
+@@ -16,7 +16,7 @@ typedef struct FFOptionsGeneral
      bool detectVersion;
  
      // Module options that cannot be put in module option structure
@@ -173,7 +226,8 @@ diff -urN --no-dereference fastfetch-clean/src/options/general.h fastfetch-workd
      FFstrbuf playerName;
      bool escapeBedrock;
      FFDsForceDrmType dsForceDrm;
-diff -urN --no-dereference fastfetch-clean/src/util/FFstrbuf.h fastfetch-workdir/src/util/FFstrbuf.h
+diff --git fastfetch-clean/src/util/FFstrbuf.h fastfetch-workdir/src/util/FFstrbuf.h
+index 1c754b1..3512038 100644
 --- fastfetch-clean/src/util/FFstrbuf.h
 +++ fastfetch-workdir/src/util/FFstrbuf.h
 @@ -7,6 +7,7 @@
@@ -184,7 +238,8 @@ diff -urN --no-dereference fastfetch-clean/src/util/FFstrbuf.h fastfetch-workdir
  #include <stdlib.h>
  #include <assert.h>
  
-diff -urN --no-dereference fastfetch-clean/src/util/platform/FFPlatform_unix.c fastfetch-workdir/src/util/platform/FFPlatform_unix.c
+diff --git fastfetch-clean/src/util/platform/FFPlatform_unix.c fastfetch-workdir/src/util/platform/FFPlatform_unix.c
+index b0d0ac1..a1e8b7b 100644
 --- fastfetch-clean/src/util/platform/FFPlatform_unix.c
 +++ fastfetch-workdir/src/util/platform/FFPlatform_unix.c
 @@ -19,7 +19,7 @@

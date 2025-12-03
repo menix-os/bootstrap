@@ -11,7 +11,6 @@ deps="core-libs cairo garcon exo libwnck libxfce4windowing"
 configure() {
     meson_configure \
         -Dintrospection=false \
-        -Dwayland=enabled \
         -Dx11=enabled
 }
 

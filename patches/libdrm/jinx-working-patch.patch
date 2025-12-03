@@ -1,24 +1,16 @@
-diff -urN --no-dereference libdrm-clean/include/drm/drm.h libdrm-workdir/include/drm/drm.h
---- libdrm-clean/include/drm/drm.h
-+++ libdrm-workdir/include/drm/drm.h
-@@ -35,7 +35,7 @@
- #ifndef _DRM_H_
- #define _DRM_H_
- 
--#if   defined(__linux__)
-+#if   defined(__linux__) || defined(__menix__)
- 
- #include <linux/types.h>
- #include <asm/ioctl.h>
-diff -urN --no-dereference libdrm-clean/xf86drm.h libdrm-workdir/xf86drm.h
+diff --git libdrm-clean/xf86drm.h libdrm-workdir/xf86drm.h
+index 6d91dfb..26bd470 100644
 --- libdrm-clean/xf86drm.h
 +++ libdrm-workdir/xf86drm.h
-@@ -47,7 +47,7 @@
- #define DRM_MAX_MINOR   64 /* deprecated */
- #endif
- 
--#if defined(__linux__)
-+#if defined(__linux__) || defined(__menix__)
- 
- #define DRM_IOCTL_NR(n)		_IOC_NR(n)
- #define DRM_IOC_VOID		_IOC_NONE
+@@ -81,6 +81,11 @@ extern "C" {
+ #define DRM_PRIMARY_MINOR_NAME  "drm"
+ #define DRM_CONTROL_MINOR_NAME  "drmC" /* deprecated */
+ #define DRM_RENDER_MINOR_NAME   "drmR"
++#elif defined(__menix__)
++#define DRM_DIR_NAME  "/dev"
++#define DRM_PRIMARY_MINOR_NAME  "drmcard"
++#define DRM_CONTROL_MINOR_NAME  "drmctrl" /* deprecated */
++#define DRM_RENDER_MINOR_NAME   "drmrender"
+ #else
+ #define DRM_DIR_NAME  "/dev/dri"
+ #define DRM_PRIMARY_MINOR_NAME  "card"

@@ -7,7 +7,7 @@ hostdeps="pkg-config"
 hostrundeps="gcc"
 
 configure() {
-    cmake  \
+    cmake \
         "${source_dir}/llvm" \
         -DDEFAULT_SYSROOT=${sysroot_dir} \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
