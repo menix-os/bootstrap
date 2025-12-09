@@ -1,0 +1,12 @@
+diff --git libexpat-clean/lib/xmlparse.c libexpat-workdir/lib/xmlparse.c
+index a187a3a..87beb6a 100644
+--- libexpat-clean/lib/xmlparse.c
++++ libexpat-workdir/lib/xmlparse.c
+@@ -64,6 +64,7 @@
+    USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+ 
++#define _XOPEN_SOURCE
+ #define XML_BUILDING_EXPAT 1
+ 
+ #include "expat_config.h"
