@@ -1,0 +1,3 @@
+type      = scripted
+command   = /bin/mount -t tmpfs tmpfs /tmp
+restart   = false
