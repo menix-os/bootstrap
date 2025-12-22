@@ -22,16 +22,17 @@ PKGS=(
     bash
     limine
     mlibc
-    openrc
+    dinit
     fastfetch
+    menix-utils
 )
-$JINX install $INITRAMFS_DIR "${PKGS[@]}"
+$JINX reinstall $INITRAMFS_DIR "${PKGS[@]}"
 
 # `tar` operates on the CWD.
 cd $INITRAMFS_DIR
 
 # Create a symlink to init.
-ln -fs usr/sbin/openrc-init init
+ln -fs usr/bin/dinit init
 ln -fs usr/lib lib
 ln -fs usr/bin bin
 
@@ -49,22 +50,12 @@ FILES=(
     usr/lib/libc.so
     usr/lib/libpthread.so
     usr/lib/libm.so
-    # OpenRC
+    usr/lib/libstdc++.so*
+    usr/lib/libgcc_s.so*
+    # Init
     init
-    usr/sbin/openrc
-    usr/sbin/openrc-init
-    usr/sbin/openrc-run
-    usr/sbin/openrc-shutdown
-    usr/sbin/rc-service
-    usr/sbin/rc-update
-    usr/sbin/start-stop-daemon
-    usr/sbin/supervise-daemon
-    usr/lib/librc.so*
-    usr/lib/libeinfo.so*
-    usr/libexec/rc/*
-    etc/rc.conf
-    etc/init.d/*
-    etc/conf.d/*
+    usr/bin/dinit
+    etc/dinit.d/*
     # Shell
     usr/bin/bash
     usr/bin/sh
@@ -75,8 +66,9 @@ FILES=(
     usr/lib/libiconv.so*
     usr/lib/libtinfo.so
     usr/lib/libtinfow.so
-    # All other utils
-    usr/bin/*
+    # Utils
+    usr/bin/mount
+    usr/bin/module
 )
 echo "Installing:" ${FILES[@]}
 
