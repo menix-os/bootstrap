@@ -66,6 +66,8 @@ FILES=(
     usr/lib/libiconv.so*
     usr/lib/libtinfo.so
     usr/lib/libtinfow.so
+    # fastfetch
+    usr/bin/fastfetch
     # Utils
     usr/bin/mount
     usr/bin/module
