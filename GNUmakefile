@@ -100,7 +100,6 @@ override QEMUFLAGS += -serial stdio \
 	-smp $(SMP) \
 	-no-reboot \
 	-no-shutdown \
-	-device virtio-gpu \
 	-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-$(ARCH).fd,readonly=on
 
 ifeq ($(KVM), 1)
@@ -115,11 +114,14 @@ endif
 
 ifeq ($(ARCH),x86_64)
 override QEMUFLAGS += \
+	-device virtio-vga \
 	-machine q35,smm=off
 endif
 
 ifeq ($(ARCH),riscv64)
 override QEMUFLAGS += \
+	-device ramfb \
+	-device virtio-gpu-pci \
 	-machine virt,acpi=off
 endif
 
