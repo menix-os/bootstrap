@@ -23,6 +23,7 @@ configure() {
         --sbindir=${prefix}/sbin \
         --mandir=${prefix}/share/man \
         --platform=Menix \
+        --disable-strip \
         --enable-utmpx
 }
 
