@@ -7,8 +7,11 @@ imagedeps="build-essential"
 hostdeps="gcc binutils"
 deps="core-libs"
 
-build() {
+configure() {
 	cp -rpa ${source_dir}/* .
+}
+
+build() {
 	make -j${parallelism} OS=Menix CC=${TARGET_CC} CC_FOR_BUILD=gcc
 }
 
