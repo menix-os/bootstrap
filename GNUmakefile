@@ -30,7 +30,7 @@ full-install: build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx/jinx update '*'
 	@cd build-$(ARCH) && ../jinx/jinx install sysroot '*'
 
-MINIMAL_PKGS = base-files menix limine mlibc openrc bash test fastfetch
+MINIMAL_PKGS = base-files menix limine mlibc dinit bash test fastfetch
 
 # Build only a minimal selection of packages
 .PHONY: minimal-install
