@@ -36,11 +36,20 @@ ln -fs usr/bin/dinit init
 ln -fs usr/lib lib
 ln -fs usr/bin bin
 
+# Create empty directories
+mkdir -p tmp
+mkdir -p var
+mkdir -p var/log
+
 # From those packages, create the initramfs with the following files.
 FILES=(
     # Compatibility symlinks
     bin
     lib
+    # Base directories
+    tmp
+    var
+    var/log
     # Supporting files
     etc/passwd
     # Kernel modules
