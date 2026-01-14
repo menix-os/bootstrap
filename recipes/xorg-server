@@ -6,7 +6,7 @@ revision=1
 git_url="https://gitlab.freedesktop.org/xorg/xserver.git"
 commit=065f02d946a798924a1d331769961b940cbf3224
 hostdeps="gcc pkg-config"
-deps="core-libs xorg-util-macros xorg-proto xorg-font-util xcb-proto xcb-util xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman dbus libdrm"
+deps="core-libs xorg-util-macros xorg-proto xorg-font-util xcb-proto xcb-util xtrans libxinerama libxcvt libxshmfence libx11 libxaw libxxf86vm libxkbfile libxmu libxfont2 libepoxy libxi libxv libxdamage libxrender libxrandr libxcb libxfixes libxext nettle xorg-xkbcomp xkeyboard-config pixman dbus libdrm libpciaccess"
 
 configure() {
     meson_configure \
@@ -36,7 +36,8 @@ configure() {
         -Dvgahw=false \
         -Ddrm=true \
         -Dglamor=false \
-        -Dglx=false
+        -Dglx=false \
+        -Dpciaccess=true
 }
 
 build() {
