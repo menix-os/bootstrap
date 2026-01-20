@@ -52,8 +52,9 @@ FILES=(
     var/log
     # Supporting files
     etc/passwd
+    etc/group
     # Kernel modules
-    usr/share/menix/modules/*
+    usr/share/menix/modules*
     # libc and loader
     usr/lib/ld.so
     usr/lib/libc.so
