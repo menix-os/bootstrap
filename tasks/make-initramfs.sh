@@ -52,7 +52,6 @@ FILES=(
     var/log
     # Supporting files
     etc/passwd
-    etc/group
     # Kernel modules
     usr/share/menix/modules*
     # libc and loader
@@ -79,8 +78,6 @@ FILES=(
     # fastfetch
     usr/bin/fastfetch
     # Utils
-    usr/bin/mount
-    usr/bin/module
 )
 echo "Installing:" ${FILES[@]}
 

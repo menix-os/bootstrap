@@ -6,10 +6,9 @@ revision=1
 hostdeps="gcc"
 skip_pkg_check=yes
 
-MENIX_ARCH="${JINX_ARCH}"
-case "${MENIX_ARCH}" in
-    "riscv64") MENIX_ARCH="riscv64gc" ;;
-esac
+configure() {
+    meson_configure
+}
 
 build() {
     meson compile -j${parallelism}

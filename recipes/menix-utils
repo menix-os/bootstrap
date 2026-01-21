@@ -8,8 +8,8 @@ skip_pkg_check=yes
 
 configure() {
     meson_configure \
-        -Dutils=true \
-        -Dkernel=false
+        -Dbuild_utils=true \
+        -Dbuild_kernel=false
 }
 
 build() {
