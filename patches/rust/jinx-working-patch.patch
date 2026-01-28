@@ -1,0 +1,581 @@
+diff --git rust-clean/Cargo.lock rust-workdir/Cargo.lock
+index 2cc2e09..25be301 100644
+--- rust-clean/Cargo.lock
++++ rust-workdir/Cargo.lock
+@@ -2164,8 +2164,6 @@ checksum = "9fa0e2a1fcbe2f6be6c42e342259976206b383122fc152e872795338b5a3f3a7"
+ [[package]]
+ name = "libc"
+ version = "0.2.177"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2874a2af47a2325c2001a6e6fad9b16a53b802102b528163885171cf92b15976"
+ 
+ [[package]]
+ name = "libdbus-sys"
+diff --git rust-clean/Cargo.toml rust-workdir/Cargo.toml
+index 67c7a9d..56ce708 100644
+--- rust-clean/Cargo.toml
++++ rust-workdir/Cargo.toml
+@@ -91,5 +91,5 @@ codegen-units = 1
+ 
+ # If you want to use a crate with local modifications, you can set a path or git dependency here.
+ # For git dependencies, also add your source to ALLOWED_SOURCES in src/tools/tidy/src/extdeps.rs.
+-#[patch.crates-io]
+-
++[patch.crates-io]
++libc = { path = "/base_dir/sources/rust-libc" }
+diff --git rust-workdir/compiler/rustc_target/src/spec/base/menix_mlibc.rs rust-workdir/compiler/rustc_target/src/spec/base/menix_mlibc.rs
+new file mode 100644
+index 0000000..5e644df
+--- /dev/null
++++ rust-workdir/compiler/rustc_target/src/spec/base/menix_mlibc.rs
+@@ -0,0 +1,17 @@
++use crate::spec::{Env, Os, RelroLevel, TargetOptions, cvs};
++
++pub(crate) fn opts() -> TargetOptions {
++    TargetOptions {
++        os: Os::Menix,
++        env: Env::Mlibc,
++        dynamic_linking: true,
++        executables: true,
++        families: cvs!["unix"],
++        has_rpath: true,
++        position_independent_executables: true,
++        relro_level: RelroLevel::Full,
++        has_thread_local: true,
++        crt_static_respected: true,
++        ..Default::default()
++    }
++}
+diff --git rust-clean/compiler/rustc_target/src/spec/base/mod.rs rust-workdir/compiler/rustc_target/src/spec/base/mod.rs
+index 9e7ff62..d429bc5 100644
+--- rust-clean/compiler/rustc_target/src/spec/base/mod.rs
++++ rust-workdir/compiler/rustc_target/src/spec/base/mod.rs
+@@ -23,6 +23,7 @@ pub(crate) mod linux_uclibc;
+ pub(crate) mod linux_wasm;
+ pub(crate) mod lynxos178;
+ pub(crate) mod managarm_mlibc;
++pub(crate) mod menix_mlibc;
+ pub(crate) mod motor;
+ pub(crate) mod msvc;
+ pub(crate) mod netbsd;
+diff --git rust-clean/compiler/rustc_target/src/spec/mod.rs rust-workdir/compiler/rustc_target/src/spec/mod.rs
+index 424026b..365828d 100644
+--- rust-clean/compiler/rustc_target/src/spec/mod.rs
++++ rust-workdir/compiler/rustc_target/src/spec/mod.rs
+@@ -1570,6 +1570,10 @@ supported_targets! {
+     ("aarch64-unknown-managarm-mlibc", aarch64_unknown_managarm_mlibc),
+     ("riscv64gc-unknown-managarm-mlibc", riscv64gc_unknown_managarm_mlibc),
+ 
++    ("x86_64-unknown-menix-mlibc", x86_64_unknown_menix_mlibc),
++    ("aarch64-unknown-menix-mlibc", aarch64_unknown_menix_mlibc),
++    ("riscv64gc-unknown-menix-mlibc", riscv64gc_unknown_menix_mlibc),
++
+     ("i386-apple-ios", i386_apple_ios),
+     ("x86_64-apple-ios", x86_64_apple_ios),
+     ("aarch64-apple-ios", aarch64_apple_ios),
+@@ -1969,6 +1973,7 @@ crate::target_spec_enum! {
+         LynxOs178 = "lynxos178",
+         MacOs = "macos",
+         Managarm = "managarm",
++        Menix = "menix",
+         Motor = "motor",
+         NetBsd = "netbsd",
+         None = "none",
+diff --git rust-workdir/compiler/rustc_target/src/spec/targets/aarch64_unknown_menix_mlibc.rs rust-workdir/compiler/rustc_target/src/spec/targets/aarch64_unknown_menix_mlibc.rs
+new file mode 100644
+index 0000000..3b98d39
+--- /dev/null
++++ rust-workdir/compiler/rustc_target/src/spec/targets/aarch64_unknown_menix_mlibc.rs
+@@ -0,0 +1,22 @@
++use crate::spec::{Arch, StackProbeType, Target, base};
++
++pub(crate) fn target() -> Target {
++    let mut base = base::menix_mlibc::opts();
++    base.max_atomic_width = Some(128);
++    base.stack_probes = StackProbeType::Inline;
++    base.features = "+v8a".into();
++
++    Target {
++        llvm_target: "aarch64-unknown-menix-mlibc".into(),
++        metadata: crate::spec::TargetMetadata {
++            description: None,
++            tier: Some(3),
++            host_tools: Some(false),
++            std: Some(false),
++        },
++        pointer_width: 64,
++        data_layout: "e-m:e-p270:32:32-p271:32:32-p272:64:64-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128-Fn32".into(),
++        arch: Arch::AArch64,
++        options: base
++    }
++}
+diff --git rust-workdir/compiler/rustc_target/src/spec/targets/riscv64gc_unknown_menix_mlibc.rs rust-workdir/compiler/rustc_target/src/spec/targets/riscv64gc_unknown_menix_mlibc.rs
+new file mode 100644
+index 0000000..49ffb6b
+--- /dev/null
++++ rust-workdir/compiler/rustc_target/src/spec/targets/riscv64gc_unknown_menix_mlibc.rs
+@@ -0,0 +1,24 @@
++use crate::spec::{Arch, CodeModel, Target, TargetOptions, base};
++
++pub(crate) fn target() -> Target {
++    Target {
++        llvm_target: "riscv64-unknown-menix-mlibc".into(),
++        metadata: crate::spec::TargetMetadata {
++            description: None,
++            tier: Some(3),
++            host_tools: Some(false),
++            std: Some(false),
++        },
++        pointer_width: 64,
++        data_layout: "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128".into(),
++        arch: Arch::RiscV64,
++        options: TargetOptions {
++            code_model: Some(CodeModel::Medium),
++            cpu: "generic-rv64".into(),
++            features: "+m,+a,+f,+d,+c".into(),
++            llvm_abiname: "lp64d".into(),
++            max_atomic_width: Some(64),
++            ..base::menix_mlibc::opts()
++        },
++    }
++}
+diff --git rust-workdir/compiler/rustc_target/src/spec/targets/x86_64_unknown_menix_mlibc.rs rust-workdir/compiler/rustc_target/src/spec/targets/x86_64_unknown_menix_mlibc.rs
+new file mode 100644
+index 0000000..f9ee28c
+--- /dev/null
++++ rust-workdir/compiler/rustc_target/src/spec/targets/x86_64_unknown_menix_mlibc.rs
+@@ -0,0 +1,24 @@
++use crate::spec::{Arch, Cc, LinkerFlavor, Lld, StackProbeType, Target, base};
++
++pub(crate) fn target() -> Target {
++    let mut base = base::menix_mlibc::opts();
++    base.cpu = "x86-64".into();
++    base.max_atomic_width = Some(64);
++    base.add_pre_link_args(LinkerFlavor::Gnu(Cc::Yes, Lld::No), &["-m64"]);
++    base.stack_probes = StackProbeType::Inline;
++
++    Target {
++        llvm_target: "x86_64-unknown-menix-mlibc".into(),
++        metadata: crate::spec::TargetMetadata {
++            description: None,
++            tier: Some(3),
++            host_tools: Some(false),
++            std: Some(false),
++        },
++        pointer_width: 64,
++        data_layout:
++            "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128".into(),
++        arch: Arch::X86_64,
++        options: base,
++    }
++}
+diff --git rust-clean/library/Cargo.lock rust-workdir/library/Cargo.lock
+index accbbe9..a13596c 100644
+--- rust-clean/library/Cargo.lock
++++ rust-workdir/library/Cargo.lock
+@@ -147,8 +147,6 @@ dependencies = [
+ [[package]]
+ name = "libc"
+ version = "0.2.177"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2874a2af47a2325c2001a6e6fad9b16a53b802102b528163885171cf92b15976"
+ dependencies = [
+  "rustc-std-workspace-core",
+ ]
+diff --git rust-clean/library/Cargo.toml rust-workdir/library/Cargo.toml
+index e30e624..78d4077 100644
+--- rust-clean/library/Cargo.toml
++++ rust-workdir/library/Cargo.toml
+@@ -56,6 +56,7 @@ rustflags = ["-Cpanic=abort"]
+ 
+ [patch.crates-io]
+ # See comments in `library/rustc-std-workspace-core/README.md` for what's going on here
++libc = { path = "/base_dir/sources/rust-libc" }
+ rustc-std-workspace-core = { path = 'rustc-std-workspace-core' }
+ rustc-std-workspace-alloc = { path = 'rustc-std-workspace-alloc' }
+ rustc-std-workspace-std = { path = 'rustc-std-workspace-std' }
+diff --git rust-workdir/library/std/src/os/menix/fs.rs rust-workdir/library/std/src/os/menix/fs.rs
+new file mode 100644
+index 0000000..b48a46f
+--- /dev/null
++++ rust-workdir/library/std/src/os/menix/fs.rs
+@@ -0,0 +1,95 @@
++#![stable(feature = "metadata_ext", since = "1.1.0")]
++
++use crate::fs::Metadata;
++use crate::sys_common::AsInner;
++
++/// OS-specific extensions to [`fs::Metadata`].
++///
++/// [`fs::Metadata`]: crate::fs::Metadata
++#[stable(feature = "metadata_ext", since = "1.1.0")]
++pub trait MetadataExt {
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_dev(&self) -> u64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_ino(&self) -> u64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_mode(&self) -> u32;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_nlink(&self) -> u64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_uid(&self) -> u32;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_gid(&self) -> u32;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_rdev(&self) -> u64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_size(&self) -> u64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_atime(&self) -> i64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_atime_nsec(&self) -> i64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_mtime(&self) -> i64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_mtime_nsec(&self) -> i64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_ctime(&self) -> i64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_ctime_nsec(&self) -> i64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_blksize(&self) -> u64;
++    #[stable(feature = "metadata_ext2", since = "1.8.0")]
++    fn st_blocks(&self) -> u64;
++}
++
++#[stable(feature = "metadata_ext", since = "1.1.0")]
++impl MetadataExt for Metadata {
++    fn st_dev(&self) -> u64 {
++        self.as_inner().as_inner().st_dev as u64
++    }
++    fn st_ino(&self) -> u64 {
++        self.as_inner().as_inner().st_ino as u64
++    }
++    fn st_mode(&self) -> u32 {
++        self.as_inner().as_inner().st_mode as u32
++    }
++    fn st_nlink(&self) -> u64 {
++        self.as_inner().as_inner().st_nlink as u64
++    }
++    fn st_uid(&self) -> u32 {
++        self.as_inner().as_inner().st_uid as u32
++    }
++    fn st_gid(&self) -> u32 {
++        self.as_inner().as_inner().st_gid as u32
++    }
++    fn st_rdev(&self) -> u64 {
++        self.as_inner().as_inner().st_rdev as u64
++    }
++    fn st_size(&self) -> u64 {
++        self.as_inner().as_inner().st_size as u64
++    }
++    fn st_atime(&self) -> i64 {
++        self.as_inner().as_inner().st_atime as i64
++    }
++    fn st_atime_nsec(&self) -> i64 {
++        self.as_inner().as_inner().st_atime_nsec as i64
++    }
++    fn st_mtime(&self) -> i64 {
++        self.as_inner().as_inner().st_mtime as i64
++    }
++    fn st_mtime_nsec(&self) -> i64 {
++        self.as_inner().as_inner().st_mtime_nsec as i64
++    }
++    fn st_ctime(&self) -> i64 {
++        self.as_inner().as_inner().st_ctime as i64
++    }
++    fn st_ctime_nsec(&self) -> i64 {
++        self.as_inner().as_inner().st_ctime_nsec as i64
++    }
++    fn st_blksize(&self) -> u64 {
++        self.as_inner().as_inner().st_blksize as u64
++    }
++    fn st_blocks(&self) -> u64 {
++        self.as_inner().as_inner().st_blocks as u64
++    }
++}
+diff --git rust-workdir/library/std/src/os/menix/mod.rs rust-workdir/library/std/src/os/menix/mod.rs
+new file mode 100644
+index 0000000..e02ba8f
+--- /dev/null
++++ rust-workdir/library/std/src/os/menix/mod.rs
+@@ -0,0 +1,4 @@
++#![stable(feature = "raw_ext", since = "1.1.0")]
++
++pub mod fs;
++pub mod raw;
+diff --git rust-workdir/library/std/src/os/menix/raw.rs rust-workdir/library/std/src/os/menix/raw.rs
+new file mode 100644
+index 0000000..a811c42
+--- /dev/null
++++ rust-workdir/library/std/src/os/menix/raw.rs
+@@ -0,0 +1,74 @@
++#![stable(feature = "raw_ext", since = "1.1.0")]
++#![deprecated(
++    since = "1.8.0",
++    note = "these type aliases are no longer supported by \
++            the standard library, the `libc` crate on \
++            crates.io should be used instead for the correct \
++            definitions"
++)]
++#![allow(deprecated)]
++
++use crate::os::raw::{c_long, c_void};
++
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type dev_t = usize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type gid_t = usize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type mode_t = usize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type uid_t = usize;
++
++#[stable(feature = "pthread_t", since = "1.8.0")]
++pub type pthread_t = *mut c_void;
++
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type blkcnt_t = usize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type blksize_t = usize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type ino_t = usize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type nlink_t = usize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type off_t = isize;
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub type time_t = usize;
++
++#[repr(C)]
++#[derive(Clone)]
++#[stable(feature = "raw_ext", since = "1.1.0")]
++pub struct stat {
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_dev: dev_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_ino: ino_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_mode: mode_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_nlink: nlink_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_uid: uid_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_gid: gid_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_rdev: dev_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_size: off_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_atime: time_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_atime_nsec: c_long,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_mtime: time_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_mtime_nsec: c_long,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_ctime: time_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_ctime_nsec: c_long,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_blksize: blksize_t,
++    #[stable(feature = "raw_ext", since = "1.1.0")]
++    pub st_blocks: blkcnt_t,
++}
+diff --git rust-clean/library/std/src/os/mod.rs rust-workdir/library/std/src/os/mod.rs
+index 7637440..6830885 100644
+--- rust-clean/library/std/src/os/mod.rs
++++ rust-workdir/library/std/src/os/mod.rs
+@@ -155,6 +155,8 @@ pub mod ios;
+ pub mod l4re;
+ #[cfg(target_os = "macos")]
+ pub mod macos;
++#[cfg(target_os = "menix")]
++pub mod menix;
+ #[cfg(target_os = "motor")]
+ pub mod motor;
+ #[cfg(target_os = "netbsd")]
+diff --git rust-clean/library/std/src/os/unix/mod.rs rust-workdir/library/std/src/os/unix/mod.rs
+index 78c9572..7f2f34d 100644
+--- rust-clean/library/std/src/os/unix/mod.rs
++++ rust-workdir/library/std/src/os/unix/mod.rs
+@@ -67,6 +67,8 @@ mod platform {
+     pub use crate::os::l4re::*;
+     #[cfg(target_os = "linux")]
+     pub use crate::os::linux::*;
++    #[cfg(target_os = "menix")]
++    pub use crate::os::menix::*;
+     #[cfg(target_os = "netbsd")]
+     pub use crate::os::netbsd::*;
+     #[cfg(target_os = "nto")]
+diff --git rust-clean/library/std/src/sys/args/unix.rs rust-workdir/library/std/src/sys/args/unix.rs
+index 0dfbd5f..9824e5f 100644
+--- rust-clean/library/std/src/sys/args/unix.rs
++++ rust-workdir/library/std/src/sys/args/unix.rs
+@@ -84,6 +84,7 @@ pub fn args() -> Args {
+     target_os = "hurd",
+     target_os = "rtems",
+     target_os = "nuttx",
++    target_os = "menix"
+ ))]
+ mod imp {
+     use crate::ffi::c_char;
+diff --git rust-clean/library/std/src/sys/env_consts.rs rust-workdir/library/std/src/sys/env_consts.rs
+index 573f540..cea4916 100644
+--- rust-clean/library/std/src/sys/env_consts.rs
++++ rust-workdir/library/std/src/sys/env_consts.rs
+@@ -147,6 +147,17 @@ pub mod os {
+     pub const EXE_EXTENSION: &str = "";
+ }
+ 
++#[cfg(target_os = "menix")]
++pub mod os {
++    pub const FAMILY: &str = "unix";
++    pub const OS: &str = "menix";
++    pub const DLL_PREFIX: &str = "lib";
++    pub const DLL_SUFFIX: &str = ".so";
++    pub const DLL_EXTENSION: &str = "so";
++    pub const EXE_SUFFIX: &str = "";
++    pub const EXE_EXTENSION: &str = "";
++}
++
+ #[cfg(target_os = "illumos")]
+ pub mod os {
+     pub const FAMILY: &str = "unix";
+diff --git rust-clean/library/std/src/sys/fd/unix.rs rust-workdir/library/std/src/sys/fd/unix.rs
+index 2b2dfe4..33387d2 100644
+--- rust-clean/library/std/src/sys/fd/unix.rs
++++ rust-workdir/library/std/src/sys/fd/unix.rs
+@@ -67,6 +67,7 @@ const READ_LIMIT: usize = if cfg!(target_vendor = "apple") {
+     target_os = "openbsd",
+     target_vendor = "apple",
+     target_os = "cygwin",
++    target_os = "menix",
+ ))]
+ const fn max_iov() -> usize {
+     libc::IOV_MAX as usize
+@@ -97,6 +98,7 @@ const fn max_iov() -> usize {
+     target_os = "vita",
+     target_vendor = "apple",
+     target_os = "cygwin",
++    target_os = "menix",
+ )))]
+ const fn max_iov() -> usize {
+     16 // The minimum value required by POSIX.
+@@ -219,6 +221,7 @@ impl FileDesc {
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd", // OpenBSD 2.7
++        target_os = "menix",
+     ))]
+     pub fn read_vectored_at(&self, bufs: &mut [IoSliceMut<'_>], offset: u64) -> io::Result<usize> {
+         let ret = cvt(unsafe {
+@@ -245,6 +248,7 @@ impl FileDesc {
+         target_os = "netbsd",
+         target_os = "openbsd",
+         target_vendor = "apple",
++        target_os = "menix",
+     )))]
+     pub fn read_vectored_at(&self, bufs: &mut [IoSliceMut<'_>], offset: u64) -> io::Result<usize> {
+         io::default_read_vectored(|b| self.read_at(b, offset), bufs)
+@@ -425,6 +429,7 @@ impl FileDesc {
+         target_os = "linux",
+         target_os = "netbsd",
+         target_os = "openbsd", // OpenBSD 2.7
++        target_os = "menix",
+     ))]
+     pub fn write_vectored_at(&self, bufs: &[IoSlice<'_>], offset: u64) -> io::Result<usize> {
+         let ret = cvt(unsafe {
+@@ -451,6 +456,7 @@ impl FileDesc {
+         target_os = "netbsd",
+         target_os = "openbsd",
+         target_vendor = "apple",
++        target_os = "menix",
+     )))]
+     pub fn write_vectored_at(&self, bufs: &[IoSlice<'_>], offset: u64) -> io::Result<usize> {
+         io::default_write_vectored(|b| self.write_at(b, offset), bufs)
+diff --git rust-clean/library/std/src/sys/net/connection/socket/unix.rs rust-workdir/library/std/src/sys/net/connection/socket/unix.rs
+index 559e276..8ee8a79 100644
+--- rust-clean/library/std/src/sys/net/connection/socket/unix.rs
++++ rust-workdir/library/std/src/sys/net/connection/socket/unix.rs
+@@ -77,6 +77,7 @@ impl Socket {
+                 target_os = "cygwin",
+                 target_os = "nto",
+                 target_os = "solaris",
++                target_os = "menix",
+             ) => {
+                 // On platforms that support it we pass the SOCK_CLOEXEC
+                 // flag to atomically create the socket and set it as
+@@ -124,6 +125,7 @@ impl Socket {
+                     target_os = "openbsd",
+                     target_os = "cygwin",
+                     target_os = "nto",
++                    target_os = "menix",
+                 ) => {
+                     // Like above, set cloexec atomically
+                     cvt(libc::socketpair(fam, ty | libc::SOCK_CLOEXEC, 0, fds.as_mut_ptr()))?;
+@@ -254,6 +256,7 @@ impl Socket {
+                 target_os = "netbsd",
+                 target_os = "openbsd",
+                 target_os = "cygwin",
++                target_os = "menix",
+             ) => {
+                 unsafe {
+                     let fd = cvt_r(|| libc::accept4(self.as_raw_fd(), storage, len, libc::SOCK_CLOEXEC))?;
+diff --git rust-clean/library/std/src/sys/pal/unix/os.rs rust-workdir/library/std/src/sys/pal/unix/os.rs
+index 7c9f3b7..ce625c9 100644
+--- rust-clean/library/std/src/sys/pal/unix/os.rs
++++ rust-workdir/library/std/src/sys/pal/unix/os.rs
+@@ -489,6 +489,12 @@ pub fn current_exe() -> io::Result<PathBuf> {
+     Err(io::const_error!(ErrorKind::Unsupported, "not yet implemented!"))
+ }
+ 
++#[cfg(target_os = "menix")]
++pub fn current_exe() -> io::Result<PathBuf> {
++    use crate::io::ErrorKind;
++    Err(io::const_error!(ErrorKind::Unsupported, "not yet implemented!"))
++}
++
+ #[cfg(target_os = "vxworks")]
+ pub fn current_exe() -> io::Result<PathBuf> {
+     #[cfg(test)]
+diff --git rust-clean/library/std/src/sys/random/mod.rs rust-workdir/library/std/src/sys/random/mod.rs
+index 91f72d0..dfd3716 100644
+--- rust-clean/library/std/src/sys/random/mod.rs
++++ rust-workdir/library/std/src/sys/random/mod.rs
+@@ -62,6 +62,10 @@ cfg_select! {
+         mod redox;
+         pub use redox::fill_bytes;
+     }
++    target_os = "menix" => {
++        mod getentropy;
++        pub use getentropy::fill_bytes;
++    }
+     target_os = "motor" => {
+         mod motor;
+         pub use motor::fill_bytes;
+diff --git rust-clean/library/std/src/sys/thread/unix.rs rust-workdir/library/std/src/sys/thread/unix.rs
+index 4adc94d..b50c713 100644
+--- rust-clean/library/std/src/sys/thread/unix.rs
++++ rust-workdir/library/std/src/sys/thread/unix.rs
+@@ -154,6 +154,7 @@ pub fn available_parallelism() -> io::Result<NonZero<usize>> {
+             target_os = "aix",
+             target_vendor = "apple",
+             target_os = "cygwin",
++            target_os = "menix",
+         ) => {
+             #[allow(unused_assignments)]
+             #[allow(unused_mut)]
+@@ -419,7 +420,8 @@ pub fn set_name(name: &CStr) {
+     target_os = "freebsd",
+     target_os = "dragonfly",
+     target_os = "nuttx",
+-    target_os = "cygwin"
++    target_os = "cygwin",
++    target_os = "menix"
+ ))]
+ pub fn set_name(name: &CStr) {
+     unsafe {

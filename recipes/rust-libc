@@ -1,0 +1,24 @@
+#! /bin/sh
+
+name=rust-libc
+skip_pkg_check=yes
+version=0.2.177
+revision=1
+tarball_url="https://github.com/rust-lang/libc/archive/refs/tags/${version}.tar.gz"
+tarball_blake2b="7157522134301d024f0a48a0c4f903dd2ff14eb6c3609dcdf830a609a75fb1e31fc736c5458aacd3e8a075f43cceafa96144820d149de44b61a49575ffadbbf0"
+source_imagedeps="libclang-dev python3-clang python3-colorama python3-yaml"
+source_deps="mlibc-headers"
+source_hostdeps="gcc"
+
+prepare() {
+    # Not using ${prefix} here instead of /usr because prefix is not set during prepare
+    python3 ${base_dir}/sources/mlibc/scripts/rust-libc.py \
+        --config ${base_dir}/sources/mlibc/scripts/rust-libc-unix-config.yml \
+        --header ${base_dir}/sources/mlibc/scripts/rust-libc-unix-header.rs \
+        --config ${base_dir}/support/rust-libc/menix-config.yml \
+        --header ${base_dir}/support/rust-libc/menix-header.rs \
+        ${sysroot_dir}/usr/include ${OS_TRIPLET}-gcc \
+        > ${source_dir}/src/unix/menix.rs
+}
+
+package_rust_crate

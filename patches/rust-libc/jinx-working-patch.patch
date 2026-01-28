@@ -1,0 +1,14 @@
+diff --git rust-libc-clean/src/unix/mod.rs rust-libc-workdir/src/unix/mod.rs
+index 6ba5d87..7707034 100644
+--- rust-libc-clean/src/unix/mod.rs
++++ rust-libc-workdir/src/unix/mod.rs
+@@ -1895,6 +1895,9 @@ cfg_if! {
+     } else if #[cfg(target_os = "nuttx")] {
+         mod nuttx;
+         pub use self::nuttx::*;
++    } else if #[cfg(target_os = "menix")] {
++        mod menix;
++        pub use self::menix::*;
+     } else {
+         // Unknown target_os
+     }
