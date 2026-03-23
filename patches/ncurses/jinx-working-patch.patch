@@ -8,34 +8,34 @@ index f03468b..4887733 100644
  		-l@PANEL_NAME@@ABI_SUFFIX@ \
 -		-lncurses@ABI_SUFFIX@ @SHLIB_LIST@
 +		-lncurses@ABI_SUFFIX@
- 
+
  LIBROOT		= ncurses++
- 
+
 @@ -159,7 +159,7 @@ LDFLAGS_SHARED	= $(TEST_LDFLAGS) $(CFLAGS_SHARED) @LD_SHARED_OPTS@
  LDFLAGS_DEFAULT	= $(LINK_@DFT_UPR_MODEL@) $(LDFLAGS_@DFT_UPR_MODEL@)
- 
+
  # flags for library built by this makefile
 -LDFLAGS		= $(TEST_ARGS) @LDFLAGS@ \
 +LDFLAGS		= @LDFLAGS@ \
  	@LD_MODEL@ $(TEST_LIBS) @LIBS@ $(CXXLIBS)
- 
+
  AUTO_SRC	= \
 @@ -184,7 +184,7 @@ AUTO_SRC	= \
  all \
  libs ::		$(AUTO_SRC) $(LIBRARIES)
- 
+
 -@MAKE_TESTS@all ::		demo$x
 +#@MAKE_TESTS@all ::		demo$x
- 
+
  depend :
- 
+
 @@ -258,20 +258,20 @@ $(INCDIR)/panel.h :
- 
+
  ###############################################################################
- 
+
 -OBJS_DEMO = $(MODEL)/demo$o
 +#OBJS_DEMO = $(MODEL)/demo$o
- 
+
 -$(MODEL)/demo$o : $(srcdir)/demo.cc \
 -		$(HEADER_DEPS) \
 -		$(cursesf_h) \
@@ -50,7 +50,7 @@ index f03468b..4887733 100644
 +#		$(cursesapp_h)
 +#	@echo 'compiling demo (obj_s)'
 +#	@( cd $(MODEL) && $(LIBTOOL_COMPILE) $(CXX) $(CFLAGS_DEFAULT) -c $(top_srcdir)/c++/demo.cc -o $@ )
- 
+
 -demo$x:	$(OBJS_DEMO) \
 -	$(LIBRARIES)  \
 -	@TEST_DEPS@
@@ -59,7 +59,7 @@ index f03468b..4887733 100644
 +#	$(LIBRARIES)  \
 +#	@TEST_DEPS@
 +#	@ECHO_LD@ $(LINK) -o $@ $(OBJS_DEMO) $(LDFLAGS_DEFAULT)
- 
+
  etip.h:	$(srcdir)/etip.h.in $(srcdir)/edit_cfg.sh
  	cp $(srcdir)/etip.h.in $@
 diff --git ncurses-clean/configure ncurses-workdir/configure
@@ -67,19 +67,19 @@ index 4e2c27c..c72022b 100755
 --- ncurses-clean/configure
 +++ ncurses-workdir/configure
 @@ -3826,7 +3826,7 @@ echo $ECHO_N "checking if $CXX works... $ECHO_C" >&6
- 
+
  		save_CPPFLAGS="$CPPFLAGS"
  		eval cf_includedir=${includedir}
 -		CPPFLAGS="$CPPFLAGS -I${cf_includedir}"
 +		CPPFLAGS="$CPPFLAGS"
- 
+
  cat >"conftest.$ac_ext" <<_ACEOF
  #line 3832 "configure"
 @@ -7246,6 +7246,10 @@ CF_EOF
  		LINK_PROGS="$SHELL ${rel_builddir}/mk_prog.sh"
  		LINK_TESTS="$SHELL ${rel_builddir}/mk_prog.sh"
  		;;
-+	(menix*)
++	(zinnia*)
 +		CC_SHARED_OPTS='-fPIC'
 +		MK_SHARED_LIB='${CC} -shared -o $@'
 +		;;
@@ -92,9 +92,9 @@ index 4e2c27c..c72022b 100755
  	;;
 -(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc)
 +(linux*gnu*|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc|*mlibc)
- 
+
  cf_gnu_xopen_source=$cf_XOPEN_SOURCE
- 
+
 @@ -10806,6 +10810,8 @@ main (void)
  		return 0;
  	#elif __NEWLIB__ > 0 && __NEWLIB_MINOR__ >= 0
@@ -110,11 +110,11 @@ index 753e42f..c1b1427 100644
 +++ ncurses-workdir/form/Makefile.in
 @@ -115,7 +115,7 @@ LINK		= $(LIBTOOL_LINK)
  LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
- 
+
  SHLIB_DIRS	= -L../lib
 -SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@ @SHLIB_LIST@
 +SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@
- 
+
  RPATH_LIST	= @RPATH_LIST@
  RESULTING_SYMS	= @RESULTING_SYMS@
 diff --git ncurses-clean/misc/gen-pkgconfig.in ncurses-workdir/misc/gen-pkgconfig.in
@@ -123,7 +123,7 @@ index c369dd2..abca88f 100644
 +++ ncurses-workdir/misc/gen-pkgconfig.in
 @@ -83,7 +83,7 @@ if [ "$includedir" != "/usr/include" ]; then
  fi
- 
+
  lib_flags=
 -for opt in -L$libdir @EXTRA_PKG_LDFLAGS@ @LIBS@
 +for opt in -L$libdir @LIBS@
@@ -149,23 +149,23 @@ index 6a0a79f..81a59bf 100644
 +++ ncurses-workdir/ncurses/tty/tty_update.c
 @@ -84,6 +84,7 @@
  #endif
- 
+
  #include <ctype.h>
 +#include <wctype.h>
- 
+
  MODULE_ID("$Id: tty_update.c,v 1.320 2025/11/01 20:02:10 tom Exp $")
- 
+
 diff --git ncurses-clean/panel/Makefile.in ncurses-workdir/panel/Makefile.in
 index 53abc36..f92bdca 100644
 --- ncurses-clean/panel/Makefile.in
 +++ ncurses-workdir/panel/Makefile.in
 @@ -117,7 +117,7 @@ LINK		= $(LIBTOOL_LINK)
  LDFLAGS		= @LDFLAGS@ @LD_MODEL@ @LIBS@
- 
+
  SHLIB_DIRS	= -L../lib
 -SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@ @SHLIB_LIST@
 +SHLIB_LIST	= $(SHLIB_DIRS) -lncurses@ABI_SUFFIX@
- 
+
  RPATH_LIST	= @RPATH_LIST@
  RESULTING_SYMS	= @RESULTING_SYMS@
 diff --git ncurses-clean/progs/Makefile.in ncurses-workdir/progs/Makefile.in
@@ -174,10 +174,10 @@ index 0e1fc01..f3245f0 100644
 +++ ncurses-workdir/progs/Makefile.in
 @@ -80,7 +80,7 @@ LIBTOOL_INSTALL	= @LIB_INSTALL@
  LIBTOOL_UNINSTALL = @LIB_UNINSTALL@
- 
+
  INSTALL		= @INSTALL@
 -INSTALL_PROG	= @INSTALL_PROGRAM@ @INSTALL_OPT_S@
 +INSTALL_PROG	= @INSTALL_PROGRAM@
  transform	= @program_transform_name@
- 
+
  AWK		= @AWK@

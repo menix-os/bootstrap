@@ -5,7 +5,7 @@ diff -urN --no-dereference binutils-clean/bfd/config.bfd binutils-workdir/bfd/co
      targ_selvecs="aarch64_elf64_be_vec arm_elf32_le_vec arm_elf32_be_vec"
      want64=true
      ;;
-+  aarch64-*-menix*)
++  aarch64-*-zinnia*)
 +    targ_defvec=aarch64_elf64_le_vec
 +    targ_selvecs="aarch64_elf64_be_vec arm_elf32_le_vec arm_elf32_be_vec"
 +    want64=true
@@ -17,7 +17,7 @@ diff -urN --no-dereference binutils-clean/bfd/config.bfd binutils-workdir/bfd/co
      targ_selvecs=
      targ64_selvecs=x86_64_elf64_vec
      ;;
-+  i[3-7]86-*-menix*)
++  i[3-7]86-*-zinnia*)
 +    targ_defvec=i386_elf32_vec
 +    targ_selvecs=
 +    targ64_selvecs=x86_64_elf64_vec
@@ -29,7 +29,7 @@ diff -urN --no-dereference binutils-clean/bfd/config.bfd binutils-workdir/bfd/co
      targ_selvecs="i386_elf32_vec iamcu_elf32_vec x86_64_elf32_vec"
      want64=true
      ;;
-+  x86_64-*-menix*)
++  x86_64-*-zinnia*)
 +    targ_defvec=x86_64_elf64_vec
 +    targ_selvecs=i386_elf32_vec
 +    want64=true
@@ -56,7 +56,7 @@ diff -urN --no-dereference binutils-clean/gas/configure.tgt binutils-workdir/gas
    aarch64*-*-fuchsia*)			fmt=elf;;
    aarch64*-*-haiku*)			fmt=elf em=haiku ;;
    aarch64*-*-genode*)			fmt=elf;;
-+  aarch64*-*-menix*)			fmt=elf;;
++  aarch64*-*-zinnia*)			fmt=elf;;
    aarch64*-*-linux*)			fmt=elf em=linux
      case ${cpu}-${os} in
        aarch64*-linux-gnu_ilp32)		arch=aarch64:32 ;;
@@ -64,7 +64,7 @@ diff -urN --no-dereference binutils-clean/gas/configure.tgt binutils-workdir/gas
      esac ;;
    i386-*-lynxos*)			fmt=elf em=lynx ;;
    i386-*-redox*)			fmt=elf ;;
-+  i386-*-menix*)			fmt=elf ;;
++  i386-*-zinnia*)			fmt=elf ;;
    i386-*-solaris*)			fmt=elf em=solaris ;;
    i386-*-freebsd* \
    | i386-*-kfreebsd*-gnu)		fmt=elf em=freebsd ;;
@@ -76,7 +76,7 @@ index ea01ccf..5ff7d22 100644
  aarch64-*-fuchsia*)	targ_emul=aarch64elf
  			targ_extra_emuls="aarch64elfb armelf armelfb"
  			;;
-+aarch64-*-menix*)	targ_emul=aarch64elf
++aarch64-*-zinnia*)	targ_emul=aarch64elf
 +			targ_extra_emuls="aarch64elfb armelf armelfb"
 +			;;
  aarch64_be-*-linux-gnu_ilp32)
@@ -86,7 +86,7 @@ index ea01ccf..5ff7d22 100644
  			targ64_extra_emuls="elf_x86_64 elf32_x86_64"
  			targ64_extra_libpath="elf_x86_64 elf32_x86_64"
  			;;
-+i[3-7]86-*-menix*)	targ_emul=elf_i386
++i[3-7]86-*-zinnia*)	targ_emul=elf_i386
 +			targ_extra_emuls=elf_x86_64
 +			;;
  i[3-7]86-*-redox*)	targ_emul=elf_i386
@@ -96,7 +96,7 @@ index ea01ccf..5ff7d22 100644
  			targ_extra_libpath="elf_i386 elf32_x86_64"
  			tdir_elf_i386=`echo ${targ_alias} | sed -e 's/x86_64/i386/'`
  			;;
-+x86_64-*-menix*)	targ_emul=elf_x86_64
++x86_64-*-zinnia*)	targ_emul=elf_x86_64
 +			targ_extra_emuls="elf_i386"
 +			;;
  x86_64-*-redox*)	targ_emul=elf_x86_64

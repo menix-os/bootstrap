@@ -84,7 +84,7 @@ index 1921e02..ff7e0de 100644
  #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
  	defined(__OpenBSD__) || defined(__NetBSD__) || \
 -	defined(__DragonFly__) || defined(__sun) || defined(__GNU__)
-+	defined(__DragonFly__) || defined(__sun) || defined(__GNU__) || defined(__menix__)
++	defined(__DragonFly__) || defined(__sun) || defined(__GNU__) || defined(__zinnia__)
  extern void osPciInit(void);
  #else
  #error No PCI support available for this architecture/OS combination

@@ -7,7 +7,7 @@ index cc867c9..1bba45a 100755
    fi
    case "$uname" in
 -  Linux* | linux* | *-linux* | GNU | GNU/* | solaris*)
-+  Linux* | linux* | *-linux* | GNU | GNU/* | solaris* | menix*)
++  Linux* | linux* | *-linux* | GNU | GNU/* | solaris* | zinnia*)
          case "$mname" in
          *sparc*)
              LDFLAGS="${LDFLAGS} -Wl,--no-warn-rwx-segments" ;;

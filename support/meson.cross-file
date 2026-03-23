@@ -10,7 +10,7 @@ pkg-config = '${OS_TRIPLET}-pkg-config'
 llvm-config = '/base_dir/support/llvm-config'
 
 [host_machine]
-system = 'menix'
+system = 'zinnia'
 cpu_family = '${JINX_ARCH}'
 cpu = '${JINX_ARCH}'
 endian = 'little'

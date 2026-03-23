@@ -30,7 +30,7 @@ diff -urN --no-dereference xorg-proto-clean/include/X11/Xos_r.h xorg-proto-workd
    (p).pwp )
  
 -#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
-+#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__) && !defined(__menix__)
++#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__) && !defined(__zinnia__)
  # define X_NEEDS_PWPARAMS
  typedef struct {
    struct passwd pws;

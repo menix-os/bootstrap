@@ -30,7 +30,7 @@ full-install: build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx/jinx update '*'
 	@cd build-$(ARCH) && ../jinx/jinx install sysroot '*'
 
-MINIMAL_PKGS = base-files menix limine mlibc dinit bash test fastfetch
+MINIMAL_PKGS = base-files zinnia limine mlibc dinit bash test fastfetch
 
 # Build only a minimal selection of packages
 .PHONY: minimal-install
@@ -42,7 +42,7 @@ minimal-install: build-$(ARCH)/.jinx-parameters
 # Image creation
 # --------------
 
-build-$(ARCH)/menix.img:
+build-$(ARCH)/zinnia.img:
 	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 2G 256M
 
 .PHONY: build-$(ARCH)/initramfs.tar
@@ -54,12 +54,12 @@ build-$(ARCH)/initramfs.tar:
 
 # Build a disk image for direct use
 .PHONY: image
-image: build-$(ARCH)/.jinx-parameters build-$(ARCH)/menix.img build-$(ARCH)/initramfs.tar
+image: build-$(ARCH)/.jinx-parameters build-$(ARCH)/zinnia.img build-$(ARCH)/initramfs.tar
 		@PATH=$$PATH:/usr/sbin:/sbin \
 	./tasks/make-image.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
-		build-$(ARCH)/menix.img \
+		build-$(ARCH)/zinnia.img \
 		$(ARCH)
 
 # Build an ISO image
@@ -68,7 +68,7 @@ iso: build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
 	./tasks/make-iso.sh \
 		build-$(ARCH)/sysroot \
 		build-$(ARCH)/initramfs.tar \
-		build-$(ARCH)/menix.iso \
+		build-$(ARCH)/zinnia.iso \
 		$(ARCH)
 
 # -----------
@@ -78,9 +78,9 @@ iso: build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
 # Shortcut to build and reinstall the kernel
 .PHONY: remake-kernel
 remake-kernel: build-$(ARCH)/.jinx-parameters
-	@cd build-$(ARCH) && ../jinx/jinx build menix
-	@cd build-$(ARCH) && ../jinx/jinx reinstall sysroot menix
-	@cd build-$(ARCH) && ../jinx/jinx reinstall initramfs menix
+	@cd build-$(ARCH) && ../jinx/jinx build zinnia
+	@cd build-$(ARCH) && ../jinx/jinx reinstall sysroot zinnia
+	@cd build-$(ARCH) && ../jinx/jinx reinstall initramfs zinnia
 
 ovmf/ovmf-code-$(ARCH).fd:
 	mkdir -p ovmf
@@ -126,11 +126,11 @@ override QEMUFLAGS += \
 endif
 
 .PHONY: qemu
-qemu: ovmf/ovmf-code-$(ARCH).fd build-$(ARCH)/menix.img
+qemu: ovmf/ovmf-code-$(ARCH).fd build-$(ARCH)/zinnia.img
 	qemu-system-$(ARCH) $(QEMUFLAGS) \
-		-drive format=raw,file=build-$(ARCH)/menix.img,if=none,id=disk \
+		-drive format=raw,file=build-$(ARCH)/zinnia.img,if=none,id=disk \
 		-device nvme,serial=FAKE_SERIAL_ID,drive=disk
 
 .PHONY: qemu-iso
-qemu-iso: ovmf/ovmf-code-$(ARCH).fd build-$(ARCH)/menix.iso
-	qemu-system-$(ARCH) $(QEMUFLAGS) -cdrom build-$(ARCH)/menix.iso
+qemu-iso: ovmf/ovmf-code-$(ARCH).fd build-$(ARCH)/zinnia.iso
+	qemu-system-$(ARCH) $(QEMUFLAGS) -cdrom build-$(ARCH)/zinnia.iso

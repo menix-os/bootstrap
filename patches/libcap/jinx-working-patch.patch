@@ -13,7 +13,7 @@ diff -urN --no-dereference libcap-clean/libcap/cap_proc.c libcap-workdir/libcap/
  
  #include "libcap.h"
  
-+#if defined(__menix__)
++#if defined(__zinnia__)
 +
 +#define SYS_capset -1
 +#define SYS_prctl -1
@@ -31,7 +31,7 @@ diff -urN --no-dereference libcap-clean/libcap/cap_proc.c libcap-workdir/libcap/
  static long int _cap_syscall3(long int syscall_nr,
  			      long int arg1, long int arg2, long int arg3)
  {
-+#if defined(__menix__)
++#if defined(__zinnia__)
 +    return ENOSYS;
 +#else
      return syscall(syscall_nr, arg1, arg2, arg3);
@@ -42,7 +42,7 @@ diff -urN --no-dereference libcap-clean/libcap/cap_proc.c libcap-workdir/libcap/
  			      long int arg1, long int arg2, long int arg3,
  			      long int arg4, long int arg5, long int arg6)
  {
-+#if defined(__menix__)
++#if defined(__zinnia__)
 +    return ENOSYS;
 +#else
      return syscall(syscall_nr, arg1, arg2, arg3, arg4, arg5, arg6);
@@ -75,7 +75,7 @@ diff -urN --no-dereference libcap-clean/psx/psx.c libcap-workdir/psx/psx.c
  
  #include "psx_syscall.h"
  
-+#if defined(__menix__)
++#if defined(__zinnia__)
 +
 +#define syscall(...) (-1)
 +

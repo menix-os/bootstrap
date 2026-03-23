@@ -9,7 +9,7 @@ skip_pkg_check=yes
 package() {
     mkdir -pv "${dest_dir}/dev"
     mkdir -pv "${dest_dir}/etc"
-    mkdir -pv "${dest_dir}/home/menix"
+    mkdir -pv "${dest_dir}/home/zinnia"
     mkdir -pv "${dest_dir}/proc"
     mkdir -pv "${dest_dir}/run"
     mkdir -pv "${dest_dir}/root"

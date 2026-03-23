@@ -5,14 +5,14 @@ index c1a68f4..36f0774 100644
 @@ -428,6 +428,41 @@ public:
    }
  };
- 
-+// Menix Target
+
++// Zinnia Target
 +template <typename Target>
-+class LLVM_LIBRARY_VISIBILITY MenixTargetInfo : public OSTargetInfo<Target> {
++class LLVM_LIBRARY_VISIBILITY ZinniaTargetInfo : public OSTargetInfo<Target> {
 +protected:
 +  void getOSDefines(const LangOptions &Opts, const llvm::Triple &Triple,
 +                    MacroBuilder &Builder) const override {
-+    Builder.defineMacro("__menix__");
++    Builder.defineMacro("__zinnia__");
 +    DefineStd(Builder, "unix", Opts);
 +    if (Opts.POSIXThreads)
 +      Builder.defineMacro("_REENTRANT");
@@ -23,7 +23,7 @@ index c1a68f4..36f0774 100644
 +  }
 +
 +public:
-+  MenixTargetInfo(const llvm::Triple &Triple, const TargetOptions &Opts)
++  ZinniaTargetInfo(const llvm::Triple &Triple, const TargetOptions &Opts)
 +      : OSTargetInfo<Target>(Triple, Opts) {
 +    this->SizeType = TargetInfo::UnsignedLong;
 +    this->IntPtrType = TargetInfo::SignedLong;
@@ -52,8 +52,8 @@ index 5d11578..638dfa4 100644
      case llvm::Triple::Managarm:
        return std::make_unique<ManagarmTargetInfo<AArch64leTargetInfo>>(Triple,
                                                                         Opts);
-+    case llvm::Triple::Menix:
-+      return std::make_unique<MenixTargetInfo<AArch64leTargetInfo>>(Triple,
++    case llvm::Triple::Zinnia:
++      return std::make_unique<ZinniaTargetInfo<AArch64leTargetInfo>>(Triple,
 +                                                                    Opts);
      case llvm::Triple::NetBSD:
        return std::make_unique<NetBSDTargetInfo<AArch64leTargetInfo>>(Triple,
@@ -62,8 +62,8 @@ index 5d11578..638dfa4 100644
      case llvm::Triple::Managarm:
        return std::make_unique<ManagarmTargetInfo<RISCV64TargetInfo>>(Triple,
                                                                       Opts);
-+    case llvm::Triple::Menix:
-+      return std::make_unique<MenixTargetInfo<RISCV64TargetInfo>>(Triple, Opts);
++    case llvm::Triple::Zinnia:
++      return std::make_unique<ZinniaTargetInfo<RISCV64TargetInfo>>(Triple, Opts);
      default:
        return std::make_unique<RISCV64TargetInfo>(Triple, Opts);
      }
@@ -71,8 +71,8 @@ index 5d11578..638dfa4 100644
      case llvm::Triple::Managarm:
        return std::make_unique<ManagarmTargetInfo<X86_64TargetInfo>>(Triple,
                                                                      Opts);
-+    case llvm::Triple::Menix:
-+      return std::make_unique<MenixTargetInfo<X86_64TargetInfo>>(Triple, Opts);
++    case llvm::Triple::Zinnia:
++      return std::make_unique<ZinniaTargetInfo<X86_64TargetInfo>>(Triple, Opts);
      default:
        return std::make_unique<X86_64TargetInfo>(Triple, Opts);
      }
@@ -80,8 +80,8 @@ index 5d11578..638dfa4 100644
      case llvm::Triple::OpenBSD:
        return std::make_unique<OpenBSDTargetInfo<LoongArch64TargetInfo>>(Triple,
                                                                          Opts);
-+    case llvm::Triple::Menix:
-+      return std::make_unique<MenixTargetInfo<LoongArch64TargetInfo>>(Triple,
++    case llvm::Triple::Zinnia:
++      return std::make_unique<ZinniaTargetInfo<LoongArch64TargetInfo>>(Triple,
 +                                                                      Opts);
      default:
        return std::make_unique<LoongArch64TargetInfo>(Triple, Opts);
@@ -94,17 +94,17 @@ index 0268ec4..56bd18b 100644
    ToolChains/Hurd.cpp
    ToolChains/Linux.cpp
    ToolChains/Managarm.cpp
-+  ToolChains/Menix.cpp
++  ToolChains/Zinnia.cpp
    ToolChains/MipsLinux.cpp
    ToolChains/MinGW.cpp
    ToolChains/MSP430.cpp
-diff --git llvm-workdir/clang/lib/Driver/ToolChains/Menix.cpp llvm-workdir/clang/lib/Driver/ToolChains/Menix.cpp
+diff --git llvm-workdir/clang/lib/Driver/ToolChains/Zinnia.cpp llvm-workdir/clang/lib/Driver/ToolChains/Zinnia.cpp
 new file mode 100644
 index 0000000..35e8280
 --- /dev/null
-+++ llvm-workdir/clang/lib/Driver/ToolChains/Menix.cpp
++++ llvm-workdir/clang/lib/Driver/ToolChains/Zinnia.cpp
 @@ -0,0 +1,153 @@
-+//===--- Menix.h - Menix ToolChain Implementations --------------*- C++ -*-===//
++//===--- Zinnia.h - Zinnia ToolChain Implementations --------------*- C++ -*-===//
 +//
 +// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 +// See https://llvm.org/LICENSE.txt for license information.
@@ -112,7 +112,7 @@ index 0000000..35e8280
 +//
 +//===----------------------------------------------------------------------===//
 +
-+#include "Menix.h"
++#include "Zinnia.h"
 +#include "clang/Config/config.h"
 +#include "clang/Driver/CommonArgs.h"
 +#include "clang/Driver/Driver.h"
@@ -132,7 +132,7 @@ index 0000000..35e8280
 +  return "lib";
 +}
 +
-+Menix::Menix(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
++Zinnia::Zinnia(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
 +    : Generic_ELF(D, Triple, Args) {
 +  GCCInstallation.init(Triple, Args);
 +  Multilibs = GCCInstallation.getMultilibs();
@@ -169,25 +169,25 @@ index 0000000..35e8280
 +  addPathIfExists(D, SysRoot + "/usr/lib", Paths);
 +}
 +
-+bool Menix::HasNativeLLVMSupport() const { return true; }
++bool Zinnia::HasNativeLLVMSupport() const { return true; }
 +
-+Tool *Menix::buildLinker() const { return new tools::gnutools::Linker(*this); }
++Tool *Zinnia::buildLinker() const { return new tools::gnutools::Linker(*this); }
 +
-+Tool *Menix::buildAssembler() const {
++Tool *Zinnia::buildAssembler() const {
 +  return new tools::gnutools::Assembler(*this);
 +}
 +
-+std::string Menix::computeSysRoot() const {
++std::string Zinnia::computeSysRoot() const {
 +  if (!getDriver().SysRoot.empty())
 +    return getDriver().SysRoot;
 +  return std::string();
 +}
 +
-+std::string Menix::getDynamicLinker(const ArgList &Args) const {
++std::string Zinnia::getDynamicLinker(const ArgList &Args) const {
 +  return "/usr/lib/ld.so";
 +}
 +
-+void Menix::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
++void Zinnia::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
 +                                      ArgStringList &CC1Args) const {
 +  const Driver &D = getDriver();
 +  std::string SysRoot = computeSysRoot();
@@ -231,9 +231,9 @@ index 0000000..35e8280
 +  addExternCSystemInclude(DriverArgs, CC1Args, concat(SysRoot, "/usr/include"));
 +}
 +
-+void Menix::addLibStdCxxIncludePaths(const llvm::opt::ArgList &DriverArgs,
++void Zinnia::addLibStdCxxIncludePaths(const llvm::opt::ArgList &DriverArgs,
 +                                     llvm::opt::ArgStringList &CC1Args) const {
-+  // We need a detected GCC installation on Menix to provide libstdc++'s
++  // We need a detected GCC installation on Zinnia to provide libstdc++'s
 +  // headers.
 +  if (!GCCInstallation.isValid())
 +    return;
@@ -244,7 +244,7 @@ index 0000000..35e8280
 +  Generic_GCC::addGCCLibStdCxxIncludePaths(DriverArgs, CC1Args, TripleStr);
 +}
 +
-+SanitizerMask Menix::getSupportedSanitizers() const {
++SanitizerMask Zinnia::getSupportedSanitizers() const {
 +  auto Arch = getTriple().getArch();
 +  SanitizerMask Res = ToolChain::getSupportedSanitizers();
 +  Res |= SanitizerKind::PointerCompare;
@@ -257,13 +257,13 @@ index 0000000..35e8280
 +  }
 +  return Res;
 +}
-diff --git llvm-workdir/clang/lib/Driver/ToolChains/Menix.h llvm-workdir/clang/lib/Driver/ToolChains/Menix.h
+diff --git llvm-workdir/clang/lib/Driver/ToolChains/Zinnia.h llvm-workdir/clang/lib/Driver/ToolChains/Zinnia.h
 new file mode 100644
 index 0000000..fddf3d4
 --- /dev/null
-+++ llvm-workdir/clang/lib/Driver/ToolChains/Menix.h
++++ llvm-workdir/clang/lib/Driver/ToolChains/Zinnia.h
 @@ -0,0 +1,53 @@
-+//===--- Menix.h - Menix ToolChain Implementations --------------*- C++ -*-===//
++//===--- Zinnia.h - Zinnia ToolChain Implementations --------------*- C++ -*-===//
 +//
 +// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 +// See https://llvm.org/LICENSE.txt for license information.
@@ -271,8 +271,8 @@ index 0000000..fddf3d4
 +//
 +//===----------------------------------------------------------------------===//
 +
-+#ifndef LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_MENIX_H
-+#define LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_MENIX_H
++#ifndef LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ZINNIA_H
++#define LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ZINNIA_H
 +
 +#include "Gnu.h"
 +#include "clang/Driver/ToolChain.h"
@@ -281,9 +281,9 @@ index 0000000..fddf3d4
 +namespace driver {
 +namespace toolchains {
 +
-+class LLVM_LIBRARY_VISIBILITY Menix : public Generic_ELF {
++class LLVM_LIBRARY_VISIBILITY Zinnia : public Generic_ELF {
 +public:
-+  Menix(const Driver &D, const llvm::Triple &Triple,
++  Zinnia(const Driver &D, const llvm::Triple &Triple,
 +        const llvm::opt::ArgList &Args);
 +
 +  bool HasNativeLLVMSupport() const override;
@@ -315,17 +315,17 @@ index 0000000..fddf3d4
 +} // end namespace driver
 +} // end namespace clang
 +
-+#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_MENIX_H
++#endif // LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_ZINNIA_H
 diff --git llvm-clean/llvm/include/llvm/ADT/bit.h llvm-workdir/llvm/include/llvm/ADT/bit.h
 index d6e33c3..db772c1 100644
 --- llvm-clean/llvm/include/llvm/ADT/bit.h
 +++ llvm-workdir/llvm/include/llvm/ADT/bit.h
 @@ -30,7 +30,7 @@
- 
+
  #if defined(__linux__) || defined(__GNU__) || defined(__HAIKU__) ||            \
      defined(__Fuchsia__) || defined(__EMSCRIPTEN__) || defined(__NetBSD__) ||  \
 -    defined(__OpenBSD__) || defined(__DragonFly__) || defined(__managarm__)
-+    defined(__OpenBSD__) || defined(__DragonFly__) || defined(__managarm__) || defined(__menix__)
++    defined(__OpenBSD__) || defined(__DragonFly__) || defined(__managarm__) || defined(__zinnia__)
  #include <endian.h>
  #elif defined(_AIX)
  #include <sys/machine.h>
@@ -337,7 +337,7 @@ index 657f423..0370cde 100644
      Lv2, // PS3
      MacOSX,
      Managarm,
-+    Menix,
++    Zinnia,
      NetBSD,
      OpenBSD,
      Solaris,
@@ -347,10 +347,10 @@ index 277247e..df11a5f 100644
 +++ llvm-workdir/llvm/lib/Support/Unix/Path.inc
 @@ -108,7 +108,7 @@ typedef uint_t uint;
  #endif
- 
+
  #if defined(__NetBSD__) || defined(__DragonFly__) || defined(__GNU__) ||       \
 -    defined(__MVS__)
-+    defined(__MVS__) || defined(__menix__)
++    defined(__MVS__) || defined(__zinnia__)
  #define STATVFS_F_FLAG(vfs) (vfs).f_flag
  #else
  #define STATVFS_F_FLAG(vfs) (vfs).f_flags
@@ -359,7 +359,7 @@ index 277247e..df11a5f 100644
      defined(__GNU__) ||                                                        \
      (defined(__sun__) && defined(__svr4__) || defined(__HAIKU__)) ||           \
 -    defined(__managarm__)
-+    defined(__managarm__) || defined(__menix__)
++    defined(__managarm__) || defined(__zinnia__)
  static int test_dir(char ret[PATH_MAX], const char *dir, const char *bin) {
    struct stat sb;
    char fullpath[PATH_MAX];
@@ -367,8 +367,8 @@ index 277247e..df11a5f 100644
  #elif defined(__Fuchsia__)
    // Fuchsia doesn't yet support remote filesystem mounts.
    return true;
-+#elif defined(__menix__)
-+  // Menix doesn't yet support remote filesystem mounts.
++#elif defined(__zinnia__)
++  // Zinnia doesn't yet support remote filesystem mounts.
 +  return true;
  #elif defined(__EMSCRIPTEN__)
    // Emscripten doesn't currently support remote filesystem mounts.
@@ -381,7 +381,7 @@ index 0584c94..30c4639 100644
    case MacOSX: return "macosx";
    case Managarm:
      return "managarm";
-+  case Menix: return "menix";
++  case Zinnia: return "zinnia";
    case Mesa3D: return "mesa3d";
    case NVCL: return "nvcl";
    case NaCl: return "nacl";
@@ -389,7 +389,7 @@ index 0584c94..30c4639 100644
      .StartsWith("lv2", Triple::Lv2)
      .StartsWith("macos", Triple::MacOSX)
      .StartsWith("managarm", Triple::Managarm)
-+    .StartsWith("menix", Triple::Menix)
++    .StartsWith("zinnia", Triple::Zinnia)
      .StartsWith("netbsd", Triple::NetBSD)
      .StartsWith("openbsd", Triple::OpenBSD)
      .StartsWith("solaris", Triple::Solaris)

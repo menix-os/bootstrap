@@ -12,8 +12,8 @@ sources/
 ovmf/
 
 # Build results
-menix.img
-menix.iso
+zinnia.img
+zinnia.iso
 
 # Allow debug config
 !.vscode/launch.json

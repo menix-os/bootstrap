@@ -147,7 +147,7 @@ index f045b8c..1e418ce 100644
  #  endif   /* AIX */
  
 -#  ifdef LINUX
-+#  if defined(LINUX) && !defined(__menix__)
++#  if defined(LINUX) && !defined(__zinnia__)
  #    include <sys/sendfile.h>
  #  endif
  
@@ -173,7 +173,7 @@ index f045b8c..1e418ce 100644
  
  #  ifdef LINUX
  static PRBool pt_linux_sendfile_cont(pt_Continuation* op, PRInt16 revents) {
-+#ifdef __menix__
++#ifdef __zinnia__
 +  op->syserrno = ENOSYS;
 +  op->result.code = -1;
 +  return PR_TRUE;
@@ -193,7 +193,7 @@ index f045b8c..1e418ce 100644
    if (file_nbytes_to_send != 0) {
      offset = sfd->file_offset;
      do {
-+#ifndef __menix__
++#ifndef __zinnia__
        rv = sendfile(sd->secret->md.osfd, sfd->fd->secret->md.osfd, &offset,
                      file_nbytes_to_send);
 +#else

@@ -32,7 +32,7 @@ diff -urN --no-dereference python-clean/Objects/mimalloc/prim/unix/prim.c python
  #include <unistd.h>    // sysconf
  #include <fcntl.h>     // open, close, read, access
  
-+#if defined(__menix__) && !defined MADV_DONTNEED
++#if defined(__zinnia__) && !defined MADV_DONTNEED
 +  #define MADV_DONTNEED 1
 +#endif
 +

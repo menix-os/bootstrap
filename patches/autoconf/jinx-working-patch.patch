@@ -3,20 +3,20 @@ index cdfc439..aa7444d 100755
 --- autoconf-clean/build-aux/config.guess
 +++ autoconf-workdir/build-aux/config.guess
 @@ -4,7 +4,7 @@
- 
+
  # shellcheck disable=SC2006,SC2268 # see below for rationale
- 
+
 -timestamp='2023-08-22'
 +timestamp='9999-99-99'
- 
+
  # This file is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by
 @@ -976,6 +976,9 @@ EOF
      *:[Mm]anagarm:*:*)
  	GUESS="$UNAME_MACHINE-unknown-managarm-mlibc"
  	;;
-+    *:[Mm]enix:*:*)
-+	GUESS="$UNAME_MACHINE-pc-menix-mlibc"
++    *:[Zz]innia:*:*)
++	GUESS="$UNAME_MACHINE-pc-zinnia-mlibc"
 +	;;
      *:Minix:*:*)
  	GUESS=$UNAME_MACHINE-unknown-minix
@@ -26,12 +26,12 @@ index defe52c..70495ff 100755
 --- autoconf-clean/build-aux/config.sub
 +++ autoconf-workdir/build-aux/config.sub
 @@ -4,7 +4,7 @@
- 
+
  # shellcheck disable=SC2006,SC2268 # see below for rationale
- 
+
 -timestamp='2023-09-19'
 +timestamp='9999-99-99'
- 
+
  # This file is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by
 @@ -145,7 +145,7 @@ case $1 in
@@ -39,7 +39,7 @@ index defe52c..70495ff 100755
  			| uclinux-gnu* | kfreebsd*-gnu* | knetbsd*-gnu* | netbsd*-gnu* \
  			| netbsd*-eabi* | kopensolaris*-gnu* | cloudabi*-eabi* \
 -			| storm-chaos* | os2-emx* | rtmk-nova* | managarm-* \
-+			| storm-chaos* | os2-emx* | rtmk-nova* | managarm-* | menix-* \
++			| storm-chaos* | os2-emx* | rtmk-nova* | managarm-* | zinnia-* \
  			| windows-* )
  				basic_machine=$field1
  				basic_os=$maybe_os
@@ -47,9 +47,9 @@ index defe52c..70495ff 100755
  		kernel=managarm
  		os=`echo "$basic_os" | sed -e 's|managarm|mlibc|'`
  		;;
-+	menix*)
-+		kernel=menix
-+		os=`echo "$basic_os" | sed -e 's|menix|mlibc|'`
++	zinnia*)
++		kernel=zinnia
++		os=`echo "$basic_os" | sed -e 's|zinnia|mlibc|'`
 +		;;
  	*)
  		kernel=
@@ -58,7 +58,7 @@ index defe52c..70495ff 100755
  		;;
  	managarm-mlibc*- | managarm-kernel*- )
  		;;
-+	menix-mlibc*- )
++	zinnia-mlibc*- )
 +		;;
  	windows*-msvc*-)
  		;;

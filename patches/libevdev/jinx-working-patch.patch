@@ -8,14 +8,14 @@ index 03c512e..51b7e98 100644
  #include "linux/input.h"
  #elif __FreeBSD__
  #include "freebsd/input.h"
-+#elif defined(__menix__)
-+#include "menix/input.h"
++#elif defined(__zinnia__)
++#include "zinnia/input.h"
  #endif
-diff --git libevdev-workdir/include/linux/menix/input-event-codes.h libevdev-workdir/include/linux/menix/input-event-codes.h
+diff --git libevdev-workdir/include/linux/zinnia/input-event-codes.h libevdev-workdir/include/linux/zinnia/input-event-codes.h
 new file mode 100644
 index 0000000..a420672
 --- /dev/null
-+++ libevdev-workdir/include/linux/menix/input-event-codes.h
++++ libevdev-workdir/include/linux/zinnia/input-event-codes.h
 @@ -0,0 +1,980 @@
 +/* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
 +/*
@@ -997,11 +997,11 @@ index 0000000..a420672
 +#define SND_CNT			(SND_MAX+1)
 +
 +#endif
-diff --git libevdev-workdir/include/linux/menix/input.h libevdev-workdir/include/linux/menix/input.h
+diff --git libevdev-workdir/include/linux/zinnia/input.h libevdev-workdir/include/linux/zinnia/input.h
 new file mode 100644
 index 0000000..ab08d35
 --- /dev/null
-+++ libevdev-workdir/include/linux/menix/input.h
++++ libevdev-workdir/include/linux/zinnia/input.h
 @@ -0,0 +1,240 @@
 +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 +/*
@@ -1243,11 +1243,11 @@ index 0000000..ab08d35
 +#define FF_CNT		(FF_MAX+1)
 +
 +#endif /* _UAPI_INPUT_H */
-diff --git libevdev-workdir/include/linux/menix/uinput.h libevdev-workdir/include/linux/menix/uinput.h
+diff --git libevdev-workdir/include/linux/zinnia/uinput.h libevdev-workdir/include/linux/zinnia/uinput.h
 new file mode 100644
 index 0000000..fc6253c
 --- /dev/null
-+++ libevdev-workdir/include/linux/menix/uinput.h
++++ libevdev-workdir/include/linux/zinnia/uinput.h
 @@ -0,0 +1,232 @@
 +/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
 +/*
@@ -1491,6 +1491,6 @@ index 1ef4e3b..87e3b93 100644
  #include "linux/uinput.h"
  #elif __FreeBSD__
  #include "freebsd/uinput.h"
-+#elif defined(__menix__)
-+#include "menix/uinput.h"
++#elif defined(__zinnia__)
++#include "zinnia/uinput.h"
  #endif

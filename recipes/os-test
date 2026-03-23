@@ -12,7 +12,7 @@ configure() {
 }
 
 build() {
-	make -j${parallelism} OS=Menix CC=${TARGET_CC} CC_FOR_BUILD=gcc
+	make -j${parallelism} OS=Zinnia CC=${TARGET_CC} CC_FOR_BUILD=gcc
 }
 
 package() {

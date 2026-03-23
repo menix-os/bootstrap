@@ -6,7 +6,7 @@ index 6d91dfb..26bd470 100644
  #define DRM_PRIMARY_MINOR_NAME  "drm"
  #define DRM_CONTROL_MINOR_NAME  "drmC" /* deprecated */
  #define DRM_RENDER_MINOR_NAME   "drmR"
-+#elif defined(__menix__)
++#elif defined(__zinnia__)
 +#define DRM_DIR_NAME  "/dev"
 +#define DRM_PRIMARY_MINOR_NAME  "drmcard"
 +#define DRM_CONTROL_MINOR_NAME  "drmctrl" /* deprecated */

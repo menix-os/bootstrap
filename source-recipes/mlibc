@@ -2,6 +2,6 @@
 
 name=mlibc
 version=6.3.0
-git_url="https://github.com/menix-os/mlibc.git"
-commit="b6ee6bdc32250342fb25ab15f8ef0fb322a7e024"
+git_url="https://github.com/zinnia-os/mlibc.git"
+commit="c32a8b9c4c254b805cca7a5bfcfdace4da023d0a"
 shallow=no

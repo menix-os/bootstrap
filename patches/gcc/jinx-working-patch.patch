@@ -10,19 +10,19 @@ index 7112f4d..6329678 100755
      i?86-*-cygwin* | \
      *-mingw32* | \
      powerpc-*-eabisim* | \
-diff --git gcc-workdir/gcc/config/aarch64/aarch64-menix.h gcc-workdir/gcc/config/aarch64/aarch64-menix.h
+diff --git gcc-workdir/gcc/config/aarch64/aarch64-zinnia.h gcc-workdir/gcc/config/aarch64/aarch64-zinnia.h
 new file mode 100644
 index 0000000..1a39ba4
 --- /dev/null
-+++ gcc-workdir/gcc/config/aarch64/aarch64-menix.h
++++ gcc-workdir/gcc/config/aarch64/aarch64-zinnia.h
 @@ -0,0 +1,49 @@
-+#undef GCC_AARCH64_MENIX
-+#define GCC_AARCH64_MENIX 1
++#undef GCC_AARCH64_ZINNIA
++#define GCC_AARCH64_ZINNIA 1
 +
 +#undef GNU_USER_DYNAMIC_LINKER
 +#define GNU_USER_DYNAMIC_LINKER "/lib/ld.so"
 +
-+#define MENIX_TARGET_LINK_SPEC  "%{h*}                       \
++#define ZINNIA_TARGET_LINK_SPEC  "%{h*}                       \
 +  %{static:-Bstatic}                                         \
 +  %{shared:-shared}                                          \
 +  %{symbolic:-Bsymbolic}                                     \
@@ -49,7 +49,7 @@ index 0000000..1a39ba4
 +  " %{mfix-cortex-a53-843419:--fix-cortex-a53-843419}"
 +#endif
 +
-+#define LINK_SPEC MENIX_TARGET_LINK_SPEC \
++#define LINK_SPEC ZINNIA_TARGET_LINK_SPEC \
 +                  CA53_ERR_835769_SPEC \
 +                  CA53_ERR_843419_SPEC
 +
@@ -65,23 +65,23 @@ index 0000000..1a39ba4
 +  do {                                 \
 +    GNU_USER_TARGET_OS_CPP_BUILTINS(); \
 +  } while (0)
-diff --git gcc-workdir/gcc/config/aarch64/t-aarch64-menix gcc-workdir/gcc/config/aarch64/t-aarch64-menix
+diff --git gcc-workdir/gcc/config/aarch64/t-aarch64-zinnia gcc-workdir/gcc/config/aarch64/t-aarch64-zinnia
 new file mode 100644
 index 0000000..33d112f
 --- /dev/null
-+++ gcc-workdir/gcc/config/aarch64/t-aarch64-menix
++++ gcc-workdir/gcc/config/aarch64/t-aarch64-zinnia
 @@ -0,0 +1,3 @@
 +
 +LIB1ASMSRC   = aarch64/lib1funcs.asm
 +LIB1ASMFUNCS = _aarch64_sync_cache_range
-diff --git gcc-workdir/gcc/config/i386/menix.h gcc-workdir/gcc/config/i386/menix.h
+diff --git gcc-workdir/gcc/config/i386/zinnia.h gcc-workdir/gcc/config/i386/zinnia.h
 new file mode 100644
 index 0000000..889aeb0
 --- /dev/null
-+++ gcc-workdir/gcc/config/i386/menix.h
++++ gcc-workdir/gcc/config/i386/zinnia.h
 @@ -0,0 +1,10 @@
-+#undef GCC_I386_MENIX
-+#define GCC_I386_MENIX 1
++#undef GCC_I386_ZINNIA
++#define GCC_I386_ZINNIA 1
 +
 +#define GNU_USER_LINK_EMULATION32 "elf_i386"
 +#define GNU_USER_LINK_EMULATION64 "elf_x86_64"
@@ -90,45 +90,45 @@ index 0000000..889aeb0
 +#define GNU_USER_DYNAMIC_LINKER64 "/lib/ld.so"
 +#define GNU_USER_DYNAMIC_LINKER32 "/dev/null"
 +#define GNU_USER_DYNAMIC_LINKERX32 "/dev/null"
-diff --git gcc-workdir/gcc/config/loongarch/menix.h gcc-workdir/gcc/config/loongarch/menix.h
+diff --git gcc-workdir/gcc/config/loongarch/zinnia.h gcc-workdir/gcc/config/loongarch/zinnia.h
 new file mode 100644
 index 0000000..2d22692
 --- /dev/null
-+++ gcc-workdir/gcc/config/loongarch/menix.h
++++ gcc-workdir/gcc/config/loongarch/zinnia.h
 @@ -0,0 +1,6 @@
-+#undef GCC_LOONGARCH_MENIX
-+#define GCC_LOONGARCH_MENIX 1
++#undef GCC_LOONGARCH_ZINNIA
++#define GCC_LOONGARCH_ZINNIA 1
 +
 +#undef GNU_USER_DYNAMIC_LINKER
 +#define GNU_USER_DYNAMIC_LINKER "/lib/ld.so"
 +#define GNU_USER_LINK_EMULATION "elf" ABI_GRLEN_SPEC "loongarch"
-diff --git gcc-workdir/gcc/config/menix.h gcc-workdir/gcc/config/menix.h
+diff --git gcc-workdir/gcc/config/zinnia.h gcc-workdir/gcc/config/zinnia.h
 new file mode 100644
 index 0000000..7fe5504
 --- /dev/null
-+++ gcc-workdir/gcc/config/menix.h
++++ gcc-workdir/gcc/config/zinnia.h
 @@ -0,0 +1,13 @@
-+#undef TARGET_MENIX
-+#define TARGET_MENIX 1
++#undef TARGET_ZINNIA
++#define TARGET_ZINNIA 1
 +
 +#undef GNU_USER_TARGET_OS_CPP_BUILTINS
 +#define GNU_USER_TARGET_OS_CPP_BUILTINS() \
 +  do {                                    \
-+    builtin_define ("__menix__");         \
++    builtin_define ("__zinnia__");         \
 +    builtin_define ("__mlibc__");         \
 +    builtin_define ("__unix__");          \
-+    builtin_assert ("system=menix");      \
++    builtin_assert ("system=zinnia");      \
 +    builtin_assert ("system=unix");       \
 +    builtin_assert ("system=posix");      \
 +  } while (0);
-diff --git gcc-workdir/gcc/config/riscv/menix.h gcc-workdir/gcc/config/riscv/menix.h
+diff --git gcc-workdir/gcc/config/riscv/zinnia.h gcc-workdir/gcc/config/riscv/zinnia.h
 new file mode 100644
 index 0000000..7bd7505
 --- /dev/null
-+++ gcc-workdir/gcc/config/riscv/menix.h
++++ gcc-workdir/gcc/config/riscv/zinnia.h
 @@ -0,0 +1,33 @@
-+#undef GCC_RISCV_MENIX
-+#define GCC_RISCV_MENIX 1
++#undef GCC_RISCV_ZINNIA
++#define GCC_RISCV_ZINNIA 1
 +
 +#define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
 +
@@ -206,10 +206,10 @@ index 40b50dc..c984584 100644
  	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-netbsd"
  	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
  	;;
-+aarch64*-*-menix*)
-+	tm_file="${tm_file} elfos.h gnu-user.h menix.h glibc-stdint.h"
-+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-menix.h"
-+	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-menix"
++aarch64*-*-zinnia*)
++	tm_file="${tm_file} elfos.h gnu-user.h zinnia.h glibc-stdint.h"
++	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-zinnia.h"
++	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-zinnia"
 +	;;
  aarch64*-*-linux*)
  	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h"
@@ -218,8 +218,8 @@ index 40b50dc..c984584 100644
  			;;
  	esac
  	;;
-+x86_64-*-menix*)
-+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h menix.h glibc-stdint.h i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/menix.h"
++x86_64-*-zinnia*)
++	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h zinnia.h glibc-stdint.h i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/zinnia.h"
 +	;;
  x86_64-*-fuchsia*)
  	tmake_file="${tmake_file} i386/t-x86_64-elf"
@@ -228,8 +228,8 @@ index 40b50dc..c984584 100644
  	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
  	tmake_file="${tmake_file} microblaze/t-microblaze"
          ;;
-+riscv*-*-menix*)
-+	tm_file="${tm_file} elfos.h gnu-user.h menix.h glibc-stdint.h riscv/menix.h"
++riscv*-*-zinnia*)
++	tm_file="${tm_file} elfos.h gnu-user.h zinnia.h glibc-stdint.h riscv/zinnia.h"
 +	tmake_file="${tmake_file} riscv/t-riscv"
 +	gnu_ld=yes
 +	gas=yes
@@ -241,10 +241,10 @@ index 40b50dc..c984584 100644
 @@ -2600,6 +2624,15 @@ loongarch*-*-linux*)
  	gcc_cv_initfini_array=yes
  	;;
- 
-+loongarch*-*-menix*)
-+	tm_file="${tm_file} elfos.h gnu-user.h menix.h glibc-stdint.h"
-+	tm_file="${tm_file} loongarch/gnu-user.h loongarch/menix.h loongarch/loongarch-driver.h"
+
++loongarch*-*-zinnia*)
++	tm_file="${tm_file} elfos.h gnu-user.h zinnia.h glibc-stdint.h"
++	tm_file="${tm_file} loongarch/gnu-user.h loongarch/zinnia.h loongarch/loongarch-driver.h"
 +	tmake_file="${tmake_file} loongarch/t-multilib"
 +	gnu_ld=yes
 +	gas=yes
@@ -258,7 +258,7 @@ index 40b50dc..c984584 100644
  		esac
  
  		case ${target} in
-+		  *-menix-mlibc*) triplet_os="menix-mlibc";;
++		  *-zinnia-mlibc*) triplet_os="zinnia-mlibc";;
  		  *-linux-gnu*) triplet_os="linux-gnu";;
  		  *-linux-musl*) triplet_os="linux-musl";;
  		  *-elf*) triplet_os="elf";;
@@ -280,7 +280,7 @@ index 4c1a5e9..d8185b0 100644
  case ${host} in
    aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia* |\
 -  aarch64*-*-darwin*)
-+  aarch64*-*-darwin* | aarch64*-*-menix*)
++  aarch64*-*-darwin* | aarch64*-*-zinnia*)
      case ${target} in
        aarch64*-*-*)
  	host_extra_gcc_objs="driver-aarch64.o"
@@ -292,7 +292,7 @@ index 5ff5c46..5053307 100644
  	      set_error (errno);
  	  else
  	    {
-+#ifndef __menix__
++#ifndef __zinnia__
  	      if (madvise (mapping, hdr.pos, MADV_RANDOM))
  		goto fail;
 -
@@ -304,7 +304,7 @@ index 5ff5c46..5053307 100644
      }
    /* We'll be hopping over this randomly.  Some systems declare the
       first parm as char *, and other declare it as void *.  */
-+#ifndef __menix__
++#ifndef __zinnia__
    if (madvise (reinterpret_cast <char *> (mapping), size, MADV_RANDOM))
      goto fail;
 +#endif
@@ -379,7 +379,7 @@ index 6a88ee5..c299cb8 100644
  	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
  	tmake_file="${tmake_file} t-dfprules"
  	;;
-+aarch64*-*-menix*)
++aarch64*-*-zinnia*)
 +	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
 +	extra_parts="$extra_parts crtfastmath.o"
 +	md_unwind_header=aarch64/aarch64-unwind.h
@@ -406,7 +406,7 @@ index 6a88ee5..c299cb8 100644
  	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
  	tmake_file="${tmake_file} t-slibgcc-libgcc"
  	;;
-+loongarch*-menix*)
++loongarch*-zinnia*)
 +	extra_parts="$extra_parts crtfastmath.o"
 +	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
 +	tmake_file="${tmake_file} t-slibgcc-libgcc"

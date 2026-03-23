@@ -6,7 +6,7 @@ index 1321702..26a7725 100644
  #define GLIBTOP_SYSDEPS_COMMON_MACHINE_H_1437506041
  
  #include <glib.h>
-+#ifndef __menix__
++#ifndef __zinnia__
  #include <glibtop_machine.h>
 +#else
 +struct _glibtop_machine
@@ -43,7 +43,7 @@ index 48a5f95..ddeac31 100644
  #include <config.h>
  #include <glibtop.h>
  #include <glibtop/procstate.h>
-+#ifdef __menix__
++#ifdef __zinnia__
 +#include <glibtop/procio.h>
 +#endif
  
@@ -57,7 +57,7 @@ index 48a5f95..ddeac31 100644
  	memset (buf, 0, sizeof (glibtop_proc_state));
  }
 +
-+#ifdef __menix__
++#ifdef __zinnia__
 +void
 +_glibtop_init_proc_io_s (glibtop *server)
 +{

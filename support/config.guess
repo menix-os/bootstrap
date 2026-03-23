@@ -976,8 +976,8 @@ EOF
     *:[Mm]anagarm:*:*)
 	GUESS="$UNAME_MACHINE-unknown-managarm-mlibc"
 	;;
-    *:[Mm]enix:*:*)
-	GUESS="$UNAME_MACHINE-pc-menix-mlibc"
+    *:[Zz]innia:*:*)
+	GUESS="$UNAME_MACHINE-pc-zinnia-mlibc"
 	;;
     *:Minix:*:*)
 	GUESS=$UNAME_MACHINE-unknown-minix

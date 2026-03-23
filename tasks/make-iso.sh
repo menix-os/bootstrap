@@ -23,7 +23,7 @@ sudo mkdir -p "$tmpdir"
 sudo mkdir -p "$tmpdir/EFI/BOOT"
 
 # Install kernel
-sudo cp "$BUILD_DIR/sysroot/usr/share/menix/menix" "$tmpdir/menix"
+sudo cp "$BUILD_DIR/sysroot/usr/share/zinnia/zinnia" "$tmpdir/zinnia"
 
 # Install initrd
 sudo cp "$INITRAMFS_PATH" "$tmpdir/initramfs.tar"

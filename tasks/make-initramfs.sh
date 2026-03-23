@@ -17,14 +17,14 @@ cd $BUILD_DIR
 # We want these packages in the initramfs.
 PKGS=(
     base-files
-    menix
+    zinnia
     coreutils
     bash
     limine
     mlibc
     dinit
     fastfetch
-    menix-utils
+    drm-test
 )
 $JINX reinstall $INITRAMFS_DIR "${PKGS[@]}"
 
@@ -53,7 +53,7 @@ FILES=(
     # Supporting files
     etc/passwd
     # Kernel modules
-    usr/share/menix/modules/*
+    usr/share/zinnia/modules/*
     # libc and loader
     usr/lib/ld.so
     usr/lib/libc.so
@@ -77,9 +77,9 @@ FILES=(
     usr/lib/libtinfow.so
     # fastfetch
     usr/bin/fastfetch
-    # Utils
-    usr/bin/mount
-    usr/bin/module
+    # drm
+    usr/bin/drm-test
+    usr/lib/libdrm.so*
 )
 echo "Installing:" ${FILES[@]}
 

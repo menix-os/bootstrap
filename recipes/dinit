@@ -22,7 +22,7 @@ configure() {
         --bindir=${prefix}/bin \
         --sbindir=${prefix}/sbin \
         --mandir=${prefix}/share/man \
-        --platform=Menix \
+        --platform=Zinnia \
         --disable-strip \
         --enable-utmpx
 }

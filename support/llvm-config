@@ -7,7 +7,7 @@ v_major = 21
 v_minor = 1
 v_patch = 6
 
-sysroot_dir = '/var/bootstrap-menix/build/system-root'
+sysroot_dir = '/var/bootstrap-zinnia/build/system-root'
 
 def do_version():
     return f'{v_major}.{v_minor}.{v_patch}'

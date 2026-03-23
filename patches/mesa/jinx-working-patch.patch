@@ -3,20 +3,20 @@ index 2d92005..cd8729f 100644
 --- mesa-clean/meson.build
 +++ mesa-workdir/meson.build
 @@ -144,7 +144,7 @@ pre_args += '-DHAVE_OPENGL_ES_2=@0@'.format(with_gles2.to_int())
- 
+
  with_any_opengl = with_opengl or with_gles1 or with_gles2
- 
+
 -system_has_kms_drm = ['openbsd', 'netbsd', 'freebsd', 'gnu/kfreebsd', 'dragonfly', 'linux', 'sunos', 'android', 'managarm'].contains(host_machine.system())
-+system_has_kms_drm = ['openbsd', 'netbsd', 'freebsd', 'gnu/kfreebsd', 'dragonfly', 'linux', 'sunos', 'android', 'managarm', 'menix'].contains(host_machine.system())
- 
++system_has_kms_drm = ['openbsd', 'netbsd', 'freebsd', 'gnu/kfreebsd', 'dragonfly', 'linux', 'sunos', 'android', 'managarm', 'zinnia'].contains(host_machine.system())
+
  gallium_drivers = get_option('gallium-drivers')
  if gallium_drivers.contains('auto')
 @@ -1070,7 +1070,7 @@ if cc.has_function('fmemopen')
  endif
- 
+
  # TODO: this is very incomplete
 -if ['linux', 'cygwin', 'gnu', 'freebsd', 'gnu/kfreebsd', 'haiku', 'android', 'managarm'].contains(host_machine.system())
-+if ['linux', 'cygwin', 'gnu', 'freebsd', 'gnu/kfreebsd', 'haiku', 'android', 'managarm', 'menix'].contains(host_machine.system())
++if ['linux', 'cygwin', 'gnu', 'freebsd', 'gnu/kfreebsd', 'haiku', 'android', 'managarm', 'zinnia'].contains(host_machine.system())
    pre_args += '-D_GNU_SOURCE'
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
@@ -25,11 +25,11 @@ index 19e7bcd..0be9965 100644
 --- mesa-clean/src/gallium/auxiliary/util/u_screen.c
 +++ mesa-workdir/src/gallium/auxiliary/util/u_screen.c
 @@ -132,7 +132,7 @@ u_init_pipe_screen_caps(struct pipe_screen *pscreen, int accel)
- 
+
     caps->throttle = true;
- 
+
 -#if defined(HAVE_LIBDRM) && (DETECT_OS_LINUX || DETECT_OS_BSD || DETECT_OS_MANAGARM)
-+#if defined(HAVE_LIBDRM) && (DETECT_OS_LINUX || DETECT_OS_BSD || DETECT_OS_MANAGARM || DETECT_OS_MENIX)
++#if defined(HAVE_LIBDRM) && (DETECT_OS_LINUX || DETECT_OS_BSD || DETECT_OS_MANAGARM || DETECT_OS_ZINNIA)
     if (pscreen->get_screen_fd) {
        uint64_t cap;
        int fd = pscreen->get_screen_fd(pscreen);
@@ -40,22 +40,22 @@ index 7403724..fe40b36 100644
 @@ -91,6 +91,10 @@
  #define DETECT_OS_POSIX 1
  #endif
- 
-+#if defined(__menix__)
-+#define DETECT_OS_MENIX 1
+
++#if defined(__zinnia__)
++#define DETECT_OS_ZINNIA 1
 +#define DETECT_OS_POSIX 1
 +#endif
- 
+
  /*
   * Make sure DETECT_OS_* are always defined, so that they can be used with #if
 @@ -146,5 +150,8 @@
  #ifndef DETECT_OS_MANAGARM
  #define DETECT_OS_MANAGARM 0
  #endif
-+#ifndef DETECT_OS_MENIX
-+#define DETECT_OS_MENIX 0
++#ifndef DETECT_OS_ZINNIA
++#define DETECT_OS_ZINNIA 0
 +#endif
- 
+
  #endif /* DETECT_OS_H */
 diff --git mesa-clean/src/util/os_misc.c mesa-workdir/src/util/os_misc.c
 index 473f619..8b01128 100644
@@ -66,7 +66,7 @@ index 473f619..8b01128 100644
  #  include <log/log.h>
  #  include <cutils/properties.h>
 -#elif DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || DETECT_OS_HURD || DETECT_OS_MANAGARM
-+#elif DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || DETECT_OS_HURD || DETECT_OS_MANAGARM || DETECT_OS_MENIX
++#elif DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || DETECT_OS_HURD || DETECT_OS_MANAGARM || DETECT_OS_ZINNIA
  #  include <unistd.h>
  #elif DETECT_OS_OPENBSD || DETECT_OS_FREEBSD
  #  include <sys/resource.h>
@@ -79,7 +79,7 @@ index 255c5f6..14863ad 100644
  {
  #if defined(HAVE_PTHREAD)
 -#if DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || defined(__GLIBC__) || DETECT_OS_MANAGARM || DETECT_OS_FUCHSIA
-+#if DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || defined(__GLIBC__) || DETECT_OS_MANAGARM || DETECT_OS_FUCHSIA || DETECT_OS_MENIX
++#if DETECT_OS_LINUX || DETECT_OS_CYGWIN || DETECT_OS_SOLARIS || defined(__GLIBC__) || DETECT_OS_MANAGARM || DETECT_OS_FUCHSIA || DETECT_OS_ZINNIA
     int ret = pthread_setname_np(pthread_self(), name);
     if (ret == ERANGE) {
        char buf[16];

@@ -1,16 +1,16 @@
 From 8dc142ca5f0bbd5f5de57bdac1a593ebeac029c9 Mon Sep 17 00:00:00 2001
 From: Dennis Bonke <admin@dennisbonke.com>
 Date: Tue, 13 Feb 2024 04:48:28 +0100
-Subject: [PATCH] Add Menix support
+Subject: [PATCH] Add Zinnia support
 
 Signed-off-by: Dennis Bonke <admin@dennisbonke.com>
 ---
  cmake/QtMkspecHelpers.cmake                   |  6 ++
  cmake/QtPlatformSupport.cmake                 |  1 +
- mkspecs/common/menix.conf                  | 52 +++++++++++
+ mkspecs/common/zinnia.conf                  | 52 +++++++++++
  mkspecs/common/posix/qplatformdefs.h          |  4 +-
- mkspecs/menix-g++/qmake.conf               | 12 +++
- mkspecs/menix-g++/qplatformdefs.h          | 88 +++++++++++++++++++
+ mkspecs/zinnia-g++/qmake.conf               | 12 +++
+ mkspecs/zinnia-g++/qplatformdefs.h          | 88 +++++++++++++++++++
  src/corelib/global/qsystemdetection.h         |  2 +
  src/corelib/io/qprocess_unix.cpp              |  4 +
  src/corelib/io/qstorageinfo_unix.cpp          |  3 +
@@ -18,9 +18,9 @@ Signed-off-by: Dennis Bonke <admin@dennisbonke.com>
  src/gui/configure.cmake                       |  4 +-
  src/network/kernel/qnetworkinterface_unix.cpp |  4 +
  12 files changed, 177 insertions(+), 5 deletions(-)
- create mode 100644 mkspecs/common/menix.conf
- create mode 100644 mkspecs/menix-g++/qmake.conf
- create mode 100644 mkspecs/menix-g++/qplatformdefs.h
+ create mode 100644 mkspecs/common/zinnia.conf
+ create mode 100644 mkspecs/zinnia-g++/qmake.conf
+ create mode 100644 mkspecs/zinnia-g++/qplatformdefs.h
 
 diff --git a/cmake/QtMkspecHelpers.cmake b/cmake/QtMkspecHelpers.cmake
 index a9612966..e39765e6 100644
@@ -30,9 +30,9 @@ index a9612966..e39765e6 100644
          elseif(CLANG)
              set(QT_DEFAULT_MKSPEC linux-clang)
          endif()
-+    elseif(MENIX)
++    elseif(ZINNIA)
 +        if(GCC)
-+            set(QT_DEFAULT_MKSPEC menix-g++)
++            set(QT_DEFAULT_MKSPEC zinnia-g++)
 +        else()
 +            message(FATAL_ERROR "Unknown compiler in use!")
 +        endif()
@@ -45,23 +45,23 @@ index 9f8498e4..4b95e3be 100644
 +++ b/cmake/QtPlatformSupport.cmake
 @@ -10,6 +10,7 @@ function(qt_set01 result)
  endfunction()
- 
+
  qt_set01(LINUX CMAKE_SYSTEM_NAME STREQUAL "Linux")
-+qt_set01(MENIX CMAKE_SYSTEM_NAME STREQUAL "Menix")
++qt_set01(ZINNIA CMAKE_SYSTEM_NAME STREQUAL "Zinnia")
  qt_set01(HPUX CMAKE_SYSTEM_NAME STREQUAL "HPUX")
  qt_set01(ANDROID CMAKE_SYSTEM_NAME STREQUAL "Android")  # FIXME: How to identify this?
  qt_set01(INTEGRITY CMAKE_SYSTEM_NAME STREQUAL "Integrity") # FIXME: How to identify this?
-diff --git a/mkspecs/common/menix.conf b/mkspecs/common/menix.conf
+diff --git a/mkspecs/common/zinnia.conf b/mkspecs/common/zinnia.conf
 new file mode 100644
 index 00000000..dfa52073
 --- /dev/null
-+++ b/mkspecs/common/menix.conf
++++ b/mkspecs/common/zinnia.conf
 @@ -0,0 +1,52 @@
 +#
-+# qmake configuration for common menix
++# qmake configuration for common zinnia
 +#
 +
-+QMAKE_PLATFORM         += menix
++QMAKE_PLATFORM         += zinnia
 +
 +include(unix.conf)
 +
@@ -117,29 +117,29 @@ index e7ce7a56..97a6f4f1 100644
 @@ -12,7 +12,7 @@
  #endif
  #include <sys/stat.h>
- 
+
 -#if defined(QT_USE_XOPEN_LFS_EXTENSIONS) && defined(QT_LARGEFILE_SUPPORT)
-+#if defined(QT_USE_XOPEN_LFS_EXTENSIONS) && defined(QT_LARGEFILE_SUPPORT) && !defined(__menix__)
- 
++#if defined(QT_USE_XOPEN_LFS_EXTENSIONS) && defined(QT_LARGEFILE_SUPPORT) && !defined(__zinnia__)
+
  #define QT_STATBUF              struct stat64
  #define QT_FPOS_T               fpos64_t
 @@ -105,7 +105,7 @@
- 
+
  #if defined(QT_LARGEFILE_SUPPORT) \
          && defined(QT_USE_XOPEN_LFS_EXTENSIONS) \
 -        && !defined(QT_NO_READDIR64)
-+        && !defined(QT_NO_READDIR64) && !defined(__menix__)
++        && !defined(QT_NO_READDIR64) && !defined(__zinnia__)
  #define QT_DIRENT               struct dirent64
  #define QT_READDIR              ::readdir64
  #else
-diff --git a/mkspecs/menix-g++/qmake.conf b/mkspecs/menix-g++/qmake.conf
+diff --git a/mkspecs/zinnia-g++/qmake.conf b/mkspecs/zinnia-g++/qmake.conf
 new file mode 100644
 index 00000000..6eb945c0
 --- /dev/null
-+++ b/mkspecs/menix-g++/qmake.conf
++++ b/mkspecs/zinnia-g++/qmake.conf
 @@ -0,0 +1,12 @@
 +#
-+# qmake configuration for menix-g++
++# qmake configuration for zinnia-g++
 +#
 +
 +MAKEFILE_GENERATOR      = UNIX
@@ -151,11 +151,11 @@ index 00000000..6eb945c0
 +include(../common/g++-unix.conf)
 +load(qt_config)
 \ No newline at end of file
-diff --git a/mkspecs/menix-g++/qplatformdefs.h b/mkspecs/menix-g++/qplatformdefs.h
+diff --git a/mkspecs/zinnia-g++/qplatformdefs.h b/mkspecs/zinnia-g++/qplatformdefs.h
 new file mode 100644
 index 00000000..91654548
 --- /dev/null
-+++ b/mkspecs/menix-g++/qplatformdefs.h
++++ b/mkspecs/zinnia-g++/qplatformdefs.h
 @@ -0,0 +1,88 @@
 +/****************************************************************************
 +**
@@ -253,8 +253,8 @@ index 0cbcef27..35f6945f 100644
  #  define Q_OS_VXWORKS
  #elif defined(__HAIKU__)
  #  define Q_OS_HAIKU
-+#elif defined(__menix__)
-+#  define Q_OS_MENIX
++#elif defined(__zinnia__)
++#  define Q_OS_ZINNIA
  #elif defined(__MAKEDEPEND__)
  #else
  #  error "Qt has not been ported to this OS - see http://www.qt-project.org/"
@@ -265,8 +265,8 @@ index d9b672df..1f320518 100644
 @@ -40,6 +40,10 @@
  #include <termios.h>
  #include <unistd.h>
- 
-+#if !defined(_POSIX_PIPE_BUF) && defined(__menix__)
+
++#if !defined(_POSIX_PIPE_BUF) && defined(__zinnia__)
 +#define _POSIX_PIPE_BUF 512
 +#endif
 +
@@ -281,7 +281,7 @@ index b809a52f..cae9ff3c 100644
  #elif defined(Q_OS_HAIKU)
  #  define QT_STATFSBUF struct statvfs
  #  define QT_STATFS    ::statvfs
-+#elif defined(Q_OS_MENIX)
++#elif defined(Q_OS_ZINNIA)
 +#  define QT_STATFSBUF struct statvfs
 +#  define QT_STATFS    ::statvfs
  #else
@@ -292,11 +292,11 @@ index 14c6490c..05ad17a4 100644
 --- a/src/corelib/thread/qthread_unix.cpp
 +++ b/src/corelib/thread/qthread_unix.cpp
 @@ -739,7 +739,7 @@ void QThread::start(Priority priority)
- 
- 
+
+
      if (d->stackSize > 0) {
 -#if defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0)
-+#if defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0) || defined(__menix__)
++#if defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0) || defined(__zinnia__)
          int code = pthread_attr_setstacksize(&attr, d->stackSize);
  #else
          int code = ENOSYS; // stack size not supported, automatically fail
@@ -305,11 +305,11 @@ index 0e53f512..09065aec 100644
 --- a/src/gui/configure.cmake
 +++ b/src/gui/configure.cmake
 @@ -29,7 +29,7 @@ set_property(CACHE INPUT_libpng PROPERTY STRINGS undefined no qt system)
- 
+
  #### Libraries
  qt_set01(X11_SUPPORTED LINUX OR HPUX OR FREEBSD OR NETBSD OR OPENBSD OR SOLARIS OR
 -    HURD)
-+    HURD OR MENIX)
++    HURD OR ZINNIA)
  qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2 MODULE_NAME gui QMAKE_LIB atspi)
  qt_find_package(DirectFB PROVIDED_TARGETS PkgConfig::DirectFB MODULE_NAME gui QMAKE_LIB directfb)
  qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm MODULE_NAME gui QMAKE_LIB drm)
@@ -318,7 +318,7 @@ index 0e53f512..09065aec 100644
  qt_find_package(WrapVulkanHeaders PROVIDED_TARGETS WrapVulkanHeaders::WrapVulkanHeaders
      MODULE_NAME gui QMAKE_LIB vulkan MARK_OPTIONAL)
 -if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-+if((LINUX OR MENIX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
++if((LINUX OR ZINNIA) OR QT_FIND_ALL_PACKAGES_ALWAYS)
      qt_find_package(Wayland PROVIDED_TARGETS Wayland::Server MODULE_NAME gui QMAKE_LIB wayland_server)
      qt_find_package(Wayland PROVIDED_TARGETS Wayland::Client MODULE_NAME gui QMAKE_LIB wayland_client)
  endif()
@@ -329,14 +329,14 @@ index 39ff8dbb..f702e384 100644
 @@ -21,6 +21,10 @@
  # include <ifaddrs.h>
  #endif
- 
-+#ifdef Q_OS_MENIX
+
++#ifdef Q_OS_ZINNIA
 +# include <linux/sockios.h>
 +#endif
 +
  #ifdef QT_LINUXBASE
  #  include <arpa/inet.h>
  #  ifndef SIOCGIFBRDADDR
--- 
+--
 2.45.2
 
