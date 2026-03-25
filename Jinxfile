@@ -2,9 +2,18 @@
 
 JINX_MAJOR_VER=0.8
 JINX_DEBIAN_SNAPSHOT="20251020T082908Z"
-JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext m4 make mercurial meson ninja-build perl python3 texinfo w3m which xmlto xsltproc"
+JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext
+                    m4 make mercurial meson ninja-build perl python3 texinfo w3m which xmlto xsltproc"
 
 OS_TRIPLET=${JINX_ARCH}-zinnia-mlibc
+case ${JINX_ARCH} in
+    riscv64)
+        RUST_TRIPLET=riscv64gc-unknown-zinnia-mlibc
+        ;;
+    *)
+        RUST_TRIPLET=${JINX_ARCH}-unknown-zinnia-mlibc
+        ;;
+esac
 
 HOST_CFLAGS="-O2 -pipe -fPIC -fPIE"
 HOST_CXXFLAGS="${HOST_CFLAGS} -Wp,-D_GLIBCXX_ASSERTIONS"
@@ -177,6 +186,28 @@ meson_configure_noflags() {
         "$@"
 }
 
+meson_build() {
+    meson compile -j${parallelism}
+}
+
+meson_install() {
+    DESTDIR="${dest_dir}" meson install --no-rebuild
+}
+
+meson_recipe() {
+    configure() {
+        meson_configure "$@"
+    }
+
+    build() {
+        meson_build
+    }
+
+    package() {
+        meson_install
+    }
+}
+
 cmake_configure() {
         CFLAGS="$TARGET_CFLAGS" \
         CXXFLAGS="$TARGET_CXXFLAGS" \
@@ -210,6 +241,7 @@ cmake_configure_noflags() {
         "$@"
 }
 
+# Build while ignoring the lockfile.
 cargo_build_nolock() {
     TARGET_DIR=$(pwd -P)
     cd "${source_dir}"
@@ -217,10 +249,11 @@ cargo_build_nolock() {
         RUSTUP_HOME="${build_dir}/.rustup" \
         CARGO_HOME="${build_dir}/.cargo" \
         CARGO_TARGET_DIR="${TARGET_DIR}" \
+        CARGO_RESOLVER_LOCKFILE_PATH="${TARGET_DIR}/Cargo.lock" \
     cargo build \
+        -Zunstable-options \
+        -Zlockfile-path \
         --release \
-        -Z unstable-options \
-        --lockfile-path ${TARGET_DIR}/Cargo.lock \
         "$@"
 }
 
@@ -234,4 +267,12 @@ cargo_build() {
     cargo build \
         --release \
         "$@"
+}
+
+package_rust_crate() {
+    package() {
+        mkdir -p "${dest_dir}${prefix}"/src/rust/${name}
+        cp -r "${source_dir}"/* "${dest_dir}${prefix}"/src/rust/${name}/
+        post_package_strip
+    }
 }

@@ -3,12 +3,11 @@
 name=zinnia
 from_source=zinnia
 revision=1
-imagedeps="build-essential rustup"
+imagedeps="build-essential"
 allow_network=yes
-hostdeps="llvm"
+hostdeps="llvm cargo rust"
 builddeps="mlibc-headers"
 skip_pkg_check=yes
-deps="core-libs"
 
 ZINNIA_ARCH="${JINX_ARCH}"
 case "${ZINNIA_ARCH}" in
