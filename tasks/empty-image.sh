@@ -18,11 +18,11 @@ ROOT_PART="${LOOPDEV}p2"
 sudo parted -s "$LOOPDEV" mklabel gpt
 sudo parted -s "$LOOPDEV" mkpart ESP fat32 1MiB ${ESP_SIZE}
 sudo parted -s "$LOOPDEV" set 1 esp on
-sudo parted -s "$LOOPDEV" mkpart ROOT ext4 ${ESP_SIZE} 100%
+sudo parted -s "$LOOPDEV" mkpart ROOT ext2 ${ESP_SIZE} 100%
 
 # Format partitions
 sudo mkfs.vfat -F 32 "$ESP_PART"
-sudo mkfs.ext4 "$ROOT_PART"
+sudo mkfs.ext2 "$ROOT_PART"
 
 # Detach
 sudo losetup -d "$LOOPDEV"
