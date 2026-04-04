@@ -6,9 +6,9 @@
 			"request": "launch",
 			"name": "Debug x86_64",
 			"targetCreateCommands": [
-				"settings set target.source-map /base_dir/sources/menix ${workspaceFolder}/sources/menix",
-				"target create ${workspaceFolder}/build-x86_64/builds/menix/x86_64-kernel/release/menix.kso",
-				"target modules load --file menix.kso --slide 0xffffffff80000000"
+				"settings set target.source-map /base_dir/sources/zinnia ${workspaceFolder}/sources/zinnia",
+				"target create ${workspaceFolder}/build-x86_64/builds/zinnia/x86_64-kernel/release/zinnia.kso",
+				"target modules load --file zinnia.kso --slide 0xffffffff80000000"
 
 			],
 			"processCreateCommands": [
