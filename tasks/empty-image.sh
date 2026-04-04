@@ -15,10 +15,12 @@ ESP_PART="${LOOPDEV}p1"
 ROOT_PART="${LOOPDEV}p2"
 
 # Create partitions
-sudo parted -s "$LOOPDEV" mklabel gpt
-sudo parted -s "$LOOPDEV" mkpart ESP fat32 1MiB ${ESP_SIZE}
-sudo parted -s "$LOOPDEV" set 1 esp on
-sudo parted -s "$LOOPDEV" mkpart ROOT ext2 ${ESP_SIZE} 100%
+sudo sgdisk "$LOOPDEV" \
+    --new=1:1M:+${ESP_SIZE} --typecode=1:C12A7328-F81F-11D2-BA4B-00A0C93EC93B \
+    --new=2:0:0 --typecode=2:0FC63DAF-8483-4772-8E79-3D69D8477DE4
+
+# Re-read partition table
+sudo partprobe "$LOOPDEV"
 
 # Format partitions
 sudo mkfs.vfat -F 32 "$ESP_PART"

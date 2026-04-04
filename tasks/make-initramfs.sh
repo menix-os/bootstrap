@@ -16,15 +16,8 @@ cd $BUILD_DIR
 
 # We want these packages in the initramfs.
 PKGS=(
-    base-files
     zinnia
-    coreutils
-    bash
-    limine
-    mlibc
-    dinit
-    fastfetch
-    drm-test
+    zinnia-init
 )
 $JINX reinstall $INITRAMFS_DIR "${PKGS[@]}"
 
@@ -32,54 +25,20 @@ $JINX reinstall $INITRAMFS_DIR "${PKGS[@]}"
 cd $INITRAMFS_DIR
 
 # Create a symlink to init.
-ln -fs usr/bin/dinit init
-ln -fs usr/lib lib
-ln -fs usr/bin bin
+ln -fs usr/bin/zinnia-init init
 
 # Create empty directories
-mkdir -p tmp
-mkdir -p var
-mkdir -p var/log
+mkdir -p realfs
 
 # From those packages, create the initramfs with the following files.
 FILES=(
-    # Compatibility symlinks
-    bin
-    lib
     # Base directories
-    tmp
-    var
-    var/log
-    # Supporting files
-    etc/passwd
+    realfs
     # Kernel modules
     usr/share/zinnia/modules/*
-    # libc and loader
-    usr/lib/ld.so
-    usr/lib/libc.so
-    usr/lib/libpthread.so
-    usr/lib/libm.so
-    usr/lib/libstdc++.so*
-    usr/lib/libgcc_s.so*
     # Init
     init
-    usr/bin/dinit
-    etc/dinit.d/*
-    # Shell
-    usr/bin/bash
-    usr/bin/sh
-    etc/bash.bashrc
-    etc/bash.bash_logout
-    usr/lib/libreadline.so*
-    usr/lib/libintl.so*
-    usr/lib/libiconv.so*
-    usr/lib/libtinfo.so
-    usr/lib/libtinfow.so
-    # fastfetch
-    usr/bin/fastfetch
-    # drm
-    usr/bin/drm-test
-    usr/lib/libdrm.so*
+    usr/bin/zinnia-init
 )
 echo "Installing:" ${FILES[@]}
 
