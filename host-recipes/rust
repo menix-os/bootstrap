@@ -6,7 +6,7 @@ revision=1
 imagedeps="build-essential cmake ninja-build python3 curl git"
 hostdeps="pkg-config"
 hostrundeps="gcc llvm"
-deps="core-libs" # TODO: rust-libc
+deps="core-libs rust-libc"
 allow_network=yes
 
 configure() {
@@ -20,10 +20,7 @@ link-shared = true
 download-ci-llvm = false
 
 [build]
-# TODO: We don't actually cross compile anything yet that targets Zinnia and don't have libc yet.
-#       But it's enough to build a host-cargo
-# target = ["${RUST_TRIPLET}", "x86_64-unknown-linux-gnu"]
-target = ["x86_64-unknown-linux-gnu"]
+target = ["${RUST_TRIPLET}", "${RUST_HOST_TRIPLET}"]
 docs = false
 python = "python3"
 tools = ["src"]
@@ -50,27 +47,18 @@ linker = "${OS_TRIPLET}-gcc"
 EOF
 }
 
-build_stage() {
-        BOOTSTRAP_SKIP_TARGET_SANITY='1' \
-        CARGO_HOME="${build_dir}/.cargo" \
-    python3 ${source_dir}/x.py build "$@" --stage 2 -j${parallelism}
-}
-
-install_stage() {
-        BOOTSTRAP_SKIP_TARGET_SANITY='1' \
-        CARGO_HOME="${build_dir}/.cargo" \
-        DESTDIR="${dest_dir}" \
-    python3 ${source_dir}/x.py install "$@" -j${parallelism}
-}
 
 build() {
-    build_stage rustc
-    build_stage std
+        BOOTSTRAP_SKIP_TARGET_SANITY=1 \
+        CARGO_HOME="${build_dir}/.cargo" \
+    ${source_dir}/x.py build rustc std --stage 2 -j${parallelism}
 }
 
 package() {
-    install_stage rustc
-    install_stage std
+        BOOTSTRAP_SKIP_TARGET_SANITY=1 \
+        CARGO_HOME="${build_dir}/.cargo" \
+        DESTDIR="${dest_dir}" \
+    ${source_dir}/x.py install rustc std --stage 2 -j${parallelism}
 
     # Remove documentation and other unnecessary files
     rm -rf "${dest_dir}${prefix}"/share/doc

@@ -5,6 +5,17 @@ JINX_DEBIAN_SNAPSHOT="20251020T082908Z"
 JINX_BASE_PACKAGES="autopoint bison cmake docbook-xsl docbook-xml docbook-xsl-ns docbook5-xml doxygen file flex gettext
                     m4 make mercurial meson ninja-build perl python3 texinfo w3m which xmlto xsltproc"
 
+HOST_ARCH="$(uname -m)"
+HOST_TRIPLET=${HOST_ARCH}-unknown-linux-gnu
+case ${HOST_ARCH} in
+    riscv64)
+        RUST_HOST_TRIPLET=riscv64gc-unknown-linux-gnu
+        ;;
+    *)
+        RUST_HOST_TRIPLET=${JINX_ARCH}-unknown-linux-gnu
+        ;;
+esac
+
 OS_TRIPLET=${JINX_ARCH}-zinnia-mlibc
 case ${JINX_ARCH} in
     riscv64)
