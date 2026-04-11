@@ -3,7 +3,7 @@
 name=zinnia
 version=0.1.0
 git_url=https://github.com/zinnia-os/zinnia.git
-commit=4b73b1e1378d21b82e26e852051ab4edbddc37d7
+commit=3ee9b535c9fd2617dd51774cd5b1e7aa78b8ae13
 imagedeps="git"
 allow_network=yes
 shallow=no
