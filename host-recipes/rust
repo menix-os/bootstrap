@@ -6,7 +6,7 @@ revision=1
 imagedeps="build-essential cmake ninja-build python3 curl git"
 hostdeps="pkg-config"
 hostrundeps="gcc llvm"
-deps="core-libs" # TODO: rust-libc
+deps="core-libs rust-libc"
 allow_network=yes
 
 configure() {
