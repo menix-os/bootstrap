@@ -22,13 +22,14 @@ int main(int argc, char **argv, char **envp) {
 
   insertmod("/usr/share/zinnia/modules/nvme.kso", NULL);
   insertmod("/usr/share/zinnia/modules/ext2.kso", NULL);
+  insertmod("/usr/share/zinnia/modules/virtio_gpu.kso", NULL);
 
   printf("init: Mounting ext2 root partition on /realfs\n");
 
   // Mount the root partition
   // TODO: Don't use a fixed uuid for this.
   e = mount("ext2", "/realfs", 0,
-            "/dev/parttype-0fc63daf-8483-4772-8e79-3d69d8477de4");
+            "/dev/block/parttype-0fc63daf-8483-4772-8e79-3d69d8477de4");
   if (e)
     return e;
 
@@ -56,7 +57,10 @@ int main(int argc, char **argv, char **envp) {
 
   printf("init: Running init from disk\n");
 
-  e = execve("/init", argv, envp);
+  char *argv_new[] = {"/usr/bin/bash", NULL};
+  char *envp_new[] = {"TERM=xterm-256color", "HOME=/root", NULL};
+
+  e = execve("/usr/bin/bash", argv_new, envp_new);
   if (e) {
     perror("execve");
     return e;
