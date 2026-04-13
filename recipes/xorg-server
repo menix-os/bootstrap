@@ -36,7 +36,7 @@ configure() {
         -Dvgahw=false \
         -Ddrm=true \
         -Dglamor=false \
-        -Dglx=false \
+        -Dglx=true \
         -Dpciaccess=true
 }
 
