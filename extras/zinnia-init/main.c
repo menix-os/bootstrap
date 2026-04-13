@@ -55,12 +55,16 @@ int main(int argc, char **argv, char **envp) {
   if (e)
     return e;
 
+  e = mount("tmpfs", "/var/run", 0, NULL);
+  if (e)
+    return e;
+
   printf("init: Running init from disk\n");
 
-  char *argv_new[] = {"/usr/bin/bash", NULL};
+  char *argv_new[] = {"/init", NULL};
   char *envp_new[] = {"TERM=xterm-256color", "HOME=/root", NULL};
 
-  e = execve("/usr/bin/bash", argv_new, envp_new);
+  e = execve("/init", argv_new, envp_new);
   if (e) {
     perror("execve");
     return e;
