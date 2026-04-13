@@ -1,0 +1,43 @@
+diff --git xfce4-session-clean/meson.build xfce4-session-workdir/meson.build
+index a36fc7b..d38a7e8 100644
+--- xfce4-session-clean/meson.build
++++ xfce4-session-workdir/meson.build
+@@ -40,14 +40,14 @@ glib = dependency('glib-2.0', version: dependency_versions['glib'])
+ gio = dependency('gio-2.0', version: dependency_versions['glib'])
+ gio_unix = dependency('gio-unix-2.0', version: dependency_versions['glib'])
+ gmodule = dependency('gmodule-2.0', version: dependency_versions['glib'])
+-gdk_pixbuf = dependency('gdk-pixbuf-2.0', version: dependency_versions['gdk-pixbuf'])
++gdk_pixbuf = dependency('gdk-pixbuf-2.0', version: dependency_versions['gdk-pixbuf'], native: true)
+ gtk = dependency('gtk+-3.0', version: dependency_versions['gtk'])
+ libxfce4ui = dependency('libxfce4ui-2', version: dependency_versions['libxfce4ui'])
+ libxfce4util = dependency('libxfce4util-1.0', version: dependency_versions['libxfce4util'])
+ libxfce4windowing = dependency('libxfce4windowing-0', version: dependency_versions['libxfce4windowing'])
+ xfconf = dependency('libxfconf-0', version: dependency_versions['xfce4'])
+ 
+-gdk_pixbuf_csource = find_program(gdk_pixbuf.get_variable(pkgconfig: 'gdk_pixbuf_csource'), required: true)
++gdk_pixbuf_csource = find_program(gdk_pixbuf.get_variable(pkgconfig: 'gdk_pixbuf_csource'), required: true, native: true)
+ 
+ # Feature: 'x11'
+ x11_deps = []
+@@ -75,8 +75,6 @@ if enable_x11
+     feature_cflags += '-DHAVE__ICETRANSNOLISTEN=1'
+   endif
+ 
+-  iceauth = find_program('iceauth', required: true)
+-
+   xsession_prefix = get_option('xsession-prefix')
+   if xsession_prefix == ''
+     xsession_prefix = '/usr'
+diff --git xfce4-session-clean/xfce4-session/meson.build xfce4-session-workdir/xfce4-session/meson.build
+index 56a297f..78a9e03 100644
+--- xfce4-session-clean/xfce4-session/meson.build
++++ xfce4-session-workdir/xfce4-session/meson.build
+@@ -42,7 +42,7 @@ c_args = [
+ 
+ if enable_x11
+   c_args += [
+-    '-DICEAUTH_CMD="@0@"'.format(iceauth.full_path()),
++    '-DICEAUTH_CMD="@0@"'.format('/usr/bin/iceauth'),
+   ]
+ 
+   session_sources += [
