@@ -59,12 +59,40 @@ int main(int argc, char **argv, char **envp) {
   if (e)
     return e;
 
-  printf("init: Running init from disk\n");
+  // Parse rd.init= from kernel command line
+  const char *init_path = "/usr/bin/dinit";
+  const char *prefix = "rd.init=";
+  size_t prefix_len = strlen(prefix);
+  static char init_buf[256];
 
-  char *argv_new[] = {"/init", NULL};
-  char *envp_new[] = {"TERM=xterm-256color", "HOME=/root", NULL};
+  char *p = line_buf;
+  while (*p) {
+    if (strncmp(p, prefix, prefix_len) == 0) {
+      p += prefix_len;
+      size_t i = 0;
+      while (*p && *p != ' ' && i < sizeof(init_buf) - 1)
+        init_buf[i++] = *p++;
+      init_buf[i] = '\0';
+      init_path = init_buf;
+      break;
+    }
+    while (*p && *p != ' ')
+      p++;
+    while (*p == ' ')
+      p++;
+  }
 
-  e = execve("/init", argv_new, envp_new);
+  printf("init: Running init from disk: %s\n", init_path);
+
+  char *argv_new[] = {(char *)init_path, NULL};
+  char *envp_new[] = {
+      "TERM=xterm-256color",
+      "HOME=/root",
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      NULL,
+  };
+
+  e = execve(init_path, argv_new, envp_new);
   if (e) {
     perror("execve");
     return e;
