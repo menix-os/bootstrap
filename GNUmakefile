@@ -95,7 +95,9 @@ MEM ?= 2G
 KVM ?= 1
 QEMUFLAGS ?=
 
-override QEMUFLAGS += -serial stdio \
+override QEMUFLAGS += \
+	-display sdl \
+	-serial stdio \
 	-m $(MEM) \
 	-smp $(SMP) \
 	-no-reboot \
