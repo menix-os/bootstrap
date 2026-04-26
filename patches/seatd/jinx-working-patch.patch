@@ -1,0 +1,7015 @@
+diff --git seatd-clean/common/drm.c seatd-workdir/common/drm.c
+index 9591dc0..1b29558 100644
+--- seatd-clean/common/drm.c
++++ seatd-workdir/common/drm.c
+@@ -40,6 +40,12 @@ int path_is_drm(const char *path) {
+ 	static const int prefixlen = STRLEN(prefix);
+ 	return strncmp(prefix, path, prefixlen) == 0;
+ }
++#elif defined(__zinnia__)
++int path_is_drm(const char *path) {
++	static const char prefix[] = "/dev/dri/";
++	static const int prefixlen = STRLEN(prefix);
++	return strncmp(prefix, path, prefixlen) == 0;
++}
+ #else
+ #error Unsupported platform
+ #endif
+diff --git seatd-clean/common/evdev.c seatd-workdir/common/evdev.c
+index 4aff9bc..f3dd4fe 100644
+--- seatd-clean/common/evdev.c
++++ seatd-workdir/common/evdev.c
+@@ -9,6 +9,8 @@
+ #include <sys/sysmacros.h>
+ #elif defined(__FreeBSD__)
+ #include <dev/evdev/input.h>
++#elif defined(__zinnia__)
++#include <linux/input.h>
+ #else
+ #error Unsupported platform
+ #endif
+diff --git seatd-clean/common/terminal.c seatd-workdir/common/terminal.c
+index 0c3466f..cb431f3 100644
+--- seatd-clean/common/terminal.c
++++ seatd-workdir/common/terminal.c
+@@ -21,6 +21,8 @@
+ #define K_ENABLE  K_XLATE
+ #define K_DISABLE K_RAW
+ #define FRSIG     SIGIO
++#elif defined(__zinnia__)
++// TODO: Add VT support
+ #else
+ #error Unsupported platform
+ #endif
+@@ -134,6 +136,14 @@ static int get_tty_path(int tty, char path[static TTYPATHLEN]) {
+ 	}
+ 	return 0;
+ }
++#elif defined(__zinnia__)
++static int get_tty_path(int tty, char path[static TTYPATHLEN]) {
++	(void)tty;
++	// Zinnia has no VTs; open /dev/null so the fd is valid but all
++	// VT ioctls (stubbed as no-ops below) don't need a real terminal.
++	strcpy(path, "/dev/null");
++	return 0;
++}
+ #else
+ #error Unsupported platform
+ #endif
+@@ -176,6 +186,9 @@ int terminal_current_vt(int fd) {
+ 		return -1;
+ 	}
+ 	return vt;
++#elif defined(__zinnia__)
++	(void)fd;
++	return 0;
+ #else
+ #error Unsupported platform
+ #endif
+@@ -183,6 +196,7 @@ int terminal_current_vt(int fd) {
+ 
+ int terminal_set_process_switching(int fd, bool enable) {
+ 	log_debugf("Setting process switching to %d", enable);
++#if !defined(__zinnia__)
+ 	struct vt_mode mode = {
+ 		.mode = enable ? VT_PROCESS : VT_AUTO,
+ 		.waitv = 0,
+@@ -196,41 +210,50 @@ int terminal_set_process_switching(int fd, bool enable) {
+ 			   enable ? "enable" : "disable", strerror(errno));
+ 		return -1;
+ 	}
++#endif
++	(void)fd;
+ 	return 0;
+ }
+ 
+ int terminal_switch_vt(int fd, int vt) {
+ 	log_debugf("Switching to VT %d", vt);
++#if !defined(__zinnia__)
+ 	if (ioctl(fd, VT_ACTIVATE, vt) == -1) {
+ 		log_errorf("Could not activate VT %d: %s", vt, strerror(errno));
+ 		return -1;
+ 	}
+-
++#endif
++	(void)fd;
+ 	return 0;
+ }
+ 
+ int terminal_ack_release(int fd) {
+ 	log_debug("Acking VT release");
++#if !defined(__zinnia__)
+ 	if (ioctl(fd, VT_RELDISP, 1) == -1) {
+ 		log_errorf("Could not ack VT release: %s", strerror(errno));
+ 		return -1;
+ 	}
+-
++#endif
++	(void)fd;
+ 	return 0;
+ }
+ 
+ int terminal_ack_acquire(int fd) {
+ 	log_debug("Acking VT acquire");
++#if !defined(__zinnia__)
+ 	if (ioctl(fd, VT_RELDISP, VT_ACKACQ) == -1) {
+ 		log_errorf("Could not ack VT acquire: %s", strerror(errno));
+ 		return -1;
+ 	}
+-
++#endif
++	(void)fd;
+ 	return 0;
+ }
+ 
+ int terminal_set_keyboard(int fd, bool enable) {
+ 	log_debugf("Setting KD keyboard state to %d", enable);
++#if !defined(__zinnia__)
+ 	if (ioctl(fd, KDSKBMODE, enable ? K_ENABLE : K_DISABLE) == -1) {
+ 		log_errorf("Could not set KD keyboard mode to %s: %s",
+ 			   enable ? "enabled" : "disabled", strerror(errno));
+@@ -253,15 +276,20 @@ int terminal_set_keyboard(int fd, bool enable) {
+ 		return -1;
+ 	}
+ #endif
++#endif
++	(void)fd;
+ 	return 0;
+ }
+ 
+ int terminal_set_graphics(int fd, bool enable) {
+ 	log_debugf("Setting KD graphics state to %d", enable);
++#if !defined(__zinnia__)
+ 	if (ioctl(fd, KDSETMODE, enable ? KD_GRAPHICS : KD_TEXT) == -1) {
+ 		log_errorf("Could not set KD graphics mode to %s: %s", enable ? "graphics" : "text",
+ 			   strerror(errno));
+ 		return -1;
+ 	}
++#endif
++	(void)fd;
+ 	return 0;
+ }
+diff --git seatd-workdir/seatd/.builds/alpine.yml seatd-workdir/seatd/.builds/alpine.yml
+new file mode 100644
+index 0000000..bb8904a
+--- /dev/null
++++ seatd-workdir/seatd/.builds/alpine.yml
+@@ -0,0 +1,28 @@
++image: alpine/edge
++packages:
++   - meson
++   - linux-headers
++   - clang
++   - clang-extra-tools
++   - clang-analyzer
++   - scdoc
++sources:
++   - https://git.sr.ht/~kennylevinsen/seatd
++tasks:
++   - prepare: |
++      meson -Dlibseat-seatd=enabled -Dlibseat-builtin=enabled -Dlibseat-logind=disabled -Dexamples=enabled build seatd
++   - build: |
++      ninja -C build
++      sudo ninja -C build install
++   - unittest: |
++      ninja -C build test
++   - scan-build: |
++      ninja -C build scan-build
++      [ -z "$(ls -A build/meson-logs/scanbuild/ 2>/dev/null)" ]
++   - smoketest: |
++      timeout -s KILL 30s sudo SEATD_LOGLEVEL=debug ./build/seatd-launch ./build/simpletest /dev/dri/card0
++   - smoketest-builtin: |
++      timeout -s KILL 30s sudo LIBSEAT_BACKEND=builtin ./build/simpletest /dev/dri/card0
++   - check-format: |
++      ninja -C build clang-format
++      git -C seatd diff --exit-code
+diff --git seatd-workdir/seatd/.builds/archlinux.yml seatd-workdir/seatd/.builds/archlinux.yml
+new file mode 100644
+index 0000000..da300c8
+--- /dev/null
++++ seatd-workdir/seatd/.builds/archlinux.yml
+@@ -0,0 +1,30 @@
++image: archlinux
++packages:
++   - meson
++   - linux-headers
++   - clang
++   - clang-analyzer
++   - scdoc
++sources:
++   - https://git.sr.ht/~kennylevinsen/seatd
++tasks:
++   - prepare: |
++      meson -Db_sanitize=address -Dlibseat-logind=auto -Dlibseat-seatd=enabled -Dlibseat-builtin=enabled -Dexamples=enabled build seatd
++   - build: |
++      ninja -C build
++      sudo ninja -C build install
++   - unittest: |
++      ninja -C build test
++   - scan-build: |
++      ninja -C build scan-build
++      [ -z "$(ls -A build/meson-logs/scanbuild/ 2>/dev/null)" ]
++   - smoketest: |
++      timeout -s KILL 30s sudo SEATD_LOGLEVEL=debug ./build/seatd-launch ./build/simpletest /dev/input/event0
++   - smoketest-builtin: |
++      timeout -s KILL 30s sudo LIBSEAT_BACKEND=builtin ./build/simpletest /dev/input/event0
++   - smoketest-logind: |
++      # Turn off systemd-logind and patch our session to be tied to seat0 on VT 6
++      sudo systemctl stop systemd-logind
++      echo -e "ACTIVE=$XDG_SESSION_ID\nACTIVE_UID=$UID\nSESSIONS=$XDG_SESSION_ID\nUIDS=$UID\n" | sudo tee -a /run/systemd/seats/seat0 > /dev/null
++      echo -e "SEAT=seat0\nVTNR=6\n" | sudo tee -a /run/systemd/sessions/$XDG_SESSION_ID > /dev/null
++      timeout -s KILL 30s sudo LIBSEAT_BACKEND=logind ./build/simpletest /dev/input/event0
+diff --git seatd-workdir/seatd/.builds/freebsd.yml seatd-workdir/seatd/.builds/freebsd.yml
+new file mode 100644
+index 0000000..b4bc7da
+--- /dev/null
++++ seatd-workdir/seatd/.builds/freebsd.yml
+@@ -0,0 +1,20 @@
++image: freebsd/latest
++packages:
++   - meson
++sources:
++   - https://git.sr.ht/~kennylevinsen/seatd
++tasks:
++   - prepare: |
++      meson -Dlibseat-seatd=enabled -Dlibseat-builtin=enabled -Dlibseat-logind=disabled build seatd
++   - build: |
++      ninja -C build
++   - unittest: |
++      ninja -C build test
++   - smoketest: |
++      rm -rf build
++      meson -Db_lundef=false -Db_sanitize=address -Dlibseat-seatd=enabled -Dlibseat-builtin=enabled -Dexamples=enabled -Dlibseat-logind=disabled build seatd
++      ninja -C build
++      sudo ninja -C build install
++      timeout -s KILL 30s sudo SEATD_LOGLEVEL=debug ./build/seatd-launch ./build/simpletest /dev/input/event0
++   - smoketest-builtin: |
++      timeout -s KILL 30s sudo LIBSEAT_BACKEND=builtin ./build/simpletest /dev/input/event0
+diff --git seatd-workdir/seatd/.clang-format seatd-workdir/seatd/.clang-format
+new file mode 100644
+index 0000000..28723ad
+--- /dev/null
++++ seatd-workdir/seatd/.clang-format
+@@ -0,0 +1,27 @@
++---
++IndentWidth: 8
++TabWidth: 8
++ContinuationIndentWidth: 8
++UseTab: ForContinuationAndIndentation
++ColumnLimit: 100
++
++AlignConsecutiveMacros: true
++AlignEscapedNewlines: Left
++AlignTrailingComments: true
++
++AllowAllArgumentsOnNextLine: true
++AllowAllParametersOfDeclarationOnNextLine: true
++AllowShortFunctionsOnASingleLine: Empty
++
++BreakBeforeBinaryOperators: None
++BreakStringLiterals: false
++
++PenaltyExcessCharacter: 10
++PenaltyBreakBeforeFirstCallParameter: 999999
++PenaltyBreakAssignment: 10
++
++MaxEmptyLinesToKeep: 1
++PointerAlignment: Right
++ReflowComments: true
++SortIncludes: true
++---
+diff --git seatd-workdir/seatd/.editorconfig seatd-workdir/seatd/.editorconfig
+new file mode 100644
+index 0000000..51a7d86
+--- /dev/null
++++ seatd-workdir/seatd/.editorconfig
+@@ -0,0 +1,8 @@
++root = true
++
++[*]
++end_of_line = lf
++insert_final_newline = true
++trim_trailing_whitespace = true
++indent_style = tab
++indent_size = 8
+diff --git seatd-workdir/seatd/LICENSE seatd-workdir/seatd/LICENSE
+new file mode 100644
+index 0000000..c81977f
+--- /dev/null
++++ seatd-workdir/seatd/LICENSE
+@@ -0,0 +1,7 @@
++Copyright 2020 Kenny Levinsen
++
++Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+diff --git seatd-workdir/seatd/README.md seatd-workdir/seatd/README.md
+new file mode 100644
+index 0000000..9aa9e99
+--- /dev/null
++++ seatd-workdir/seatd/README.md
+@@ -0,0 +1,46 @@
++# seatd and libseat
++
++A minimal seat management daemon, and a universal seat management library.
++
++Currently supports Linux and FreeBSD.
++
++## What is seat management?
++
++Seat management takes care of mediating access to shared devices (graphics, input), without requiring the applications needing access to be root.
++
++## What's in the box?
++
++### seatd
++
++A seat management daemon, that does everything it needs to do. Nothing more, nothing less. Depends only on libc.
++
++### libseat
++
++A seat management library allowing applications to use whatever seat management is available.
++
++Supports:
++- seatd
++- (e)logind
++- embedded seatd for standalone operation
++
++Each backend can be compile-time included and is runtime auto-detected or manually selected with the `LIBSEAT_BACKEND` environment variable.
++
++Which backend is in use is transparent to the application, providing a simple common interface.
++
++## Why not (e)logind?
++
++systemd-logind is not portable, and being part of the systemd project, it cannot be used in an environment not based on systemd. Furthermore, "simple" is definitely not within the set of adjectives that can be used to describe logind. For those in the dark, [take a glance at its API](https://www.freedesktop.org/wiki/Software/systemd/logind/). Plus, competition is healthy.
++
++elogind tries to isolate systemd-logind form systemd through brute-force. This requires actively fighting against upstream design decisions for deep integration, and the efforts must be repeated every time one syncs with upstream. And even after all this work, one is left with nothing but a hackjob.
++
++Why spend time isolating logind and keeping up with upstream when we could instead create something better with less work?
++
++## Why does libseat support (e)logind?
++
++[In order to not be part of the problem](https://xkcd.com/927/). We will not displace systemd-logind anytime soon, so for user shells like [sway](https://github.com/swaywm/sway), seatd joins the ranks of logind and direct session management for things they need to support.
++
++Instead of giving user shell developers more work, libseat aims to make supporting seatd less work than what they're currently implementing. This is done by taking care of all the seat management needs with multiple backends, providing not only seatd support, but replacing the existing logind and direct seat management implementations.
++
++## How to discuss
++
++Go to #kennylevinsen @ irc.libera.chat to discuss, or use [~kennylevinsen/seatd-devel@lists.sr.ht](https://lists.sr.ht/~kennylevinsen/seatd-devel).
+diff --git seatd-clean/seatd/client.c seatd-workdir/seatd/client.c
+index 220c5d3..df57c42 100644
+--- seatd-clean/seatd/client.c
++++ seatd-workdir/seatd/client.c
+@@ -24,7 +24,7 @@
+ #include "terminal.h"
+ 
+ static int get_peer(int fd, pid_t *pid, uid_t *uid, gid_t *gid) {
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__zinnia__)
+ 	struct ucred cred;
+ 	socklen_t len = sizeof cred;
+ 	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) == -1) {
+diff --git seatd-workdir/seatd/common/connection.c seatd-workdir/seatd/common/connection.c
+new file mode 100644
+index 0000000..6b2c366
+--- /dev/null
++++ seatd-workdir/seatd/common/connection.c
+@@ -0,0 +1,308 @@
++#include <errno.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <unistd.h>
++
++#include "connection.h"
++
++static inline uint32_t connection_buffer_mask(const uint32_t idx) {
++	return idx & (CONNECTION_BUFFER_SIZE - 1);
++}
++
++static inline uint32_t connection_buffer_size(const struct connection_buffer *b) {
++	return b->head - b->tail;
++}
++
++static inline void connection_buffer_consume(struct connection_buffer *b, const size_t size) {
++	b->tail += size;
++}
++
++static inline void connection_buffer_restore(struct connection_buffer *b, const size_t size) {
++	b->tail -= size;
++}
++
++/*
++ * connection_buffer_get_iov prepares I/O vectors pointing to our ring buffer.
++ * Two may be used if the buffer has wrapped around.
++ */
++static void connection_buffer_get_iov(struct connection_buffer *b, struct iovec *iov, int *count) {
++	uint32_t head = connection_buffer_mask(b->head);
++	uint32_t tail = connection_buffer_mask(b->tail);
++	if (tail < head) {
++		iov[0].iov_base = b->data + tail;
++		iov[0].iov_len = head - tail;
++		*count = 1;
++	} else if (head == 0) {
++		iov[0].iov_base = b->data + tail;
++		iov[0].iov_len = sizeof b->data - tail;
++		*count = 1;
++	} else {
++		iov[0].iov_base = b->data + tail;
++		iov[0].iov_len = sizeof b->data - tail;
++		iov[1].iov_base = b->data;
++		iov[1].iov_len = head;
++		*count = 2;
++	}
++}
++
++/*
++ * connection_buffer_put_iov prepares I/O vectors pointing to our ring buffer.
++ * Two may be used if the buffer has wrapped around.
++ */
++static void connection_buffer_put_iov(struct connection_buffer *b, struct iovec *iov, int *count) {
++	uint32_t head = connection_buffer_mask(b->head);
++	uint32_t tail = connection_buffer_mask(b->tail);
++	if (head < tail) {
++		iov[0].iov_base = b->data + head;
++		iov[0].iov_len = tail - head;
++		*count = 1;
++	} else if (tail == 0) {
++		iov[0].iov_base = b->data + head;
++		iov[0].iov_len = sizeof b->data - head;
++		*count = 1;
++	} else {
++		iov[0].iov_base = b->data + head;
++		iov[0].iov_len = sizeof b->data - head;
++		iov[1].iov_base = b->data;
++		iov[1].iov_len = tail;
++		*count = 2;
++	}
++}
++
++/*
++ * connection_buffer_copy copies from our ring buffer into a linear buffer.
++ */
++static void connection_buffer_copy(const struct connection_buffer *b, void *data, const size_t count) {
++	uint32_t tail = connection_buffer_mask(b->tail);
++	if (tail + count <= sizeof b->data) {
++		memcpy(data, b->data + tail, count);
++		return;
++	}
++
++	uint32_t size = sizeof b->data - tail;
++	memcpy(data, b->data + tail, size);
++	memcpy((char *)data + size, b->data, count - size);
++}
++/*
++ * connection_buffer_copy copies from a linear buffer into our ring buffer.
++ */
++static int connection_buffer_put(struct connection_buffer *b, const void *data, const size_t count) {
++	if (count > sizeof(b->data)) {
++		errno = EOVERFLOW;
++		return -1;
++	}
++
++	uint32_t head = connection_buffer_mask(b->head);
++	if (head + count <= sizeof b->data) {
++		memcpy(b->data + head, data, count);
++	} else {
++		uint32_t size = sizeof b->data - head;
++		memcpy(b->data + head, data, size);
++		memcpy(b->data, (const char *)data + size, count - size);
++	}
++
++	b->head += count;
++	return 0;
++}
++
++/*
++ * close_fds closes all fds within a connection_buffer
++ */
++static void connection_buffer_close_fds(struct connection_buffer *buffer) {
++	size_t size = connection_buffer_size(buffer);
++	if (size == 0) {
++		return;
++	}
++	int fds[sizeof(buffer->data) / sizeof(int)];
++	connection_buffer_copy(buffer, fds, size);
++	int count = size / sizeof fds[0];
++	size = count * sizeof fds[0];
++	for (int idx = 0; idx < count; idx++) {
++		close(fds[idx]);
++	}
++	connection_buffer_consume(buffer, size);
++}
++
++/*
++ * build_cmsg prepares a cmsg from a buffer full of fds
++ */
++static void build_cmsg(struct connection_buffer *buffer, char *data, int *clen) {
++	size_t size = connection_buffer_size(buffer);
++	if (size > MAX_FDS * sizeof(int)) {
++		size = MAX_FDS * sizeof(int);
++	}
++
++	if (size <= 0) {
++		*clen = 0;
++		return;
++	}
++
++	struct cmsghdr *cmsg = (struct cmsghdr *)data;
++	cmsg->cmsg_level = SOL_SOCKET;
++	cmsg->cmsg_type = SCM_RIGHTS;
++	cmsg->cmsg_len = CMSG_LEN(size);
++	connection_buffer_copy(buffer, CMSG_DATA(cmsg), size);
++	*clen = cmsg->cmsg_len;
++}
++
++static int decode_cmsg(struct connection_buffer *buffer, struct msghdr *msg) {
++	bool overflow = false;
++	struct cmsghdr *cmsg;
++	for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL; cmsg = CMSG_NXTHDR(msg, cmsg)) {
++		if (cmsg->cmsg_level != SOL_SOCKET || cmsg->cmsg_type != SCM_RIGHTS) {
++			continue;
++		}
++
++		size_t size = cmsg->cmsg_len - CMSG_LEN(0);
++		size_t max = sizeof(buffer->data) - connection_buffer_size(buffer);
++		if (size > max || overflow) {
++			overflow = true;
++			size /= sizeof(int);
++			for (size_t idx = 0; idx < size; idx++) {
++				close(((int *)CMSG_DATA(cmsg))[idx]);
++			}
++		} else if (connection_buffer_put(buffer, CMSG_DATA(cmsg), size) < 0) {
++			return -1;
++		}
++	}
++
++	if (overflow) {
++		errno = EOVERFLOW;
++		return -1;
++	}
++	return 0;
++}
++
++int connection_read(struct connection *connection) {
++	if (connection_buffer_size(&connection->in) >= sizeof(connection->in.data)) {
++		errno = EOVERFLOW;
++		return -1;
++	}
++
++	int count;
++	struct iovec iov[2];
++	connection_buffer_put_iov(&connection->in, iov, &count);
++
++	char cmsg[CMSG_LEN(CONNECTION_BUFFER_SIZE)];
++	struct msghdr msg = {
++		.msg_name = NULL,
++		.msg_namelen = 0,
++		.msg_iov = iov,
++		.msg_iovlen = count,
++		.msg_control = cmsg,
++		.msg_controllen = sizeof cmsg,
++		.msg_flags = 0,
++	};
++
++	int len;
++	do {
++		len = recvmsg(connection->fd, &msg, MSG_DONTWAIT | MSG_CMSG_CLOEXEC);
++		if (len == -1 && errno != EINTR)
++			return -1;
++	} while (len == -1);
++
++	if (decode_cmsg(&connection->fds_in, &msg) != 0) {
++		return -1;
++	}
++	connection->in.head += len;
++
++	return connection_buffer_size(&connection->in);
++}
++
++int connection_flush(struct connection *connection) {
++	if (!connection->want_flush) {
++		return 0;
++	}
++
++	uint32_t tail = connection->out.tail;
++	while (connection->out.head - connection->out.tail > 0) {
++		int count;
++		struct iovec iov[2];
++		connection_buffer_get_iov(&connection->out, iov, &count);
++
++		int clen;
++		char cmsg[CMSG_LEN(CONNECTION_BUFFER_SIZE)];
++		build_cmsg(&connection->fds_out, cmsg, &clen);
++		struct msghdr msg = {
++			.msg_name = NULL,
++			.msg_namelen = 0,
++			.msg_iov = iov,
++			.msg_iovlen = count,
++			.msg_control = (clen > 0) ? cmsg : NULL,
++			.msg_controllen = clen,
++			.msg_flags = 0,
++		};
++
++		int len;
++		do {
++			len = sendmsg(connection->fd, &msg, MSG_NOSIGNAL | MSG_DONTWAIT);
++			if (len == -1 && errno != EINTR)
++				return -1;
++		} while (len == -1);
++		connection_buffer_close_fds(&connection->fds_out);
++		connection->out.tail += len;
++	}
++	connection->want_flush = 0;
++	return connection->out.head - tail;
++}
++
++int connection_put(struct connection *connection, const void *data, size_t count) {
++	if (connection_buffer_size(&connection->out) + count > CONNECTION_BUFFER_SIZE) {
++		connection->want_flush = 1;
++		if (connection_flush(connection) == -1) {
++			return -1;
++		}
++	}
++
++	if (connection_buffer_put(&connection->out, data, count) == -1) {
++		return -1;
++	}
++
++	connection->want_flush = 1;
++	return 0;
++}
++
++int connection_put_fd(struct connection *connection, int fd) {
++	if (connection_buffer_size(&connection->fds_out) == MAX_FDS * sizeof fd) {
++		errno = EOVERFLOW;
++		return -1;
++	}
++
++	return connection_buffer_put(&connection->fds_out, &fd, sizeof fd);
++}
++
++int connection_get(struct connection *connection, void *dst, size_t count) {
++	if (count > connection_buffer_size(&connection->in)) {
++		errno = EAGAIN;
++		return -1;
++	}
++	connection_buffer_copy(&connection->in, dst, count);
++	connection_buffer_consume(&connection->in, count);
++	return count;
++}
++
++int connection_get_fd(struct connection *connection, int *fd) {
++	if (sizeof(int) > connection_buffer_size(&connection->fds_in)) {
++		errno = EAGAIN;
++		return -1;
++	}
++	connection_buffer_copy(&connection->fds_in, fd, sizeof(int));
++	connection_buffer_consume(&connection->fds_in, sizeof(int));
++	return 0;
++}
++
++void connection_close_fds(struct connection *connection) {
++	connection_buffer_close_fds(&connection->fds_in);
++	connection_buffer_close_fds(&connection->fds_out);
++}
++
++size_t connection_pending(struct connection *connection) {
++	return connection_buffer_size(&connection->in);
++}
++
++void connection_restore(struct connection *connection, size_t count) {
++	connection_buffer_restore(&connection->in, count);
++}
+diff --git seatd-workdir/seatd/common/drm.c seatd-workdir/seatd/common/drm.c
+new file mode 100644
+index 0000000..f5f3b10
+--- /dev/null
++++ seatd-workdir/seatd/common/drm.c
+@@ -0,0 +1,51 @@
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/types.h>
++
++#if defined(__linux__)
++#include <sys/sysmacros.h>
++#endif
++
++#include "drm.h"
++
++// From libdrm
++#define DRM_IOCTL_BASE        'd'
++#define DRM_IO(nr)            _IO(DRM_IOCTL_BASE, nr)
++#define DRM_IOCTL_SET_MASTER  DRM_IO(0x1e)
++#define DRM_IOCTL_DROP_MASTER DRM_IO(0x1f)
++
++#define STRLEN(s) ((sizeof(s) / sizeof(s[0])) - 1)
++
++int drm_set_master(int fd) {
++	return ioctl(fd, DRM_IOCTL_SET_MASTER, 0);
++}
++
++int drm_drop_master(int fd) {
++	return ioctl(fd, DRM_IOCTL_DROP_MASTER, 0);
++}
++
++#if defined(__linux__)
++int path_is_drm(const char *path) {
++	static const char prefix[] = "/dev/dri/";
++	static const int prefixlen = STRLEN(prefix);
++	return strncmp(prefix, path, prefixlen) == 0;
++}
++
++int dev_is_drm(dev_t device) {
++	return major(device) == 226;
++}
++#elif defined(__FreeBSD__)
++int path_is_drm(const char *path) {
++	static const char prefix[] = "/dev/drm/";
++	static const int prefixlen = STRLEN(prefix);
++	return strncmp(prefix, path, prefixlen) == 0;
++}
++#elif defined(__zinnia__)
++int path_is_drm(const char *path) {
++	static const char prefix[] = "/dev/drm/";
++	static const int prefixlen = STRLEN(prefix);
++	return strncmp(prefix, path, prefixlen) == 0;
++}
++#else
++#error Unsupported platform
++#endif
+diff --git seatd-workdir/seatd/common/evdev.c seatd-workdir/seatd/common/evdev.c
+new file mode 100644
+index 0000000..f3dd4fe
+--- /dev/null
++++ seatd-workdir/seatd/common/evdev.c
+@@ -0,0 +1,36 @@
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/types.h>
++
++#if defined(__linux__)
++#include <linux/input.h>
++#include <linux/major.h>
++#include <sys/sysmacros.h>
++#elif defined(__FreeBSD__)
++#include <dev/evdev/input.h>
++#elif defined(__zinnia__)
++#include <linux/input.h>
++#else
++#error Unsupported platform
++#endif
++
++#include "evdev.h"
++
++#define STRLEN(s) ((sizeof(s) / sizeof(s[0])) - 1)
++
++int path_is_evdev(const char *path) {
++	static const char prefix[] = "/dev/input/event";
++	static const size_t prefixlen = STRLEN(prefix);
++	return strncmp(prefix, path, prefixlen) == 0;
++}
++
++int evdev_revoke(int fd) {
++	return ioctl(fd, EVIOCREVOKE, NULL);
++}
++
++#if defined(__linux__)
++int dev_is_evdev(dev_t device) {
++	return major(device) == INPUT_MAJOR;
++}
++#endif
+diff --git seatd-workdir/seatd/common/linked_list.c seatd-workdir/seatd/common/linked_list.c
+new file mode 100644
+index 0000000..7383de0
+--- /dev/null
++++ seatd-workdir/seatd/common/linked_list.c
+@@ -0,0 +1,46 @@
++#include <assert.h>
++#include <stdbool.h>
++#include <stddef.h>
++
++#include "linked_list.h"
++
++void linked_list_init(struct linked_list *list) {
++	list->next = list;
++	list->prev = list;
++}
++
++void linked_list_insert(struct linked_list *list, struct linked_list *elem) {
++	assert(list->prev != NULL && list->next != NULL);
++	assert(elem->prev == NULL && elem->next == NULL);
++
++	elem->prev = list;
++	elem->next = list->next;
++	list->next = elem;
++	elem->next->prev = elem;
++}
++
++void linked_list_remove(struct linked_list *elem) {
++	assert(elem->prev != NULL && elem->next != NULL);
++
++	elem->prev->next = elem->next;
++	elem->next->prev = elem->prev;
++	elem->next = NULL;
++	elem->prev = NULL;
++}
++
++bool linked_list_empty(struct linked_list *list) {
++	assert(list->prev != NULL && list->next != NULL);
++	return list->next == list;
++}
++
++void linked_list_take(struct linked_list *target, struct linked_list *source) {
++	if (linked_list_empty(source)) {
++		return;
++	}
++
++	source->next->prev = target;
++	source->prev->next = target->next;
++	target->next->prev = source->prev;
++	target->next = source->next;
++	linked_list_init(source);
++}
+diff --git seatd-workdir/seatd/common/log.c seatd-workdir/seatd/common/log.c
+new file mode 100644
+index 0000000..bea683b
+--- /dev/null
++++ seatd-workdir/seatd/common/log.c
+@@ -0,0 +1,98 @@
++#include <errno.h>
++#include <stdarg.h>
++#include <stdbool.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <time.h>
++#include <unistd.h>
++
++#include "log.h"
++
++const long NSEC_PER_SEC = 1000000000;
++
++static void log_stderr(enum libseat_log_level level, const char *fmt, va_list args);
++
++static enum libseat_log_level current_log_level = LIBSEAT_LOG_LEVEL_SILENT;
++static libseat_log_func current_log_handler = log_stderr;
++static struct timespec start_time = {-1, -1};
++static bool colored = false;
++
++static const char *verbosity_colors[] = {
++	[LIBSEAT_LOG_LEVEL_SILENT] = "",
++	[LIBSEAT_LOG_LEVEL_ERROR] = "\x1B[1;31m",
++	[LIBSEAT_LOG_LEVEL_INFO] = "\x1B[1;34m",
++	[LIBSEAT_LOG_LEVEL_DEBUG] = "\x1B[1;90m",
++};
++
++static const char *verbosity_headers[] = {
++	[LIBSEAT_LOG_LEVEL_SILENT] = "",
++	[LIBSEAT_LOG_LEVEL_ERROR] = "[ERROR]",
++	[LIBSEAT_LOG_LEVEL_INFO] = "[INFO]",
++	[LIBSEAT_LOG_LEVEL_DEBUG] = "[DEBUG]",
++};
++
++static void timespec_sub(struct timespec *r, const struct timespec *a, const struct timespec *b) {
++	r->tv_sec = a->tv_sec - b->tv_sec;
++	r->tv_nsec = a->tv_nsec - b->tv_nsec;
++	if (r->tv_nsec < 0) {
++		r->tv_sec--;
++		r->tv_nsec += NSEC_PER_SEC;
++	}
++}
++
++static void log_stderr(enum libseat_log_level level, const char *fmt, va_list args) {
++	struct timespec ts = {0};
++	clock_gettime(CLOCK_MONOTONIC, &ts);
++	timespec_sub(&ts, &ts, &start_time);
++	unsigned c = (level < LIBSEAT_LOG_LEVEL_LAST) ? level : LIBSEAT_LOG_LEVEL_LAST - 1;
++
++	const char *prefix, *postfix;
++
++	if (colored) {
++		prefix = verbosity_colors[c];
++		postfix = "\x1B[0m\n";
++	} else {
++		prefix = verbosity_headers[c];
++		postfix = "\n";
++	}
++
++	fprintf(stderr, "%02d:%02d:%02d.%03ld %s ", (int)(ts.tv_sec / 60 / 60),
++		(int)(ts.tv_sec / 60 % 60), (int)(ts.tv_sec % 60), ts.tv_nsec / 1000000, prefix);
++
++	vfprintf(stderr, fmt, args);
++
++	fprintf(stderr, "%s", postfix);
++}
++
++void log_init(void) {
++	if (start_time.tv_sec >= 0) {
++		return;
++	}
++	clock_gettime(CLOCK_MONOTONIC, &start_time);
++	colored = isatty(STDERR_FILENO);
++}
++
++void _logf(enum libseat_log_level level, const char *fmt, ...) {
++	int stored_errno = errno;
++	va_list args;
++	if (level > current_log_level) {
++		return;
++	}
++
++	va_start(args, fmt);
++	current_log_handler(level, fmt, args);
++	va_end(args);
++
++	errno = stored_errno;
++}
++
++void libseat_set_log_handler(libseat_log_func handler) {
++	if (handler == NULL) {
++		handler = log_stderr;
++	}
++	current_log_handler = handler;
++}
++
++void libseat_set_log_level(enum libseat_log_level level) {
++	current_log_level = level;
++}
+diff --git seatd-workdir/seatd/common/terminal.c seatd-workdir/seatd/common/terminal.c
+new file mode 100644
+index 0000000..cb431f3
+--- /dev/null
++++ seatd-workdir/seatd/common/terminal.c
+@@ -0,0 +1,295 @@
++#include <assert.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stdbool.h>
++#include <stdio.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <unistd.h>
++
++#if defined(__linux__)
++#include <linux/kd.h>
++#include <linux/vt.h>
++#define K_ENABLE  K_UNICODE
++#define K_DISABLE K_OFF
++#define FRSIG     0
++#elif defined(__FreeBSD__)
++#include <sys/consio.h>
++#include <sys/kbio.h>
++#include <termios.h>
++#define K_ENABLE  K_XLATE
++#define K_DISABLE K_RAW
++#define FRSIG     SIGIO
++#elif defined(__zinnia__)
++// TODO: Add VT support
++#else
++#error Unsupported platform
++#endif
++
++#include "log.h"
++#include "terminal.h"
++
++#define TTYPATHLEN 16
++
++#if defined(__FreeBSD__)
++static int get_tty_path(int tty, char path[static TTYPATHLEN]) {
++	assert(tty >= 0);
++
++	const char prefix[] = "/dev/ttyv";
++	const size_t prefix_len = sizeof(prefix) - 1;
++	strcpy(path, prefix);
++
++	// The FreeBSD VT_GETACTIVE is implemented in the kernel as follows:
++	//
++	//	static int
++	//	vtterm_ioctl(struct terminal *tm, u_long cmd, caddr_t data,
++	// 		struct thread *td)
++	//	{
++	//		struct vt_window *vw = tm->tm_softc;
++	//		struct vt_device *vd = vw->vw_device;
++	//		...
++	//		switch (cmd) {
++	//		...
++	//		case VT_GETACTIVE:
++	//			*(int *)data = vd->vd_curwindow->vw_number + 1;
++	//			return (0);
++	//		...
++	//		}
++	//		...
++	//	}
++	//
++	// The side-effect here being that the returned VT number is one
++	// greater than the internal VT number. The internal number is what is
++	// used to number the TTY device, while the external number is what we
++	// use in e.g. VT switching.
++	//
++	// We subtract one from the requested TTY number to compensate. If the
++	// user asked for TTY 0 (which is special on Linux), we just give them
++	// the first tty.
++
++	if (tty > 0) {
++		tty--;
++	}
++
++	// The FreeBSD tty name is constructed in the kernel as follows:
++	//
++	//	static void
++	//	vtterm_cnprobe(struct terminal *tm, struct consdev *cp)
++	//	{
++	//		...
++	//		struct vt_window *vw = tm->tm_softc;
++	//		...
++	//		sprintf(cp->cn_name, "ttyv%r", VT_UNIT(vw));
++	//		...
++	//	}
++	//
++	// With %r being a FreeBSD-internal radix formatter (seemingly set to
++	// base 32), and VT_UNIT expanding to the following to extract the
++	// internal VT number (which is one less than the external VT number):
++	//
++	//	((vw)->vw_device->vd_unit * VT_MAXWINDOWS + (vw)->vw_number)
++	//
++	// As the %r formatter is kernel-internal, we implement the base 32
++	// encoding ourselves below.
++
++	size_t offset = prefix_len;
++	if (tty == 0) {
++		path[offset++] = '0';
++		path[offset++] = '\0';
++		return 0;
++	}
++
++	const int base = 32;
++	for (int remaining = tty; remaining > 0; remaining /= base, offset++) {
++		// Return early if the buffer is too small.
++		if (offset + 1 >= TTYPATHLEN) {
++			errno = ENOMEM;
++			return -1;
++		}
++
++		const int value = remaining % base;
++		if (value >= 10) {
++			path[offset] = 'a' + value - 10;
++		} else {
++			path[offset] = '0' + value;
++		}
++	}
++
++	const size_t num_len = offset - prefix_len;
++	for (size_t i = 0; i < num_len / 2; i++) {
++		const size_t p1 = prefix_len + i;
++		const size_t p2 = offset - 1 - i;
++		const char tmp = path[p1];
++		path[p1] = path[p2];
++		path[p2] = tmp;
++	}
++
++	path[offset++] = '\0';
++	return 0;
++}
++#elif defined(__linux__)
++static int get_tty_path(int tty, char path[static TTYPATHLEN]) {
++	assert(tty >= 0);
++	if (snprintf(path, TTYPATHLEN, "/dev/tty%d", tty) == -1) {
++		return -1;
++	}
++	return 0;
++}
++#elif defined(__zinnia__)
++static int get_tty_path(int tty, char path[static TTYPATHLEN]) {
++	(void)tty;
++	// Zinnia has no VTs; open /dev/null so the fd is valid but all
++	// VT ioctls (stubbed as no-ops below) don't need a real terminal.
++	strcpy(path, "/dev/null");
++	return 0;
++}
++#else
++#error Unsupported platform
++#endif
++
++int terminal_open(int vt) {
++	char path[TTYPATHLEN];
++	if (get_tty_path(vt, path) == -1) {
++		log_errorf("Could not generate tty path: %s", strerror(errno));
++		return -1;
++	}
++	int fd = open(path, O_RDWR | O_NOCTTY);
++	if (fd == -1) {
++		log_errorf("Could not open target tty: %s", strerror(errno));
++		return -1;
++	}
++	return fd;
++}
++
++int terminal_current_vt(int fd) {
++#if defined(__linux__)
++	struct vt_stat st;
++	int res = ioctl(fd, VT_GETSTATE, &st);
++	close(fd);
++	if (res == -1) {
++		log_errorf("Could not retrieve VT state: %s", strerror(errno));
++		return -1;
++	}
++	return st.v_active;
++#elif defined(__FreeBSD__)
++	int vt;
++	int res = ioctl(fd, VT_GETACTIVE, &vt);
++	close(fd);
++	if (res == -1) {
++		log_errorf("Could not retrieve VT state: %s", strerror(errno));
++		return -1;
++	}
++
++	if (vt == -1) {
++		log_errorf("Invalid VT: %d", vt);
++		return -1;
++	}
++	return vt;
++#elif defined(__zinnia__)
++	(void)fd;
++	return 0;
++#else
++#error Unsupported platform
++#endif
++}
++
++int terminal_set_process_switching(int fd, bool enable) {
++	log_debugf("Setting process switching to %d", enable);
++#if !defined(__zinnia__)
++	struct vt_mode mode = {
++		.mode = enable ? VT_PROCESS : VT_AUTO,
++		.waitv = 0,
++		.relsig = enable ? SIGUSR1 : 0,
++		.acqsig = enable ? SIGUSR2 : 0,
++		.frsig = FRSIG,
++	};
++
++	if (ioctl(fd, VT_SETMODE, &mode) == -1) {
++		log_errorf("Could not set VT mode to %s process switching: %s",
++			   enable ? "enable" : "disable", strerror(errno));
++		return -1;
++	}
++#endif
++	(void)fd;
++	return 0;
++}
++
++int terminal_switch_vt(int fd, int vt) {
++	log_debugf("Switching to VT %d", vt);
++#if !defined(__zinnia__)
++	if (ioctl(fd, VT_ACTIVATE, vt) == -1) {
++		log_errorf("Could not activate VT %d: %s", vt, strerror(errno));
++		return -1;
++	}
++#endif
++	(void)fd;
++	return 0;
++}
++
++int terminal_ack_release(int fd) {
++	log_debug("Acking VT release");
++#if !defined(__zinnia__)
++	if (ioctl(fd, VT_RELDISP, 1) == -1) {
++		log_errorf("Could not ack VT release: %s", strerror(errno));
++		return -1;
++	}
++#endif
++	(void)fd;
++	return 0;
++}
++
++int terminal_ack_acquire(int fd) {
++	log_debug("Acking VT acquire");
++#if !defined(__zinnia__)
++	if (ioctl(fd, VT_RELDISP, VT_ACKACQ) == -1) {
++		log_errorf("Could not ack VT acquire: %s", strerror(errno));
++		return -1;
++	}
++#endif
++	(void)fd;
++	return 0;
++}
++
++int terminal_set_keyboard(int fd, bool enable) {
++	log_debugf("Setting KD keyboard state to %d", enable);
++#if !defined(__zinnia__)
++	if (ioctl(fd, KDSKBMODE, enable ? K_ENABLE : K_DISABLE) == -1) {
++		log_errorf("Could not set KD keyboard mode to %s: %s",
++			   enable ? "enabled" : "disabled", strerror(errno));
++		return -1;
++	}
++#if defined(__FreeBSD__)
++	struct termios tios;
++	if (tcgetattr(fd, &tios) == -1) {
++		log_errorf("Could not set get terminal mode: %s", strerror(errno));
++		return -1;
++	}
++	if (enable) {
++		cfmakesane(&tios);
++	} else {
++		cfmakeraw(&tios);
++	}
++	if (tcsetattr(fd, TCSAFLUSH, &tios) == -1) {
++		log_errorf("Could not set terminal mode to %s: %s", enable ? "sane" : "raw",
++			   strerror(errno));
++		return -1;
++	}
++#endif
++#endif
++	(void)fd;
++	return 0;
++}
++
++int terminal_set_graphics(int fd, bool enable) {
++	log_debugf("Setting KD graphics state to %d", enable);
++#if !defined(__zinnia__)
++	if (ioctl(fd, KDSETMODE, enable ? KD_GRAPHICS : KD_TEXT) == -1) {
++		log_errorf("Could not set KD graphics mode to %s: %s", enable ? "graphics" : "text",
++			   strerror(errno));
++		return -1;
++	}
++#endif
++	(void)fd;
++	return 0;
++}
+diff --git seatd-workdir/seatd/contrib/systemd/seatd.service seatd-workdir/seatd/contrib/systemd/seatd.service
+new file mode 100644
+index 0000000..bbbaf23
+--- /dev/null
++++ seatd-workdir/seatd/contrib/systemd/seatd.service
+@@ -0,0 +1,13 @@
++[Unit]
++Description=Seat management daemon
++Documentation=man:seatd(1)
++
++[Service]
++Type=simple
++# Specify the group you'd like to grant access to seatd
++ExecStart=seatd -g seat
++Restart=always
++RestartSec=1
++
++[Install]
++WantedBy=multi-user.target
+diff --git seatd-workdir/seatd/examples/simpletest/main.c seatd-workdir/seatd/examples/simpletest/main.c
+new file mode 100644
+index 0000000..6f94cf5
+--- /dev/null
++++ seatd-workdir/seatd/examples/simpletest/main.c
+@@ -0,0 +1,68 @@
++#include <errno.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++#include "libseat.h"
++
++static void handle_enable(struct libseat *backend, void *data) {
++	(void)backend;
++	int *active = (int *)data;
++	(*active)++;
++}
++
++static void handle_disable(struct libseat *backend, void *data) {
++	(void)backend;
++	int *active = (int *)data;
++	(*active)--;
++
++	libseat_disable_seat(backend);
++}
++
++int main(int argc, char *argv[]) {
++	if (argc < 2) {
++		fprintf(stderr, "Specify name of file to open as argument\n");
++		return -1;
++	}
++	char *file = argv[1];
++
++	int active = 0;
++	struct libseat_seat_listener listener = {
++		.enable_seat = handle_enable,
++		.disable_seat = handle_disable,
++	};
++	libseat_set_log_level(LIBSEAT_LOG_LEVEL_DEBUG);
++	struct libseat *backend = libseat_open_seat(&listener, &active);
++	fprintf(stderr, "libseat_open_seat(listener: %p, userdata: %p) = %p\n", (void *)&listener,
++		(void *)&active, (void *)backend);
++	if (backend == NULL) {
++		fprintf(stderr, "libseat_open_seat() failed: %s\n", strerror(errno));
++		return -1;
++	}
++
++	while (active == 0) {
++		fprintf(stderr, "waiting for activation...\n");
++		if (libseat_dispatch(backend, -1) == -1) {
++			libseat_close_seat(backend);
++			fprintf(stderr, "libseat_dispatch() failed: %s\n", strerror(errno));
++			return -1;
++		}
++	}
++	fprintf(stderr, "active!\n");
++
++	int fd, device;
++	device = libseat_open_device(backend, file, &fd);
++	fprintf(stderr, "libseat_open_device(backend: %p, path: %s, fd: %p) = %d\n",
++		(void *)backend, file, (void *)&fd, device);
++	if (device == -1) {
++		fprintf(stderr, "libseat_open_device() failed: %s\n", strerror(errno));
++		libseat_close_seat(backend);
++		return 1;
++	}
++
++	libseat_close_device(backend, device);
++	close(fd);
++	libseat_close_seat(backend);
++	return 0;
++}
+diff --git seatd-workdir/seatd/include/backend.h seatd-workdir/seatd/include/backend.h
+new file mode 100644
+index 0000000..8f6ff39
+--- /dev/null
++++ seatd-workdir/seatd/include/backend.h
+@@ -0,0 +1,32 @@
++#ifndef _SEATD_BACKEND_H
++#define _SEATD_BACKEND_H
++
++#include "libseat.h"
++
++struct seat_impl;
++struct libseat_seat_listener;
++
++struct libseat {
++	const struct seat_impl *impl;
++};
++
++struct named_backend {
++	const char *name;
++	const struct seat_impl *backend;
++};
++
++struct seat_impl {
++	struct libseat *(*open_seat)(const struct libseat_seat_listener *listener, void *data);
++	int (*disable_seat)(struct libseat *seat);
++	int (*close_seat)(struct libseat *seat);
++	const char *(*seat_name)(struct libseat *seat);
++
++	int (*open_device)(struct libseat *seat, const char *path, int *fd);
++	int (*close_device)(struct libseat *seat, int device_id);
++	int (*switch_session)(struct libseat *seat, int session);
++
++	int (*get_fd)(struct libseat *seat);
++	int (*dispatch)(struct libseat *seat, int timeout);
++};
++
++#endif
+diff --git seatd-workdir/seatd/include/client.h seatd-workdir/seatd/include/client.h
+new file mode 100644
+index 0000000..8746bea
+--- /dev/null
++++ seatd-workdir/seatd/include/client.h
+@@ -0,0 +1,45 @@
++#ifndef _SEATD_CLIENT_H
++#define _SEATD_CLIENT_H
++
++#include <stdint.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#include "connection.h"
++#include "linked_list.h"
++
++struct server;
++
++enum client_state {
++	CLIENT_NEW,
++	CLIENT_ACTIVE,
++	CLIENT_PENDING_DISABLE,
++	CLIENT_DISABLED,
++	CLIENT_CLOSED
++};
++
++struct client {
++	struct linked_list link; // seat::clients
++	struct server *server;
++	struct event_source_fd *event_source;
++	struct connection connection;
++
++	pid_t pid;
++	uid_t uid;
++	gid_t gid;
++
++	struct seat *seat;
++	int session;
++	enum client_state state;
++
++	struct linked_list devices;
++};
++
++struct client *client_create(struct server *server, int client_fd);
++void client_destroy(struct client *client);
++
++int client_handle_connection(int fd, uint32_t mask, void *data);
++int client_send_enable_seat(struct client *client);
++int client_send_disable_seat(struct client *client);
++
++#endif
+diff --git seatd-workdir/seatd/include/connection.h seatd-workdir/seatd/include/connection.h
+new file mode 100644
+index 0000000..d32e766
+--- /dev/null
++++ seatd-workdir/seatd/include/connection.h
+@@ -0,0 +1,36 @@
++#ifndef _SEATD_CONNECTION_H
++#define _SEATD_CONNECTION_H
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++
++#define CONNECTION_BUFFER_SIZE 256
++
++#define MAX_FDS (CONNECTION_BUFFER_SIZE / sizeof(int))
++
++struct connection_buffer {
++	uint32_t head, tail;
++	char data[CONNECTION_BUFFER_SIZE];
++};
++
++struct connection {
++	struct connection_buffer in, out;
++	struct connection_buffer fds_in, fds_out;
++	int fd;
++	bool want_flush;
++};
++
++int connection_read(struct connection *connection);
++int connection_flush(struct connection *connection);
++
++int connection_put(struct connection *connection, const void *data, size_t count);
++int connection_put_fd(struct connection *connection, int fd);
++
++size_t connection_pending(struct connection *connection);
++int connection_get(struct connection *connection, void *dst, size_t count);
++int connection_get_fd(struct connection *connection, int *fd);
++void connection_restore(struct connection *connection, size_t count);
++
++void connection_close_fds(struct connection *connection);
++
++#endif
+diff --git seatd-workdir/seatd/include/drm.h seatd-workdir/seatd/include/drm.h
+new file mode 100644
+index 0000000..8a7fb10
+--- /dev/null
++++ seatd-workdir/seatd/include/drm.h
+@@ -0,0 +1,13 @@
++#ifndef _SEATD_DRM_H
++#define _SEATD_DRM_H
++
++int drm_set_master(int fd);
++int drm_drop_master(int fd);
++int path_is_drm(const char *path);
++
++#if defined(__linux__)
++#include <sys/types.h>
++int dev_is_drm(dev_t device);
++#endif
++
++#endif
+diff --git seatd-workdir/seatd/include/evdev.h seatd-workdir/seatd/include/evdev.h
+new file mode 100644
+index 0000000..6ebd943
+--- /dev/null
++++ seatd-workdir/seatd/include/evdev.h
+@@ -0,0 +1,12 @@
++#ifndef _SEATD_EVDEV_H
++#define _SEATD_EVDEV_H
++
++int evdev_revoke(int fd);
++int path_is_evdev(const char *path);
++
++#if defined(__linux__)
++#include <sys/types.h>
++int dev_is_evdev(dev_t device);
++#endif
++
++#endif
+diff --git seatd-workdir/seatd/include/libseat.h seatd-workdir/seatd/include/libseat.h
+new file mode 100644
+index 0000000..385acd9
+--- /dev/null
++++ seatd-workdir/seatd/include/libseat.h
+@@ -0,0 +1,175 @@
++#ifndef _LIBSEAT_H
++#define _LIBSEAT_H
++
++#include <stdarg.h>
++
++/*
++ * An opaque struct containing an opened seat, created by libseat_open_seat and
++ * destroyed by libseat_close_seat.
++ */
++struct libseat;
++
++/*
++ * A seat event listener, given to libseat_open_seat.
++ */
++struct libseat_seat_listener {
++	/*
++	 * The seat has been enabled, and is now valid for use. Re-open all seat
++	 * devices to ensure that they are operational, as existing fds may have
++	 * had their functionality blocked or revoked.
++	 *
++	 * Must be non-NULL.
++	 */
++	void (*enable_seat)(struct libseat *seat, void *userdata);
++
++	/*
++	 * The seat has been disabled. This event signals that the application
++	 * is going to lose its seat access. The event *must* be acknowledged
++	 * with libseat_disable_seat shortly after receiving this event.
++	 *
++	 * If the recepient fails to acknowledge the event in time, seat devices
++	 * may be forcibly revoked by the seat provider.
++	 *
++	 * Must be non-NULL.
++	 */
++	void (*disable_seat)(struct libseat *seat, void *userdata);
++};
++
++/*
++ * Opens a seat, taking control of it if possible and returning a pointer to
++ * the libseat instance. If LIBSEAT_BACKEND is set, the specified backend is
++ * used. Otherwise, the first successful backend will be used.
++ *
++ * The seat listener specified is used to signal events on the seat, and must
++ * be non-NULL. The userdata pointer will be provided in all calls to the seat
++ * listener.
++ *
++ * The available backends, if enabled at compile-time, are: seatd, logind and
++ * builtin.
++ *
++ * To use builtin, the process must have permission to open and use the seat's
++ * devices at the time of the call. In the case of DRM devices, this includes
++ * permission for drmSetMaster(3). These privileges can be dropped at any
++ * point after the call.
++ *
++ * The returned pointer must be destroyed with libseat_close_seat.
++ *
++ * Returns a pointer to an opaque libseat struct on success. Returns NULL and
++ * sets errno on error.
++ */
++struct libseat *libseat_open_seat(const struct libseat_seat_listener *listener, void *userdata);
++
++/*
++ * Disables a seat, used in response to a disable_seat event. After disabling
++ * the seat, the seat devices must not be used until enable_seat is received,
++ * and all requests on the seat will fail during this period.
++ *
++ * Returns 0 on success. -1 and sets errno on error.
++ */
++int libseat_disable_seat(struct libseat *seat);
++
++/*
++ * Closes the seat. This frees the libseat structure.
++ *
++ * Returns 0 on success. Returns -1 and sets errno on error.
++ */
++int libseat_close_seat(struct libseat *seat);
++
++/*
++ * Opens a device on the seat, returning its device ID and placing the fd in
++ * the specified pointer.
++ *
++ * This will only succeed if the seat is active and the device is of a type
++ * permitted for opening on the backend, such as drm and evdev.
++ *
++ * The device may be revoked in some situations, such as in situations where a
++ * seat session switch is being forced.
++ *
++ * Returns the device id on success. Returns -1 and sets errno on error.
++ */
++int libseat_open_device(struct libseat *seat, const char *path, int *fd);
++
++/*
++ * Closes a device that has been opened on the seat using the device_id from
++ * libseat_open_device.
++ *
++ * Returns 0 on success. Returns -1 and sets errno on error.
++ */
++int libseat_close_device(struct libseat *seat, int device_id);
++
++/*
++ * Retrieves the name of the seat that is currently made available through the
++ * provided libseat instance.
++ *
++ * The returned string is owned by the libseat instance, and must not be
++ * modified. It remains valid as long as the seat is open.
++ */
++const char *libseat_seat_name(struct libseat *seat);
++
++/*
++ * Requests that the seat switches session to the specified session number.
++ * For seats that are VT-bound, the session number matches the VT number, and
++ * switching session results in a VT switch.
++ *
++ * A call to libseat_switch_session does not imply that a switch will occur,
++ * and the caller should assume that the session continues unaffected.
++ *
++ * Returns 0 on success. Returns -1 and sets errno on error.
++ */
++int libseat_switch_session(struct libseat *seat, int session);
++
++/*
++ * Retrieve the pollable connection fd for a given libseat instance. Used to
++ * poll the libseat connection for events that need to be dispatched.
++ *
++ * Returns a pollable fd on success. Returns -1 and sets errno on error.
++ */
++int libseat_get_fd(struct libseat *seat);
++
++/*
++ * Reads and dispatches events on the libseat connection fd.
++ *
++ * The specified timeout dictates how long libseat might wait for data if none
++ * is available: 0 means that no wait will occur, -1 means that libseat might
++ * wait indefinitely for data to arrive, while > 0 is the maximum wait in
++ * milliseconds that might occur.
++ *
++ * Returns a positive number signifying processed internal messages on success.
++ * Returns 0 if no messages were processed. Returns -1 and sets errno on error.
++ */
++int libseat_dispatch(struct libseat *seat, int timeout);
++
++/*
++ * A log level.
++ */
++enum libseat_log_level {
++	LIBSEAT_LOG_LEVEL_SILENT = 0,
++	LIBSEAT_LOG_LEVEL_ERROR = 1,
++	LIBSEAT_LOG_LEVEL_INFO = 2,
++	LIBSEAT_LOG_LEVEL_DEBUG = 3,
++	LIBSEAT_LOG_LEVEL_LAST,
++};
++
++/*
++ * A function that handles log messages.
++ */
++typedef void (*libseat_log_func)(enum libseat_log_level level, const char *format, va_list args);
++
++/*
++ * Sets the handler for log messages.
++ *
++ * The handler will be called for each message whose level is lower or equal
++ * to the current log level. If the handler is NULL, the handler is reset to
++ * the default.
++ */
++void libseat_set_log_handler(libseat_log_func handler);
++
++/*
++ * Sets the libseat log level.
++ *
++ * Only log messages whose level is lower or equal than the current log level
++ * will be processed, others will be ignored.
++ */
++void libseat_set_log_level(enum libseat_log_level level);
++
++#endif
+diff --git seatd-workdir/seatd/include/linked_list.h seatd-workdir/seatd/include/linked_list.h
+new file mode 100644
+index 0000000..7a20985
+--- /dev/null
++++ seatd-workdir/seatd/include/linked_list.h
+@@ -0,0 +1,17 @@
++#ifndef _LINKED_LIST_H
++#define _LINKED_LIST_H
++
++#include <stdbool.h>
++
++struct linked_list {
++	struct linked_list *prev;
++	struct linked_list *next;
++};
++
++void linked_list_init(struct linked_list *list);
++void linked_list_insert(struct linked_list *list, struct linked_list *elem);
++void linked_list_remove(struct linked_list *elem);
++bool linked_list_empty(struct linked_list *list);
++void linked_list_take(struct linked_list *target, struct linked_list *source);
++
++#endif
+diff --git seatd-workdir/seatd/include/log.h seatd-workdir/seatd/include/log.h
+new file mode 100644
+index 0000000..4cf5af3
+--- /dev/null
++++ seatd-workdir/seatd/include/log.h
+@@ -0,0 +1,38 @@
++#ifndef _LOG_H
++#define _LOG_H
++
++#include <stdarg.h>
++
++#include "libseat.h"
++
++#ifdef __GNUC__
++#define ATTRIB_PRINTF(start, end) __attribute__((format(printf, start, end)))
++#else
++#define ATTRIB_PRINTF(start, end)
++#endif
++
++#ifdef REL_SRC_DIR
++#define __FILENAME__ ((const char *)__FILE__ + sizeof(REL_SRC_DIR) - 1)
++#else
++#define __FILENAME__ __FILE__
++#endif
++
++#define log_infof(fmt, ...) \
++	_logf(LIBSEAT_LOG_LEVEL_INFO, "[%s:%d] " fmt, __FILENAME__, __LINE__, __VA_ARGS__)
++
++#define log_info(str) _logf(LIBSEAT_LOG_LEVEL_INFO, "[%s:%d] %s", __FILENAME__, __LINE__, str)
++
++#define log_errorf(fmt, ...) \
++	_logf(LIBSEAT_LOG_LEVEL_ERROR, "[%s:%d] " fmt, __FILENAME__, __LINE__, __VA_ARGS__)
++
++#define log_error(str) _logf(LIBSEAT_LOG_LEVEL_ERROR, "[%s:%d] %s", __FILENAME__, __LINE__, str)
++
++#define log_debugf(fmt, ...) \
++	_logf(LIBSEAT_LOG_LEVEL_DEBUG, "[%s:%d] " fmt, __FILENAME__, __LINE__, __VA_ARGS__)
++
++#define log_debug(str) _logf(LIBSEAT_LOG_LEVEL_DEBUG, "[%s:%d] %s", __FILENAME__, __LINE__, str)
++
++void log_init(void);
++void _logf(enum libseat_log_level level, const char *fmt, ...) ATTRIB_PRINTF(2, 3);
++
++#endif
+diff --git seatd-workdir/seatd/include/poller.h seatd-workdir/seatd/include/poller.h
+new file mode 100644
+index 0000000..63733e2
+--- /dev/null
++++ seatd-workdir/seatd/include/poller.h
+@@ -0,0 +1,129 @@
++#ifndef _SEATD_POLLER_H
++#define _SEATD_POLLER_H
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#include "linked_list.h"
++
++/*
++ * These are the event types available from the poller.
++ */
++#define EVENT_READABLE 0x1
++#define EVENT_WRITABLE 0x4
++#define EVENT_ERROR    0x8
++#define EVENT_HANGUP   0x10
++
++/**
++ * The fd poller class. This must be created by poller_add_fd.
++ */
++struct event_source_fd;
++
++/*
++ * The signal poller class. This must be created by poller_add_signal.
++ */
++struct event_source_signal;
++
++/**
++ * The callback type used by event_source_fd, passed to poller_add_fd.
++ */
++typedef int (*event_source_fd_func_t)(int fd, uint32_t mask, void *data);
++
++/**
++ * The interface that an event_source_fd must implement.
++ */
++struct event_source_fd_impl {
++	int (*update)(struct event_source_fd *event_source, uint32_t mask);
++	int (*destroy)(struct event_source_fd *event_source);
++};
++
++/**
++ * Removes the event_source_fd from the poller and frees the structure.
++ */
++int event_source_fd_destroy(struct event_source_fd *event_source);
++
++/**
++ * Updates the poll mask applied to this fd, effective on the next poll.
++ */
++int event_source_fd_update(struct event_source_fd *event_source, uint32_t mask);
++
++/**
++ * The callback type used by event_source_signal, passed to poller_add_signal.
++ */
++typedef int (*event_source_signal_func_t)(int signal, void *data);
++
++/**
++ * The interface that an event_source_signal must implement.
++ */
++struct event_source_signal_impl {
++	int (*destroy)(struct event_source_signal *event_source);
++};
++
++/**
++ * Removes the event_source_siganl from the poller and frees the structure.
++ */
++int event_source_signal_destroy(struct event_source_signal *event_source);
++
++/**
++ * The poller base class. This must be created by poller_create.
++ */
++struct poller {
++	struct linked_list signals;
++	struct linked_list fds;
++
++	int signal_fds[2];
++	struct pollfd *pollfds;
++	size_t pollfds_len;
++	size_t fd_event_sources;
++	bool dirty;
++};
++
++/**
++ * The interface that a poll backend must implement.
++ */
++struct poll_impl {
++	struct poller *(*create)(void);
++	int (*destroy)(struct poller *);
++
++	struct event_source_fd *(*add_fd)(struct poller *, int fd, uint32_t mask,
++					  event_source_fd_func_t func, void *data);
++	struct event_source_signal *(*add_signal)(struct poller *, int signal,
++						  event_source_signal_func_t func, void *data);
++
++	int (*poll)(struct poller *);
++};
++
++/**
++ * Initializes the poller. The poller must be torn down with poller_finish when
++ * it is no longer needed.
++ */
++int poller_init(struct poller *poller);
++
++/**
++ * De-initializes the poller. This destroys all remaining event sources and
++ * tears down the poller.
++ */
++int poller_finish(struct poller *poller);
++
++/**
++ * Create an fd event source with the provided initial parameters. This event
++ * source must be torn down with event_source_fd_destroy when it is no longer
++ * needed.
++ */
++struct event_source_fd *poller_add_fd(struct poller *poller, int fd, uint32_t mask,
++				      event_source_fd_func_t func, void *data);
++
++/**
++ * Create  signal event source with the provided initial parameters. This event
++ * source must be torn down with event_source_signal_destroy when it is no
++ * longer needed.
++ */
++struct event_source_signal *poller_add_signal(struct poller *poller, int signal,
++					      event_source_signal_func_t func, void *data);
++
++/**
++ * Poll the poller. I don't know what you were expecting.
++ */
++int poller_poll(struct poller *poller);
++
++#endif
+diff --git seatd-workdir/seatd/include/protocol.h seatd-workdir/seatd/include/protocol.h
+new file mode 100644
+index 0000000..25133e5
+--- /dev/null
++++ seatd-workdir/seatd/include/protocol.h
+@@ -0,0 +1,63 @@
++#ifndef _SEATD_CONSTANTS_H
++#define _SEATD_CONSTANTS_H
++
++#define MAX_PATH_LEN     256
++#define MAX_SEAT_LEN     64
++#define MAX_SEAT_DEVICES 128
++#define MAX_SESSION_LEN  64
++
++#define CLIENT_EVENT(opcode) (opcode)
++#define SERVER_EVENT(opcode) ((opcode) + (1 << 15))
++
++#define CLIENT_OPEN_SEAT      CLIENT_EVENT(1)
++#define CLIENT_CLOSE_SEAT     CLIENT_EVENT(2)
++#define CLIENT_OPEN_DEVICE    CLIENT_EVENT(3)
++#define CLIENT_CLOSE_DEVICE   CLIENT_EVENT(4)
++#define CLIENT_DISABLE_SEAT   CLIENT_EVENT(5)
++#define CLIENT_SWITCH_SESSION CLIENT_EVENT(6)
++#define CLIENT_PING           CLIENT_EVENT(7)
++
++#define SERVER_SEAT_OPENED   SERVER_EVENT(1)
++#define SERVER_SEAT_CLOSED   SERVER_EVENT(2)
++#define SERVER_DEVICE_OPENED SERVER_EVENT(3)
++#define SERVER_DEVICE_CLOSED SERVER_EVENT(4)
++#define SERVER_DISABLE_SEAT  SERVER_EVENT(5)
++#define SERVER_ENABLE_SEAT   SERVER_EVENT(6)
++#define SERVER_PONG          SERVER_EVENT(7)
++#define SERVER_ERROR         SERVER_EVENT(0x7FFF)
++
++#include <stdint.h>
++
++struct proto_header {
++	uint16_t opcode;
++	uint16_t size;
++};
++
++struct proto_client_open_device {
++	uint16_t path_len;
++	// NULL-terminated byte-sequence path_len long follows
++};
++
++struct proto_client_close_device {
++	int device_id;
++};
++
++struct proto_client_switch_session {
++	int session;
++};
++
++struct proto_server_seat_opened {
++	uint16_t seat_name_len;
++	// NULL-terminated byte-sequence seat_name_len long follows
++};
++
++struct proto_server_device_opened {
++	int device_id;
++	// One fd in auxillary data
++};
++
++struct proto_server_error {
++	int error_code;
++};
++
++#endif
+diff --git seatd-workdir/seatd/include/seat.h seatd-workdir/seatd/include/seat.h
+new file mode 100644
+index 0000000..cc243b6
+--- /dev/null
++++ seatd-workdir/seatd/include/seat.h
+@@ -0,0 +1,56 @@
++#ifndef _SEATD_SEAT_H
++#define _SEATD_SEAT_H
++
++#include <stdbool.h>
++#include <stdint.h>
++#include <sys/types.h>
++
++#include "linked_list.h"
++
++struct client;
++
++enum seat_device_type {
++	SEAT_DEVICE_TYPE_NORMAL,
++	SEAT_DEVICE_TYPE_EVDEV,
++	SEAT_DEVICE_TYPE_DRM,
++};
++
++struct seat_device {
++	struct linked_list link; // client::devices
++	int device_id;
++	int fd;
++	int ref_cnt;
++	bool active;
++	char *path;
++	enum seat_device_type type;
++};
++
++struct seat {
++	struct linked_list link; // server::seats
++	char *seat_name;
++	struct linked_list clients;
++	struct client *active_client;
++	struct client *next_client;
++
++	bool vt_bound;
++	int cur_vt;
++	int session_cnt;
++};
++
++struct seat *seat_create(const char *name, bool vt_bound);
++void seat_destroy(struct seat *seat);
++
++int seat_add_client(struct seat *seat, struct client *client);
++int seat_remove_client(struct client *client);
++int seat_open_client(struct seat *seat, struct client *client);
++int seat_ack_disable_client(struct client *client);
++
++struct seat_device *seat_open_device(struct client *client, const char *path);
++int seat_close_device(struct client *client, struct seat_device *seat_device);
++struct seat_device *seat_find_device(struct client *client, int device_id);
++
++int seat_set_next_session(struct client *client, int session);
++int seat_vt_activate(struct seat *seat);
++int seat_vt_release(struct seat *seat);
++
++#endif
+diff --git seatd-workdir/seatd/include/server.h seatd-workdir/seatd/include/server.h
+new file mode 100644
+index 0000000..488915c
+--- /dev/null
++++ seatd-workdir/seatd/include/server.h
+@@ -0,0 +1,27 @@
++#ifndef _SEATD_SERVER_H
++#define _SEATD_SERVER_H
++
++#include <stdbool.h>
++
++#include "linked_list.h"
++#include "poller.h"
++
++struct client;
++
++struct server {
++	bool running;
++	struct poller poller;
++
++	struct linked_list seats;
++	struct linked_list idle_clients;
++};
++
++int server_init(struct server *server);
++void server_finish(struct server *server);
++
++struct seat *server_get_seat(struct server *server, const char *seat_name);
++
++int server_handle_connection(int fd, uint32_t mask, void *data);
++int server_add_client(struct server *server, int fd);
++
++#endif
+diff --git seatd-workdir/seatd/include/terminal.h seatd-workdir/seatd/include/terminal.h
+new file mode 100644
+index 0000000..fb46ce3
+--- /dev/null
++++ seatd-workdir/seatd/include/terminal.h
+@@ -0,0 +1,16 @@
++#ifndef _SEATD_TERMINAL_H
++#define _SEATD_TERMINAL_H
++
++#include <stdbool.h>
++
++int terminal_open(int vt);
++
++int terminal_set_process_switching(int fd, bool enable);
++int terminal_current_vt(int fd);
++int terminal_switch_vt(int fd, int vt);
++int terminal_ack_release(int fd);
++int terminal_ack_acquire(int fd);
++int terminal_set_keyboard(int fd, bool enable);
++int terminal_set_graphics(int fd, bool enable);
++
++#endif
+diff --git seatd-workdir/seatd/include/test.h seatd-workdir/seatd/include/test.h
+new file mode 100644
+index 0000000..64716cc
+--- /dev/null
++++ seatd-workdir/seatd/include/test.h
+@@ -0,0 +1,23 @@
++#ifndef _TEST_H
++#define _TEST_H
++
++char *__curtestname = "<none>";
++
++#define test_run(func)                      \
++	do {                                \
++		char *orig = __curtestname; \
++		__curtestname = #func;      \
++		func();                     \
++		__curtestname = orig;       \
++	} while (0)
++
++#define test_assert(cond)                                                                          \
++	do {                                                                                       \
++		if (!(cond)) {                                                                     \
++			fprintf(stderr, "%s:%d: %s: test_assert failed: %s\n", __FILE__, __LINE__, \
++				__curtestname, #cond);                                             \
++			abort();                                                                   \
++		}                                                                                  \
++	} while (0)
++
++#endif
+diff --git seatd-workdir/seatd/libseat/backend/logind.c seatd-workdir/seatd/libseat/backend/logind.c
+new file mode 100644
+index 0000000..5a10c75
+--- /dev/null
++++ seatd-workdir/seatd/libseat/backend/logind.c
+@@ -0,0 +1,763 @@
++#include <assert.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <poll.h>
++#include <stdbool.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <sys/stat.h>
++#include <sys/sysmacros.h>
++#include <sys/un.h>
++#include <unistd.h>
++
++#if defined(HAVE_ELOGIND)
++#include <elogind/sd-bus.h>
++#include <elogind/sd-login.h>
++#elif defined(HAVE_SYSTEMD)
++#include <systemd/sd-bus.h>
++#include <systemd/sd-login.h>
++#else
++#error logind backend requires either elogind or systemd
++#endif
++
++#include "backend.h"
++#include "drm.h"
++#include "libseat.h"
++#include "log.h"
++
++struct backend_logind {
++	struct libseat base;
++	const struct libseat_seat_listener *seat_listener;
++	void *seat_listener_data;
++
++	sd_bus *bus;
++	char *id;
++	char *seat;
++	char *path;
++	char *seat_path;
++
++	bool active;
++	bool initial_setup;
++	bool awaiting_pong;
++	int has_drm;
++};
++
++const struct seat_impl logind_impl;
++static struct backend_logind *backend_logind_from_libseat_backend(struct libseat *base);
++static void release_control(struct backend_logind *backend);
++
++static void destroy(struct backend_logind *backend) {
++	assert(backend);
++	if (backend->bus != NULL) {
++		sd_bus_unref(backend->bus);
++	}
++	free(backend->id);
++	free(backend->seat);
++	free(backend->path);
++	free(backend->seat_path);
++	free(backend);
++}
++
++static int close_seat(struct libseat *base) {
++	struct backend_logind *backend = backend_logind_from_libseat_backend(base);
++	release_control(backend);
++	destroy(backend);
++	return 0;
++}
++
++static int ping_handler(sd_bus_message *m, void *userdata, sd_bus_error *ret_error) {
++	(void)ret_error;
++	struct backend_logind *session = userdata;
++	if (sd_bus_message_is_method_error(m, NULL)) {
++		const sd_bus_error *error = sd_bus_message_get_error(m);
++		log_errorf("Ping failed: %s: %s", error->name, error->message);
++		return -1;
++	}
++	session->awaiting_pong = false;
++	return 0;
++}
++
++static int send_ping(struct backend_logind *backend) {
++	int ret = sd_bus_call_method_async(backend->bus, NULL, "org.freedesktop.login1",
++					   "/org/freedesktop/login1", "org.freedesktop.DBus.Peer",
++					   "Ping", ping_handler, backend, "");
++	if (ret < 0) {
++		return ret;
++	}
++	return 0;
++}
++
++static void check_pending_events(struct backend_logind *backend) {
++	if (sd_bus_get_events(backend->bus) <= 0) {
++		return;
++	}
++	if (backend->awaiting_pong) {
++		return;
++	}
++
++	// We have events pending execution, so a dispatch is required.
++	// However, we likely already drained our socket, so there will not be
++	// anything to read. Instead, send a ping request to logind so that the
++	// user will be woken up by its response.
++	int ret = send_ping(backend);
++	if (ret < 0) {
++		log_errorf("Could not send ping message: %s", strerror(-ret));
++		return;
++	}
++	backend->awaiting_pong = true;
++}
++
++static int open_device(struct libseat *base, const char *path, int *fd) {
++	struct backend_logind *session = backend_logind_from_libseat_backend(base);
++
++	int ret;
++	int tmpfd = -1;
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	struct stat st;
++	if (stat(path, &st) < 0) {
++		log_errorf("Could not stat path '%s'", path);
++		return -1;
++	}
++
++	ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", session->path,
++				 "org.freedesktop.login1.Session", "TakeDevice", &error, &msg, "uu",
++				 major(st.st_rdev), minor(st.st_rdev));
++	if (ret < 0) {
++		log_errorf("Could not take device: %s", error.message);
++		tmpfd = -1;
++		goto out;
++	}
++
++	int paused = 0;
++	ret = sd_bus_message_read(msg, "hb", &tmpfd, &paused);
++	if (ret < 0) {
++		log_errorf("Could not parse D-Bus response: %s", strerror(-ret));
++		tmpfd = -1;
++		goto out;
++	}
++
++	// The original fd seems to be closed when the message is freed
++	// so we just clone it.
++	tmpfd = fcntl(tmpfd, F_DUPFD_CLOEXEC, 0);
++	if (tmpfd < 0) {
++		log_errorf("Could not duplicate fd: %s", strerror(errno));
++		tmpfd = -1;
++		goto out;
++	}
++
++	if (dev_is_drm(st.st_rdev)) {
++		session->has_drm++;
++		log_debugf("DRM device opened, current total: %d", session->has_drm);
++	}
++
++	*fd = tmpfd;
++
++out:
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++	check_pending_events(session);
++	return tmpfd;
++}
++
++static int close_device(struct libseat *base, int device_id) {
++	struct backend_logind *session = backend_logind_from_libseat_backend(base);
++	if (device_id < 0) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	int fd = device_id;
++
++	struct stat st = {0};
++	if (fstat(fd, &st) < 0) {
++		log_errorf("Could not stat fd %d", fd);
++		return -1;
++	}
++	if (dev_is_drm(st.st_rdev)) {
++		session->has_drm--;
++		log_debugf("DRM device closed, current total: %d", session->has_drm);
++		assert(session->has_drm >= 0);
++	}
++
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++	int ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", session->path,
++				     "org.freedesktop.login1.Session", "ReleaseDevice", &error,
++				     &msg, "uu", major(st.st_rdev), minor(st.st_rdev));
++	if (ret < 0) {
++		log_errorf("Could not close device: %s", error.message);
++	}
++
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++	check_pending_events(session);
++	return ret < 0 ? -1 : 0;
++}
++
++static int switch_session(struct libseat *base, int s) {
++	struct backend_logind *session = backend_logind_from_libseat_backend(base);
++	if (s < 0) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	int ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", session->seat_path,
++				     "org.freedesktop.login1.Seat", "SwitchTo", &error, &msg, "u",
++				     (uint32_t)s);
++	if (ret < 0) {
++		log_errorf("Could not switch session: %s", error.message);
++	}
++
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++	check_pending_events(session);
++	return ret < 0 ? -1 : 0;
++}
++
++static int disable_seat(struct libseat *base) {
++	(void)base;
++	return 0;
++}
++
++static int get_fd(struct libseat *base) {
++	struct backend_logind *backend = backend_logind_from_libseat_backend(base);
++	int fd = sd_bus_get_fd(backend->bus);
++	if (fd >= 0) {
++		return fd;
++	}
++
++	errno = -fd;
++	return -1;
++}
++
++static int poll_connection(struct backend_logind *backend, int timeout) {
++	struct pollfd fd = {
++		.fd = sd_bus_get_fd(backend->bus),
++		.events = POLLIN,
++	};
++
++	if (poll(&fd, 1, timeout) == -1) {
++		if (errno == EAGAIN || errno == EINTR) {
++			return 0;
++		} else {
++			return -1;
++		}
++	}
++
++	if (fd.revents & (POLLERR | POLLHUP)) {
++		errno = ECONNRESET;
++		return -1;
++	}
++	return 0;
++}
++
++static int dispatch_and_execute(struct libseat *base, int timeout) {
++	struct backend_logind *backend = backend_logind_from_libseat_backend(base);
++	if (backend->initial_setup) {
++		backend->initial_setup = false;
++		if (backend->active) {
++			backend->seat_listener->enable_seat(&backend->base,
++							    backend->seat_listener_data);
++		} else {
++			backend->seat_listener->disable_seat(&backend->base,
++							     backend->seat_listener_data);
++		}
++	}
++
++	int total_dispatched = 0;
++	int dispatched = 0;
++	while ((dispatched = sd_bus_process(backend->bus, NULL)) > 0) {
++		total_dispatched += dispatched;
++	}
++	if (total_dispatched == 0 && timeout != 0) {
++		if (poll_connection(backend, timeout) == -1) {
++			log_errorf("Could not poll connection: %s", strerror(errno));
++			return -1;
++		}
++		while ((dispatched = sd_bus_process(backend->bus, NULL)) > 0) {
++			total_dispatched += dispatched;
++		}
++	}
++	return total_dispatched;
++}
++
++static const char *seat_name(struct libseat *base) {
++	struct backend_logind *backend = backend_logind_from_libseat_backend(base);
++	return backend->seat;
++}
++
++static struct backend_logind *backend_logind_from_libseat_backend(struct libseat *base) {
++	assert(base->impl == &logind_impl);
++	return (struct backend_logind *)base;
++}
++
++static int session_activate(struct backend_logind *session) {
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	// Note: the Activate call might not make the session active immediately
++	int ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", session->path,
++				     "org.freedesktop.login1.Session", "Activate", &error, &msg, "");
++	if (ret < 0) {
++		log_errorf("Could not activate session: %s", error.message);
++	}
++
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++	return ret;
++}
++
++static int session_check_active(struct backend_logind *session) {
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++	int active = 0;
++	int ret = sd_bus_get_property_trivial(session->bus, "org.freedesktop.login1", session->path,
++					      "org.freedesktop.login1.Session", "Active", &error,
++					      'b', &active);
++	if (ret < 0) {
++		log_errorf("Could not check if session is active: %s", error.message);
++	} else {
++		session->active = (bool)active;
++	}
++
++	sd_bus_error_free(&error);
++	return ret;
++}
++
++static int take_control(struct backend_logind *session) {
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	int ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", session->path,
++				     "org.freedesktop.login1.Session", "TakeControl", &error, &msg,
++				     "b", false);
++	if (ret < 0) {
++		log_errorf("Could not take control of session: %s", error.message);
++	}
++
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++	return ret;
++}
++
++static void release_control(struct backend_logind *session) {
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	int ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", session->path,
++				     "org.freedesktop.login1.Session", "ReleaseControl", &error,
++				     &msg, "");
++	if (ret < 0) {
++		log_errorf("Could not release control of session: %s", error.message);
++	}
++
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++}
++
++static void set_active(struct backend_logind *backend, bool active) {
++	if (backend->active == active) {
++		return;
++	}
++
++	backend->active = active;
++	if (active) {
++		log_info("Enabling seat");
++		backend->seat_listener->enable_seat(&backend->base, backend->seat_listener_data);
++	} else {
++		log_info("Disabling seat");
++		backend->seat_listener->disable_seat(&backend->base, backend->seat_listener_data);
++	}
++}
++
++static int pause_device(sd_bus_message *msg, void *userdata, sd_bus_error *ret_error) {
++	struct backend_logind *session = userdata;
++
++	uint32_t major, minor;
++	const char *type;
++	int ret = sd_bus_message_read(msg, "uus", &major, &minor, &type);
++	if (ret < 0) {
++		log_errorf("Could not parse D-Bus response: %s", strerror(-ret));
++		return 0;
++	}
++
++	if (dev_is_drm(makedev(major, minor)) && strcmp(type, "gone") != 0) {
++		log_debugf("DRM device paused: %s", type);
++		assert(session->has_drm > 0);
++		set_active(session, false);
++	}
++
++	if (strcmp(type, "pause") == 0) {
++		ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", session->path,
++					 "org.freedesktop.login1.Session", "PauseDeviceComplete",
++					 ret_error, &msg, "uu", major, minor);
++		if (ret < 0) {
++			log_errorf("Could not send PauseDeviceComplete signal: %s",
++				   ret_error->message);
++		}
++	}
++
++	return 0;
++}
++
++static int resume_device(sd_bus_message *msg, void *userdata, sd_bus_error *ret_error) {
++	(void)ret_error;
++	struct backend_logind *session = userdata;
++	int ret;
++
++	int fd;
++	uint32_t major, minor;
++	ret = sd_bus_message_read(msg, "uuh", &major, &minor, &fd);
++	if (ret < 0) {
++		log_errorf("Could not parse D-Bus response: %s", strerror(-ret));
++		return 0;
++	}
++
++	if (dev_is_drm(makedev(major, minor))) {
++		log_debug("DRM device resumed");
++		assert(session->has_drm > 0);
++		set_active(session, true);
++	}
++
++	return 0;
++}
++
++static int properties_changed(sd_bus_message *msg, void *userdata, sd_bus_error *ret_error) {
++	(void)ret_error;
++	struct backend_logind *session = userdata;
++	int ret = 0;
++
++	if (session->has_drm > 0) {
++		return 0;
++	}
++
++	// PropertiesChanged arg 1: interface
++	const char *interface;
++	ret = sd_bus_message_read_basic(msg, 's', &interface); // skip path
++	if (ret < 0) {
++		goto error;
++	}
++
++	bool is_session = strcmp(interface, "org.freedesktop.login1.Session") == 0;
++	bool is_seat = strcmp(interface, "org.freedesktop.login1.Seat") == 0;
++	if (!is_session || !is_seat) {
++		// not interesting for us; ignore
++		return 0;
++	}
++
++	// PropertiesChanged arg 2: changed properties with values
++	ret = sd_bus_message_enter_container(msg, 'a', "{sv}");
++	if (ret < 0) {
++		goto error;
++	}
++
++	const char *s;
++	while ((ret = sd_bus_message_enter_container(msg, 'e', "sv")) > 0) {
++		ret = sd_bus_message_read_basic(msg, 's', &s);
++		if (ret < 0) {
++			goto error;
++		}
++
++		if (is_session && strcmp(s, "Active") == 0) {
++			int ret;
++			ret = sd_bus_message_enter_container(msg, 'v', "b");
++			if (ret < 0) {
++				goto error;
++			}
++
++			bool value;
++			ret = sd_bus_message_read_basic(msg, 'b', &value);
++			if (ret < 0) {
++				goto error;
++			}
++
++			log_debugf("%s state changed: %d", s, value);
++			set_active(session, value);
++			return 0;
++		} else {
++			sd_bus_message_skip(msg, "{sv}");
++		}
++
++		ret = sd_bus_message_exit_container(msg);
++		if (ret < 0) {
++			goto error;
++		}
++	}
++
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = sd_bus_message_exit_container(msg);
++	if (ret < 0) {
++		goto error;
++	}
++
++	// PropertiesChanged arg 3: changed properties without values
++	sd_bus_message_enter_container(msg, 'a', "s");
++	while ((ret = sd_bus_message_read_basic(msg, 's', &s)) > 0) {
++		if (is_session && strcmp(s, "Active") == 0) {
++			sd_bus_error error = SD_BUS_ERROR_NULL;
++			const char *obj = "org.freedesktop.login1.Session";
++			const char *field = "Active";
++			bool value;
++			ret = sd_bus_get_property_trivial(session->bus, "org.freedesktop.login1",
++							  session->path, obj, field, &error, 'b',
++							  &value);
++			if (ret < 0) {
++				log_errorf("Could not get '%s' property: %s", field, error.message);
++				return 0;
++			}
++
++			log_debugf("%s state changed: %d", field, value);
++			set_active(session, value);
++			return 0;
++		}
++	}
++
++error:
++	if (ret < 0) {
++		log_errorf("Could not parse D-Bus PropertiesChanged: %s", strerror(-ret));
++	}
++
++	return 0;
++}
++
++static int add_signal_matches(struct backend_logind *backend) {
++	static const char *logind = "org.freedesktop.login1";
++	static const char *session_interface = "org.freedesktop.login1.Session";
++	static const char *property_interface = "org.freedesktop.DBus.Properties";
++	int ret;
++
++	ret = sd_bus_match_signal(backend->bus, NULL, logind, backend->path, session_interface,
++				  "PauseDevice", pause_device, backend);
++	if (ret < 0) {
++		log_errorf("Could not add D-Bus match: %s", strerror(-ret));
++		return ret;
++	}
++
++	ret = sd_bus_match_signal(backend->bus, NULL, logind, backend->path, session_interface,
++				  "ResumeDevice", resume_device, backend);
++	if (ret < 0) {
++		log_errorf("Could not add D-Bus match: %s", strerror(-ret));
++		return ret;
++	}
++
++	ret = sd_bus_match_signal(backend->bus, NULL, logind, backend->path, property_interface,
++				  "PropertiesChanged", properties_changed, backend);
++	if (ret < 0) {
++		log_errorf("Could not add D-Bus match: %s", strerror(-ret));
++		return ret;
++	}
++
++	ret = sd_bus_match_signal(backend->bus, NULL, logind, backend->seat_path, property_interface,
++				  "PropertiesChanged", properties_changed, backend);
++	if (ret < 0) {
++		log_errorf("Could not add D-Bus match: %s", strerror(-ret));
++		return ret;
++	}
++
++	return 0;
++}
++
++static int find_session_path(struct backend_logind *session) {
++	int ret;
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", "/org/freedesktop/login1",
++				 "org.freedesktop.login1.Manager", "GetSession", &error, &msg, "s",
++				 session->id);
++	if (ret < 0) {
++		log_errorf("Could not get session: %s", error.message);
++		goto out;
++	}
++
++	const char *path;
++	ret = sd_bus_message_read(msg, "o", &path);
++	if (ret < 0) {
++		log_errorf("Could not parse D-Bus response: %s", strerror(-ret));
++		goto out;
++	}
++	session->path = strdup(path);
++
++out:
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++
++	return ret;
++}
++
++static int find_seat_path(struct backend_logind *session) {
++	int ret;
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	ret = sd_bus_call_method(session->bus, "org.freedesktop.login1", "/org/freedesktop/login1",
++				 "org.freedesktop.login1.Manager", "GetSeat", &error, &msg, "s",
++				 session->seat);
++	if (ret < 0) {
++		log_errorf("Could not get seat: %s", error.message);
++		goto out;
++	}
++
++	const char *path;
++	ret = sd_bus_message_read(msg, "o", &path);
++	if (ret < 0) {
++		log_errorf("Could not parse D-Bus response: %s", strerror(-ret));
++		goto out;
++	}
++	session->seat_path = strdup(path);
++
++out:
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++
++	return ret;
++}
++
++static int get_display_session(char **session_id) {
++	assert(session_id != NULL);
++	char *xdg_session_id = getenv("XDG_SESSION_ID");
++	int ret;
++
++	if (xdg_session_id) {
++		// This just checks whether the supplied session ID is valid
++		ret = sd_session_is_active(xdg_session_id);
++		if (ret < 0) {
++			log_errorf("Could not check if session was active: %s", strerror(-ret));
++			goto error;
++		}
++		*session_id = strdup(xdg_session_id);
++		goto success;
++	}
++
++	// If there's a session active for the current process then just use
++	// that
++	ret = sd_pid_get_session(getpid(), session_id);
++	if (ret == 0) {
++		goto success;
++	}
++
++	// Find any active sessions for the user if the process isn't part of an
++	// active session itself
++	ret = sd_uid_get_display(getuid(), session_id);
++	if (ret < 0) {
++		log_errorf("Could not get primary session for user: %s", strerror(-ret));
++		goto error;
++	}
++
++success:
++	assert(*session_id != NULL);
++	return 0;
++
++error:
++	free(*session_id);
++	*session_id = NULL;
++	return ret;
++}
++
++static int set_type(struct backend_logind *backend, const char *type) {
++	sd_bus_message *msg = NULL;
++	sd_bus_error error = SD_BUS_ERROR_NULL;
++
++	int ret = sd_bus_call_method(backend->bus, "org.freedesktop.login1", backend->path,
++				     "org.freedesktop.login1.Session", "SetType", &error, &msg, "s",
++				     type);
++	if (ret < 0) {
++		log_errorf("Could not set session type: %s", error.message);
++	}
++
++	sd_bus_error_free(&error);
++	sd_bus_message_unref(msg);
++	return ret;
++}
++
++static struct libseat *logind_open_seat(const struct libseat_seat_listener *listener, void *data) {
++	struct backend_logind *backend = calloc(1, sizeof(struct backend_logind));
++	if (backend == NULL) {
++		return NULL;
++	}
++
++	int ret;
++	ret = get_display_session(&backend->id);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = sd_session_get_seat(backend->id, &backend->seat);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = sd_bus_default_system(&backend->bus);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = find_session_path(backend);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = find_seat_path(backend);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = add_signal_matches(backend);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = session_activate(backend);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = session_check_active(backend);
++	if (ret < 0) {
++		goto error;
++	}
++
++	ret = take_control(backend);
++	if (ret < 0) {
++		goto error;
++	}
++
++	const char *env = getenv("XDG_SESSION_TYPE");
++	if (env != NULL) {
++		set_type(backend, env);
++	}
++
++	backend->initial_setup = true;
++	backend->seat_listener = listener;
++	backend->seat_listener_data = data;
++	backend->base.impl = &logind_impl;
++
++	return &backend->base;
++
++error:
++	destroy(backend);
++	errno = -ret;
++	return NULL;
++}
++
++const struct seat_impl logind_impl = {
++	.open_seat = logind_open_seat,
++	.disable_seat = disable_seat,
++	.close_seat = close_seat,
++	.seat_name = seat_name,
++	.open_device = open_device,
++	.close_device = close_device,
++	.switch_session = switch_session,
++	.get_fd = get_fd,
++	.dispatch = dispatch_and_execute,
++};
+diff --git seatd-workdir/seatd/libseat/backend/noop.c seatd-workdir/seatd/libseat/backend/noop.c
+new file mode 100644
+index 0000000..7436c48
+--- /dev/null
++++ seatd-workdir/seatd/libseat/backend/noop.c
+@@ -0,0 +1,135 @@
++#include <assert.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <poll.h>
++#include <stdbool.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <unistd.h>
++
++#include "backend.h"
++#include "log.h"
++
++struct backend_noop {
++	struct libseat base;
++	const struct libseat_seat_listener *seat_listener;
++	void *seat_listener_data;
++
++	bool initial_setup;
++	int sockets[2];
++};
++
++extern const struct seat_impl noop_impl;
++
++static struct backend_noop *backend_noop_from_libseat_backend(struct libseat *base) {
++	assert(base->impl == &noop_impl);
++	return (struct backend_noop *)base;
++}
++
++static void destroy(struct backend_noop *backend) {
++	close(backend->sockets[0]);
++	close(backend->sockets[1]);
++	free(backend);
++}
++
++static int close_seat(struct libseat *base) {
++	struct backend_noop *backend = backend_noop_from_libseat_backend(base);
++	destroy(backend);
++	return 0;
++}
++
++static int disable_seat(struct libseat *base) {
++	(void)base;
++	return 0;
++}
++
++static const char *seat_name(struct libseat *base) {
++	(void)base;
++	return "noop";
++}
++
++static int open_device(struct libseat *base, const char *path, int *fd) {
++	(void)base;
++
++	int tmpfd = open(path, O_RDWR | O_CLOEXEC);
++	if (tmpfd < 0) {
++		log_errorf("Failed to open device: %s", strerror(errno));
++		return -1;
++	}
++
++	*fd = tmpfd;
++	return tmpfd;
++}
++
++static int close_device(struct libseat *base, int device_id) {
++	(void)base;
++	(void)device_id;
++	return 0;
++}
++
++static int switch_session(struct libseat *base, int s) {
++	(void)base;
++	(void)s;
++	log_errorf("No-op backend cannot switch to session %d", s);
++	return -1;
++}
++
++static int get_fd(struct libseat *base) {
++	struct backend_noop *backend = backend_noop_from_libseat_backend(base);
++	return backend->sockets[0];
++}
++
++static int dispatch_background(struct libseat *base, int timeout) {
++	struct backend_noop *backend = backend_noop_from_libseat_backend(base);
++
++	if (backend->initial_setup) {
++		backend->initial_setup = false;
++		backend->seat_listener->enable_seat(&backend->base, backend->seat_listener_data);
++	}
++
++	struct pollfd fd = {
++		.fd = backend->sockets[0],
++		.events = POLLIN,
++	};
++	if (poll(&fd, 1, timeout) < 0) {
++		if (errno == EAGAIN || errno == EINTR) {
++			return 0;
++		} else {
++			return -1;
++		}
++	}
++
++	return 0;
++}
++
++static struct libseat *noop_open_seat(const struct libseat_seat_listener *listener, void *data) {
++	struct backend_noop *backend = calloc(1, sizeof(struct backend_noop));
++	if (backend == NULL) {
++		return NULL;
++	}
++
++	if (socketpair(AF_UNIX, SOCK_STREAM, 0, backend->sockets) != 0) {
++		log_errorf("socketpair() failed: %s", strerror(errno));
++		free(backend);
++		return NULL;
++	}
++
++	backend->seat_listener = listener;
++	backend->seat_listener_data = data;
++	backend->base.impl = &noop_impl;
++
++	return &backend->base;
++}
++
++const struct seat_impl noop_impl = {
++	.open_seat = noop_open_seat,
++	.disable_seat = disable_seat,
++	.close_seat = close_seat,
++	.seat_name = seat_name,
++	.open_device = open_device,
++	.close_device = close_device,
++	.switch_session = switch_session,
++	.get_fd = get_fd,
++	.dispatch = dispatch_background,
++};
+diff --git seatd-workdir/seatd/libseat/backend/seatd.c seatd-workdir/seatd/libseat/backend/seatd.c
+new file mode 100644
+index 0000000..26308d1
+--- /dev/null
++++ seatd-workdir/seatd/libseat/backend/seatd.c
+@@ -0,0 +1,697 @@
++#include <assert.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <poll.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <sys/un.h>
++#include <unistd.h>
++
++#include "backend.h"
++#include "connection.h"
++#include "libseat.h"
++#include "linked_list.h"
++#include "log.h"
++#include "protocol.h"
++
++#ifdef BUILTIN_ENABLED
++#include "poller.h"
++#include "server.h"
++#endif
++
++const struct seat_impl seatd_impl;
++const struct seat_impl builtin_impl;
++
++struct pending_event {
++	struct linked_list link; // backend_seat::link
++	int opcode;
++};
++
++struct backend_seatd {
++	struct libseat base;
++	struct connection connection;
++	const struct libseat_seat_listener *seat_listener;
++	void *seat_listener_data;
++	struct linked_list pending_events;
++	bool awaiting_pong;
++	bool error;
++
++	char seat_name[MAX_SEAT_LEN];
++};
++
++static int set_nonblock(int fd) {
++	int flags;
++	if ((flags = fcntl(fd, F_GETFD)) == -1 || fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
++		return -1;
++	}
++	if ((flags = fcntl(fd, F_GETFL)) == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
++		return -1;
++	}
++	return 0;
++}
++
++static int seatd_connect(void) {
++	union {
++		struct sockaddr_un unix;
++		struct sockaddr generic;
++	} addr = {{0}};
++	int fd = socket(AF_UNIX, SOCK_STREAM, 0);
++	if (fd == -1) {
++		log_errorf("Could not create socket: %s", strerror(errno));
++		return -1;
++	}
++	if (set_nonblock(fd) == -1) {
++		log_errorf("Could not make socket non-blocking: %s", strerror(errno));
++		close(fd);
++		return -1;
++	}
++	const char *path = getenv("SEATD_SOCK");
++	if (path == NULL) {
++		path = SEATD_DEFAULTPATH;
++	}
++	addr.unix.sun_family = AF_UNIX;
++	strncpy(addr.unix.sun_path, path, sizeof addr.unix.sun_path - 1);
++	socklen_t size = offsetof(struct sockaddr_un, sun_path) + strlen(addr.unix.sun_path);
++	if (connect(fd, &addr.generic, size) == -1) {
++		if (errno == ENOENT) {
++			log_infof("Could not connect to socket %s: %s", path, strerror(errno));
++		} else {
++			log_errorf("Could not connect to socket %s: %s", path, strerror(errno));
++		}
++		close(fd);
++		return -1;
++	};
++	return fd;
++}
++
++static struct backend_seatd *backend_seatd_from_libseat_backend(struct libseat *base) {
++	assert(base);
++#ifdef BUILTIN_ENABLED
++	assert(base->impl == &seatd_impl || base->impl == &builtin_impl);
++#else
++	assert(base->impl == &seatd_impl);
++#endif
++	return (struct backend_seatd *)base;
++}
++
++static void cleanup(struct backend_seatd *backend) {
++	if (backend->connection.fd != -1) {
++		close(backend->connection.fd);
++		backend->connection.fd = -1;
++	}
++	connection_close_fds(&backend->connection);
++	while (!linked_list_empty(&backend->pending_events)) {
++		struct pending_event *ev = (struct pending_event *)backend->pending_events.next;
++		linked_list_remove(&ev->link);
++		free(ev);
++	}
++}
++
++static void destroy(struct backend_seatd *backend) {
++	cleanup(backend);
++	free(backend);
++}
++
++static void set_error(struct backend_seatd *backend) {
++	if (backend->error) {
++		return;
++	}
++
++	backend->error = true;
++	cleanup(backend);
++}
++
++static inline int conn_put(struct backend_seatd *backend, const void *data, const size_t data_len) {
++	if (connection_put(&backend->connection, data, data_len) == -1) {
++		log_errorf("Could not send request: %s", strerror(errno));
++		set_error(backend);
++		return -1;
++	}
++	return 0;
++}
++
++static inline int conn_flush(struct backend_seatd *backend) {
++	if (connection_flush(&backend->connection) == -1) {
++		log_errorf("Could not flush connection: %s", strerror(errno));
++		set_error(backend);
++		return -1;
++	}
++	return 0;
++}
++
++static inline int conn_get(struct backend_seatd *backend, void *target, const size_t target_len) {
++	if (connection_get(&backend->connection, target, target_len) == -1) {
++		log_error("Invalid message: insufficient data received");
++		set_error(backend);
++		errno = EBADMSG;
++		return -1;
++	}
++	return 0;
++}
++
++static inline int conn_get_fd(struct backend_seatd *backend, int *fd) {
++	if (connection_get_fd(&backend->connection, fd) == -1) {
++		log_error("Invalid message: insufficient data received");
++		set_error(backend);
++		errno = EBADMSG;
++		return -1;
++	}
++	return 0;
++}
++
++static size_t read_header(struct backend_seatd *backend, uint16_t expected_opcode,
++			  size_t expected_size, bool variable) {
++	struct proto_header header;
++	if (conn_get(backend, &header, sizeof header) == -1) {
++		set_error(backend);
++		return SIZE_MAX;
++	}
++	if (header.opcode != expected_opcode) {
++		struct proto_server_error msg;
++		if (header.opcode != SERVER_ERROR) {
++			log_errorf("Unexpected response: expected opcode %d, received opcode %d",
++				   expected_opcode, header.opcode);
++			set_error(backend);
++			errno = EBADMSG;
++		} else if (header.size != sizeof msg || conn_get(backend, &msg, sizeof msg) == -1) {
++			set_error(backend);
++			errno = EBADMSG;
++		} else {
++			errno = msg.error_code;
++		}
++		return SIZE_MAX;
++	}
++
++	if ((!variable && header.size != expected_size) || (variable && header.size < expected_size)) {
++		log_errorf("Invalid message: does not match expected size: variable: %d, header.size: %d, expected size: %zd",
++			   variable, header.size, expected_size);
++		set_error(backend);
++		errno = EBADMSG;
++		return SIZE_MAX;
++	}
++	return header.size;
++}
++
++static int queue_event(struct backend_seatd *backend, int opcode) {
++	struct pending_event *ev = calloc(1, sizeof(struct pending_event));
++	if (ev == NULL) {
++		log_errorf("Allocation failed: %s", strerror(errno));
++		return -1;
++	}
++
++	ev->opcode = opcode;
++	linked_list_insert(&backend->pending_events, &ev->link);
++	return 0;
++}
++
++static int execute_events(struct backend_seatd *backend) {
++	struct linked_list list;
++	linked_list_init(&list);
++	linked_list_take(&list, &backend->pending_events);
++	int executed = 0;
++	while (!linked_list_empty(&list)) {
++		struct pending_event *ev = (struct pending_event *)list.next;
++		int opcode = ev->opcode;
++		linked_list_remove(&ev->link);
++		free(ev);
++
++		switch (opcode) {
++		case SERVER_DISABLE_SEAT:
++			log_info("Disabling seat");
++			backend->seat_listener->disable_seat(&backend->base,
++							     backend->seat_listener_data);
++			break;
++		case SERVER_ENABLE_SEAT:
++			log_info("Enabling seat");
++			backend->seat_listener->enable_seat(&backend->base,
++							    backend->seat_listener_data);
++			break;
++		default:
++			log_errorf("Invalid opcode: %d", opcode);
++			abort();
++		}
++		executed++;
++	}
++	return executed;
++}
++
++static int dispatch_pending(struct backend_seatd *backend, int *opcode) {
++	int packets = 0;
++	struct proto_header header;
++	while (connection_get(&backend->connection, &header, sizeof header) != -1) {
++		packets++;
++		switch (header.opcode) {
++		case SERVER_PONG:
++			// We care about whether or not the answer has been
++			// read from the connection, so handle it here instead
++			// of pushing it to the pending event list.
++			backend->awaiting_pong = false;
++			break;
++		case SERVER_DISABLE_SEAT:
++		case SERVER_ENABLE_SEAT:
++			if (queue_event(backend, header.opcode) == -1) {
++				set_error(backend);
++				return -1;
++			}
++			break;
++		default:
++			if (opcode != NULL &&
++			    connection_pending(&backend->connection) >= header.size) {
++				*opcode = header.opcode;
++			}
++			connection_restore(&backend->connection, sizeof header);
++			return packets;
++		}
++	}
++	return packets;
++}
++
++static int dispatch_pending_and_execute(struct backend_seatd *backend) {
++	int dispatched = dispatch_pending(backend, NULL);
++	if (dispatched == -1) {
++		return -1;
++	}
++	dispatched += execute_events(backend);
++	return dispatched;
++}
++
++static int poll_connection(struct backend_seatd *backend, int timeout) {
++	struct pollfd fd = {
++		.fd = backend->connection.fd,
++		.events = POLLIN,
++	};
++
++	if (poll(&fd, 1, timeout) == -1) {
++		return (errno == EAGAIN || errno == EINTR) ? 0 : -1;
++	}
++
++	if (fd.revents & (POLLERR | POLLHUP)) {
++		errno = EPIPE;
++		return -1;
++	}
++
++	int len = 0;
++	if (fd.revents & POLLIN) {
++		len = connection_read(&backend->connection);
++		if (len == 0) {
++			errno = EIO;
++			return -1;
++		} else if (len == -1 && errno != EAGAIN) {
++			return -1;
++		}
++	}
++
++	return len;
++}
++
++static int dispatch(struct backend_seatd *backend) {
++	if (conn_flush(backend) == -1) {
++		return -1;
++	}
++	while (true) {
++		int opcode = 0;
++		if (dispatch_pending(backend, &opcode) == -1) {
++			log_errorf("Could not dispatch pending messages: %s", strerror(errno));
++			return -1;
++		}
++		if (opcode != 0) {
++			break;
++		}
++		if (poll_connection(backend, -1) == -1) {
++			log_errorf("Could not poll connection: %s", strerror(errno));
++			return -1;
++		}
++	}
++	return 0;
++}
++
++static int get_fd(struct libseat *base) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++	return backend->connection.fd;
++}
++
++static int dispatch_and_execute(struct libseat *base, int timeout) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++	if (backend->error) {
++		errno = ENOTCONN;
++		return -1;
++	}
++
++	int predispatch = dispatch_pending_and_execute(backend);
++	if (predispatch == -1) {
++		return -1;
++	}
++
++	// We don't want to block if we dispatched something, as the
++	// caller might be waiting for the result. However, we'd also
++	// like to read anything pending.
++	int read = 0;
++	if (predispatch > 0 || timeout == 0) {
++		read = connection_read(&backend->connection);
++	} else {
++		read = poll_connection(backend, timeout);
++	}
++
++	if (read == 0) {
++		return predispatch;
++	} else if (read == -1 && errno != EAGAIN) {
++		log_errorf("Could not read from connection: %s", strerror(errno));
++		return -1;
++	}
++
++	int postdispatch = dispatch_pending_and_execute(backend);
++	if (postdispatch == -1) {
++		return -1;
++	}
++
++	return predispatch + postdispatch;
++}
++
++static struct libseat *_open_seat(const struct libseat_seat_listener *listener, void *data, int fd) {
++	assert(listener != NULL);
++	assert(listener->enable_seat != NULL && listener->disable_seat != NULL);
++	struct backend_seatd *backend = calloc(1, sizeof(struct backend_seatd));
++	if (backend == NULL) {
++		log_errorf("Allocation failed: %s", strerror(errno));
++		goto alloc_error;
++	}
++
++	backend->seat_listener = listener;
++	backend->seat_listener_data = data;
++	backend->connection.fd = fd;
++	backend->base.impl = &seatd_impl;
++	linked_list_init(&backend->pending_events);
++
++	struct proto_header header = {
++		.opcode = CLIENT_OPEN_SEAT,
++		.size = 0,
++	};
++	if (conn_put(backend, &header, sizeof header) == -1 || dispatch(backend) == -1) {
++		goto backend_error;
++	}
++
++	struct proto_server_seat_opened rmsg;
++	size_t size = read_header(backend, SERVER_SEAT_OPENED, sizeof rmsg, true);
++	if (size == SIZE_MAX || conn_get(backend, &rmsg, sizeof rmsg) == -1) {
++		goto backend_error;
++	}
++	if (rmsg.seat_name_len != size - sizeof rmsg) {
++		log_errorf("Invalid message: seat_name_len does not match remaining message size (%d != %zd)",
++			   rmsg.seat_name_len, size);
++		errno = EBADMSG;
++		goto backend_error;
++	}
++	if (conn_get(backend, backend->seat_name, rmsg.seat_name_len) == -1) {
++		goto backend_error;
++	}
++
++	execute_events(backend);
++	return &backend->base;
++
++backend_error:
++	destroy(backend);
++alloc_error:
++	close(fd);
++	return NULL;
++}
++
++static struct libseat *open_seat(const struct libseat_seat_listener *listener, void *data) {
++	int fd = seatd_connect();
++	if (fd == -1) {
++		return NULL;
++	}
++
++	return _open_seat(listener, data, fd);
++}
++
++static int close_seat(struct libseat *base) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++
++	struct proto_header header = {
++		.opcode = CLIENT_CLOSE_SEAT,
++		.size = 0,
++	};
++	if (conn_put(backend, &header, sizeof header) == -1 || dispatch(backend) == -1) {
++		goto error;
++	}
++
++	if (read_header(backend, SERVER_SEAT_CLOSED, 0, false) == SIZE_MAX) {
++		goto error;
++	}
++
++	execute_events(backend);
++	destroy(backend);
++	return 0;
++
++error:
++	execute_events(backend);
++	destroy(backend);
++	return -1;
++}
++
++static const char *seat_name(struct libseat *base) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++	return backend->seat_name;
++}
++
++static int send_ping(struct backend_seatd *backend) {
++	struct proto_header header = {
++		.opcode = CLIENT_PING,
++		.size = 0,
++	};
++	if (conn_put(backend, &header, sizeof header) == -1 || conn_flush(backend) == -1) {
++		return -1;
++	}
++	return 0;
++}
++
++static void check_pending_events(struct backend_seatd *backend) {
++	if (linked_list_empty(&backend->pending_events)) {
++		return;
++	}
++	if (backend->awaiting_pong) {
++		return;
++	}
++
++	// We have events pending execution, so a dispatch is required.
++	// However, we likely already drained our socket, so there will not be
++	// anything to read. Instead, send a ping request to seatd, so that the
++	// user will be woken up by its response.
++	if (send_ping(backend) == -1) {
++		log_errorf("Could not send ping request: %s", strerror(errno));
++		return;
++	}
++	backend->awaiting_pong = true;
++}
++
++static int open_device(struct libseat *base, const char *path, int *fd) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++	if (backend->error) {
++		errno = ENOTCONN;
++		return -1;
++	}
++	size_t pathlen = strlen(path) + 1;
++	if (pathlen > MAX_PATH_LEN) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	struct proto_client_open_device msg = {
++		.path_len = (uint16_t)pathlen,
++	};
++	struct proto_header header = {
++		.opcode = CLIENT_OPEN_DEVICE,
++		.size = sizeof msg + pathlen,
++	};
++	if (conn_put(backend, &header, sizeof header) == -1 ||
++	    conn_put(backend, &msg, sizeof msg) == -1 || conn_put(backend, path, pathlen) == -1 ||
++	    dispatch(backend) == -1) {
++		goto error;
++	}
++
++	struct proto_server_device_opened rmsg;
++	if (read_header(backend, SERVER_DEVICE_OPENED, sizeof rmsg, false) == SIZE_MAX ||
++	    conn_get(backend, &rmsg, sizeof rmsg) == -1 || conn_get_fd(backend, fd)) {
++		goto error;
++	}
++
++	check_pending_events(backend);
++	return rmsg.device_id;
++
++error:
++	check_pending_events(backend);
++	return -1;
++}
++
++static int close_device(struct libseat *base, int device_id) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++	if (backend->error) {
++		errno = ENOTCONN;
++		return -1;
++	}
++	if (device_id < 0) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	struct proto_client_close_device msg = {
++		.device_id = device_id,
++	};
++	struct proto_header header = {
++		.opcode = CLIENT_CLOSE_DEVICE,
++		.size = sizeof msg,
++	};
++	if (conn_put(backend, &header, sizeof header) == -1 ||
++	    conn_put(backend, &msg, sizeof msg) == -1 || dispatch(backend) == -1) {
++		goto error;
++	}
++
++	if (read_header(backend, SERVER_DEVICE_CLOSED, 0, false) == SIZE_MAX) {
++		goto error;
++	}
++
++	check_pending_events(backend);
++	return 0;
++
++error:
++	check_pending_events(backend);
++	return -1;
++}
++
++static int switch_session(struct libseat *base, int session) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++	if (backend->error) {
++		errno = ENOTCONN;
++		return -1;
++	}
++	if (session < 0) {
++		return -1;
++	}
++
++	struct proto_client_switch_session msg = {
++		.session = session,
++	};
++	struct proto_header header = {
++		.opcode = CLIENT_SWITCH_SESSION,
++		.size = sizeof msg,
++	};
++	if (conn_put(backend, &header, sizeof header) == -1 ||
++	    conn_put(backend, &msg, sizeof msg) == -1 || conn_flush(backend) == -1) {
++		return -1;
++	}
++
++	return 0;
++}
++
++static int disable_seat(struct libseat *base) {
++	struct backend_seatd *backend = backend_seatd_from_libseat_backend(base);
++	if (backend->error) {
++		errno = ENOTCONN;
++		return -1;
++	}
++	struct proto_header header = {
++		.opcode = CLIENT_DISABLE_SEAT,
++		.size = 0,
++	};
++	if (conn_put(backend, &header, sizeof header) == -1 || conn_flush(backend) == -1) {
++		return -1;
++	}
++
++	return 0;
++}
++
++const struct seat_impl seatd_impl = {
++	.open_seat = open_seat,
++	.disable_seat = disable_seat,
++	.close_seat = close_seat,
++	.seat_name = seat_name,
++	.open_device = open_device,
++	.close_device = close_device,
++	.switch_session = switch_session,
++	.get_fd = get_fd,
++	.dispatch = dispatch_and_execute,
++};
++
++#ifdef BUILTIN_ENABLED
++#include <signal.h>
++
++static int set_deathsig(int signal);
++
++#if defined(__linux__)
++#include <sys/prctl.h>
++
++static int set_deathsig(int signal) {
++	return prctl(PR_SET_PDEATHSIG, signal);
++}
++#elif defined(__FreeBSD__)
++#include <sys/procctl.h>
++
++static int set_deathsig(int signal) {
++	return procctl(P_PID, 0, PROC_PDEATHSIG_CTL, &signal);
++}
++#else
++#error Unsupported platform
++#endif
++
++static struct libseat *builtin_open_seat(const struct libseat_seat_listener *listener, void *data) {
++	int fds[2];
++	if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == -1) {
++		log_errorf("Could not create socket pair: %s", strerror(errno));
++		return NULL;
++	}
++
++	pid_t pid = fork();
++	if (pid == -1) {
++		log_errorf("Could not fork: %s", strerror(errno));
++		close(fds[0]);
++		close(fds[1]);
++		return NULL;
++	} else if (pid == 0) {
++		int fd = fds[0];
++		int res = 0;
++		struct server server = {0};
++		if (server_init(&server) == -1) {
++			log_errorf("Could not init embedded seatd server: %s", strerror(errno));
++			res = 1;
++			goto error;
++		}
++		if (server_add_client(&server, fd) == -1) {
++			log_errorf("Could not add client to embedded seatd server: %s",
++				   strerror(errno));
++			res = 1;
++			goto server_error;
++		}
++		set_deathsig(SIGTERM);
++		while (server.running) {
++			if (poller_poll(&server.poller) == -1) {
++				log_errorf("Could not poll server socket: %s", strerror(errno));
++				res = 1;
++				break;
++			}
++		}
++	server_error:
++		server_finish(&server);
++	error:
++		close(fd);
++		exit(res);
++	} else {
++		int fd = fds[1];
++		return _open_seat(listener, data, fd);
++	}
++}
++
++const struct seat_impl builtin_impl = {
++	.open_seat = builtin_open_seat,
++	.disable_seat = disable_seat,
++	.close_seat = close_seat,
++	.seat_name = seat_name,
++	.open_device = open_device,
++	.close_device = close_device,
++	.switch_session = switch_session,
++	.get_fd = get_fd,
++	.dispatch = dispatch_and_execute,
++};
++#endif
+diff --git seatd-workdir/seatd/libseat/libseat.c seatd-workdir/seatd/libseat/libseat.c
+new file mode 100644
+index 0000000..8cc9ab2
+--- /dev/null
++++ seatd-workdir/seatd/libseat/libseat.c
+@@ -0,0 +1,122 @@
++#include <assert.h>
++#include <errno.h>
++#include <stdarg.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "backend.h"
++#include "libseat.h"
++#include "log.h"
++
++extern const struct seat_impl seatd_impl;
++extern const struct seat_impl logind_impl;
++extern const struct seat_impl builtin_impl;
++extern const struct seat_impl noop_impl;
++
++static const struct named_backend impls[] = {
++#ifdef SEATD_ENABLED
++	{"seatd", &seatd_impl},
++#endif
++#ifdef LOGIND_ENABLED
++	{"logind", &logind_impl},
++#endif
++#ifdef BUILTIN_ENABLED
++	{"builtin", &builtin_impl},
++#endif
++	{"noop", &noop_impl},
++
++	{NULL, NULL},
++};
++
++#if !defined(SEATD_ENABLED) && !defined(LOGIND_ENABLED) && !defined(BUILTIN_ENABLED)
++#error At least one backend must be enabled
++#endif
++
++struct libseat *libseat_open_seat(const struct libseat_seat_listener *listener, void *data) {
++	if (listener == NULL || listener->enable_seat == NULL || listener->disable_seat == NULL) {
++		errno = EINVAL;
++		return NULL;
++	}
++
++	log_init();
++
++	char *backend_type = getenv("LIBSEAT_BACKEND");
++	if (backend_type != NULL) {
++		const struct named_backend *iter = impls;
++		while (iter->backend != NULL && strcmp(backend_type, iter->name) != 0) {
++			iter++;
++		}
++		if (iter == NULL || iter->backend == NULL) {
++			log_errorf("No backend matched name '%s'", backend_type);
++			errno = EINVAL;
++			return NULL;
++		}
++		struct libseat *backend = iter->backend->open_seat(listener, data);
++		if (backend == NULL) {
++			log_errorf("Backend '%s' failed to open seat: %s", iter->name,
++				   strerror(errno));
++			return NULL;
++		}
++		log_infof("Seat opened with backend '%s'", iter->name);
++		return backend;
++	}
++
++	struct libseat *backend = NULL;
++	for (const struct named_backend *iter = impls; iter->backend != NULL; iter++) {
++		if (iter->backend == &noop_impl) {
++			continue;
++		}
++		backend = iter->backend->open_seat(listener, data);
++		if (backend != NULL) {
++			log_infof("Seat opened with backend '%s'", iter->name);
++			return backend;
++		}
++		log_infof("Backend '%s' failed to open seat, skipping", iter->name);
++	}
++
++	log_error("No backend was able to open a seat");
++	errno = ENOSYS;
++	return NULL;
++}
++
++int libseat_disable_seat(struct libseat *seat) {
++	assert(seat && seat->impl);
++	return seat->impl->disable_seat(seat);
++}
++
++int libseat_close_seat(struct libseat *seat) {
++	assert(seat && seat->impl);
++	return seat->impl->close_seat(seat);
++}
++
++const char *libseat_seat_name(struct libseat *seat) {
++	assert(seat && seat->impl);
++	return seat->impl->seat_name(seat);
++}
++
++int libseat_open_device(struct libseat *seat, const char *path, int *fd) {
++	assert(seat && seat->impl);
++	return seat->impl->open_device(seat, path, fd);
++}
++
++int libseat_close_device(struct libseat *seat, int device_id) {
++	assert(seat && seat->impl);
++	return seat->impl->close_device(seat, device_id);
++}
++
++int libseat_get_fd(struct libseat *seat) {
++	assert(seat && seat->impl);
++	return seat->impl->get_fd(seat);
++}
++
++int libseat_dispatch(struct libseat *seat, int timeout) {
++	assert(seat && seat->impl);
++	return seat->impl->dispatch(seat, timeout);
++}
++
++int libseat_switch_session(struct libseat *seat, int session) {
++	assert(seat && seat->impl);
++	return seat->impl->switch_session(seat, session);
++}
+diff --git seatd-workdir/seatd/libseat/libseat.syms seatd-workdir/seatd/libseat/libseat.syms
+new file mode 100644
+index 0000000..8fd9732
+--- /dev/null
++++ seatd-workdir/seatd/libseat/libseat.syms
+@@ -0,0 +1,6 @@
++{
++   global:
++      libseat_*;
++   local:
++      *;
++};
+diff --git seatd-workdir/seatd/man/seatd-launch.1.scd seatd-workdir/seatd/man/seatd-launch.1.scd
+new file mode 100644
+index 0000000..9234203
+--- /dev/null
++++ seatd-workdir/seatd/man/seatd-launch.1.scd
+@@ -0,0 +1,57 @@
++seatd-launch(1)
++
++# NAME
++
++seatd-launch - Start a process with its own seatd instance
++
++# SYNOPSIS
++
++*seatd-launch* [options] [--] command
++
++# OPTIONS
++
++*-h*
++	Show help message and quit.
++
++*-s <path>*
++	Where to create the seatd socket. Defaults to a unique file path.
++
++*-v*
++	Show the version number and quit.
++
++# DESCRIPTION
++
++seatd-launch starts a seatd instance with a dedicated socket path, waits for it
++to be ready, and starts the specified command with SEATD_SOCK set
++appropriately.  Once the specified command terminates, the seatd instance is
++also terminated.
++
++seatd requires root privileges to perform its tasks. This can be achieved
++through SUID of seatd-launch or by running seatd-launch as root. seatd-launch
++will drop privileges from the effective user to the real user before running
++the specified command. If the real user is root, this is simply a noop. You
++should only run seatd-launch as root if you intend for the specified command to
++run as root as well.
++
++seatd-launch serves a similar purpose to the libseat "builtin" backend, but is
++superior to it for two reasons:
++. The specified command never runs as root
++. The standard seatd executable and libseat backend is used
++
++# EXIT STATUS
++
++seatd-launch exits with the status of its child. When the child terminates on
++a signal _N_, seatd-launch exits with the status 128 + _N_.
++
++If seatd-launch fails because of another error, it exits with a non-zero
++status.
++
++# SEE ALSO
++
++The libseat library, *<libseat.h>*, *seatd*(1)
++
++# AUTHORS
++
++Maintained by Kenny Levinsen <contact@kl.wtf>, who is assisted by other
++open-source contributors. For more information about seatd development, see
++https://sr.ht/~kennylevinsen/seatd.
+diff --git seatd-workdir/seatd/man/seatd.1.scd seatd-workdir/seatd/man/seatd.1.scd
+new file mode 100644
+index 0000000..de95843
+--- /dev/null
++++ seatd-workdir/seatd/man/seatd.1.scd
+@@ -0,0 +1,61 @@
++seatd(1)
++
++# NAME
++
++seatd - A seat management daemon
++
++# SYNOPSIS
++
++*seatd* [options]
++
++# OPTIONS
++
++*-h*
++	Show help message and quit.
++
++*-n*
++	FD to notify readiness on. A single newline will be written and the fd
++	closed when seatd is ready to serve requests. This is compatible with
++	s6's notification protocol.
++
++*-u <user>*
++	User to own the seatd socket.
++
++*-g <group>*
++	Group to own the seatd socket.
++
++*-s <path>*
++	Where to create the seatd socket. Defaults to `/run/seatd.sock`.
++
++*-v*
++	Show the version number and quit.
++
++# DESCRIPTION
++
++seatd provides central seat management, mediating access to shared resources
++such as displays and input devices in a multi-session, multi-seat environment.
++
++seatd operates over a UNIX domain socket, with *libseat* providing the
++client-side of the protocol.
++
++# ENVIRONMENT
++
++[[ *VARIABLE*
++:[ *VALUES*
++:< *DESCRIPTION*
++|  SEATD_SOCK
++:  File path
++:  Informs libseat of the socket location, needed if it differs from `/run/seatd.sock`
++|  SEATD_LOGLEVEL
++:  silent, error, info, debug
++:  Sets the seatd log level. Defaults to "error"
++
++# SEE ALSO
++
++The libseat library, *<libseat.h>*, *seatd-launch*(1)
++
++# AUTHORS
++
++Maintained by Kenny Levinsen <contact@kl.wtf>, who is assisted by other
++open-source contributors. For more information about seatd development, see
++https://sr.ht/~kennylevinsen/seatd.
+diff --git seatd-workdir/seatd/meson.build seatd-workdir/seatd/meson.build
+new file mode 100644
+index 0000000..d8fd25d
+--- /dev/null
++++ seatd-workdir/seatd/meson.build
+@@ -0,0 +1,277 @@
++project(
++	'seatd',
++	'c',
++	version: '0.6.3',
++	license: 'MIT',
++	meson_version: '>=0.56.0',
++	default_options: [
++		'c_std=c11',
++		'warning_level=3',
++		'werror=true',
++	],
++)
++
++# Bump whenever ABI-breaking changes occur.
++libseat_soversion = 1
++
++defaultpath = get_option('defaultpath')
++if defaultpath == ''
++	defaultpath = '/var/run/seatd.sock'
++	if target_machine.system() == 'linux'
++	   defaultpath = '/run/seatd.sock'
++	endif
++endif
++
++seatdpath = '@0@/@1@/seatd'.format(get_option('prefix'), get_option('bindir'))
++
++cc = meson.get_compiler('c')
++add_project_arguments(cc.get_supported_arguments(
++	[
++		'-Wundef',
++		'-Wunused',
++		'-Wlogical-op',
++		'-Wmissing-include-dirs',
++		'-Wold-style-definition', # nop
++		'-Wpointer-arith',
++		'-Wstrict-prototypes',
++		'-Wimplicit-fallthrough',
++		'-Wmissing-prototypes',
++		'-Wno-unknown-warning-option',
++		'-Wno-unused-command-line-argument',
++		'-Wvla',
++		'-Wl,--exclude-libs=ALL',
++		'-D_XOPEN_SOURCE=700',
++		'-D__BSD_VISIBLE',
++		'-DSEATD_VERSION="@0@"'.format(meson.project_version()),
++		'-DSEATD_DEFAULTPATH="@0@"'.format(defaultpath),
++		'-DSEATD_INSTALLPATH="@0@"'.format(seatdpath),
++	]),
++	language: 'c',
++)
++
++if ['debugoptimized', 'release', 'minsize'].contains(get_option('buildtype'))
++	add_project_arguments('-D_FORTIFY_SOURCE=2', language: 'c')
++endif
++
++if get_option('buildtype').startswith('debug')
++	add_project_arguments('-DDEBUG', language : 'c')
++endif
++
++# Hacks
++source_root = meson.current_source_dir().split('/')
++build_root = meson.build_root().split('/')
++relative_dir_parts = []
++i = 0
++in_prefix = true
++foreach p : build_root
++	if i >= source_root.length() or not in_prefix or p != source_root[i]
++		in_prefix = false
++		relative_dir_parts += '..'
++	endif
++	i += 1
++endforeach
++i = 0
++in_prefix = true
++foreach p : source_root
++	if i >= build_root.length() or not in_prefix or build_root[i] != p
++		in_prefix = false
++		relative_dir_parts += p
++	endif
++	i += 1
++endforeach
++
++add_project_arguments(
++	'-DREL_SRC_DIR="@0@"'.format(join_paths(relative_dir_parts) + '/'),
++	language: 'c',
++)
++
++private_files = [
++	'common/connection.c',
++	'common/linked_list.c',
++	'common/log.c',
++]
++
++private_deps = []
++
++server_files = [
++	'common/log.c',
++	'common/linked_list.c',
++	'common/terminal.c',
++	'common/connection.c',
++	'common/evdev.c',
++	'common/drm.c',
++	'seatd/poller.c',
++	'seatd/seat.c',
++	'seatd/client.c',
++	'seatd/server.c',
++]
++
++with_seatd = get_option('libseat-seatd') == 'enabled'
++with_builtin = get_option('libseat-builtin') == 'enabled'
++with_server = get_option('server') == 'enabled'
++
++if with_seatd or with_builtin
++	private_files += 'libseat/backend/seatd.c'
++endif
++
++if with_seatd
++	add_project_arguments('-DSEATD_ENABLED=1', language: 'c')
++endif
++
++logind = disabler()
++logind_provider = ''
++if get_option('libseat-logind') != 'disabled'
++	if get_option('libseat-logind') == 'auto' and get_option('auto_features').disabled()
++		# Disable logind
++	elif get_option('libseat-logind') == 'auto'
++		assert(get_option('auto_features').auto(), '-Dlibseat-logind must be set to systemd or elogind since auto_features != auto')
++		foreach logind_provider : ['elogind', 'systemd']
++			logind = dependency('lib@0@'.format(logind_provider), required: false)
++			if logind.found()
++				break
++			endif
++		endforeach
++	else
++		logind_provider = get_option('libseat-logind')
++		logind = dependency('lib@0@'.format(logind_provider))
++	endif
++
++	if logind.found()
++		add_project_arguments('-DLOGIND_ENABLED=1', language: 'c')
++		add_project_arguments('-DHAVE_@0@=1'.format(logind_provider.to_upper()), language: 'c')
++		private_files += [
++			'libseat/backend/logind.c',
++			'common/drm.c',
++		]
++		private_deps += logind
++	endif
++endif
++
++# needed for cross-compilation
++realtime = meson.get_compiler('c').find_library('rt')
++private_deps += realtime
++
++if with_builtin
++	add_project_arguments('-DBUILTIN_ENABLED=1', language: 'c')
++	private_files += server_files
++endif
++
++private_lib = static_library(
++	'seat-private',
++	private_files,
++	dependencies: private_deps,
++	include_directories: [include_directories('.', 'include')],
++)
++
++symbols_file = 'libseat/libseat.syms'
++symbols_flag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbols_file)
++lib = library(
++	'seat', # This results in the library being called 'libseat'
++	[ 'libseat/libseat.c', 'libseat/backend/noop.c' ],
++	soversion: libseat_soversion,
++	link_with: private_lib,
++	include_directories: [include_directories('.', 'include')],
++	install: true,
++	link_args: symbols_flag,
++	link_depends: symbols_file,
++)
++
++install_headers('include/libseat.h')
++
++libseat_vars = {
++	'have_seatd': with_seatd.to_string(),
++	'have_logind': logind.found().to_string(),
++	'have_builtin': with_builtin.to_string(),
++}
++
++pkgconfig = import('pkgconfig')
++pkgconfig.generate(lib,
++	version: meson.project_version(),
++	filebase: 'libseat',
++	name: 'libseat',
++	description: 'Seat management library',
++	variables: libseat_vars,
++)
++
++libseat = declare_dependency(
++	link_with: lib,
++	dependencies: private_deps,
++	include_directories: include_directories('include', is_system: true),
++	variables: libseat_vars,
++)
++
++if with_server
++	executable(
++		'seatd',
++		[ server_files, 'seatd/seatd.c' ],
++		include_directories: [include_directories('.', 'include')],
++		install: true,
++		dependencies: [realtime],
++	)
++	executable(
++		'seatd-launch',
++		[ 'seatd-launch/seatd-launch.c' ],
++		include_directories: [include_directories('.', 'include')],
++		install: true,
++		dependencies: [realtime],
++	)
++endif
++
++if get_option('examples') == 'enabled'
++	executable(
++		'simpletest',
++		['examples/simpletest/main.c'],
++		link_with: [lib],
++		include_directories: [include_directories('.', 'include')],
++		install: false,
++	)
++endif
++
++tests = {
++	'linked_list': ['common/linked_list.c'],
++	'connection': ['common/connection.c'],
++	'poller': ['common/linked_list.c', 'seatd/poller.c'],
++}
++
++foreach name, value : tests
++	test(name, executable(
++		'@0@_test'.format(name),
++		['tests/@0@.c'.format(name), value],
++		include_directories: [include_directories('.', 'include')]))
++endforeach
++
++if with_server
++	scdoc = dependency('scdoc', required: get_option('man-pages'), version: '>= 1.9.7', native: true)
++else
++	scdoc = disabler()
++endif
++
++if scdoc.found()
++	scdoc_prog = find_program(scdoc.get_variable(pkgconfig: 'scdoc'), native: true)
++	mandir = get_option('mandir')
++
++	foreach src : ['seatd.1.scd', 'seatd-launch.1.scd']
++		topic = src.split('.')[0]
++		section = src.split('.')[1]
++		output = '@0@.@1@'.format(topic, section)
++
++		custom_target(
++			output,
++			input: 'man/' + src,
++			output: output,
++			command: [
++				'sh', '-c', '@0@ < @INPUT@ > @1@'.format(scdoc_prog.full_path(), output)
++			],
++			install: true,
++			install_dir: '@0@/man@1@'.format(mandir, section)
++		)
++	endforeach
++endif
++
++summary({
++	'libseat-seatd': with_seatd,
++	'libseat-builtin': with_builtin,
++	'libseat-systemd': logind.found() and logind_provider == 'systemd',
++	'libseat-elogind': logind.found() and logind_provider == 'elogind',
++	'server': with_server,
++}, bool_yn: true)
+diff --git seatd-workdir/seatd/meson_options.txt seatd-workdir/seatd/meson_options.txt
+new file mode 100644
+index 0000000..0731ac4
+--- /dev/null
++++ seatd-workdir/seatd/meson_options.txt
+@@ -0,0 +1,7 @@
++option('libseat-logind', type: 'combo', choices: ['auto', 'disabled', 'elogind', 'systemd'], value: 'auto', description: 'logind support for libseat')
++option('libseat-seatd', type: 'combo', choices: ['enabled', 'disabled'], value: 'enabled', description: 'seatd support for libseat')
++option('libseat-builtin', type: 'combo', choices: ['enabled', 'disabled'], value: 'disabled', description: 'built-in seatd server for libseat')
++option('server', type: 'combo', choices: ['enabled', 'disabled'], value: 'enabled', description: 'seatd server')
++option('examples', type: 'combo', choices: ['enabled', 'disabled'], value: 'disabled', description: 'libseat example programs')
++option('man-pages', type: 'feature', value: 'auto', description: 'Generate and install man pages')
++option('defaultpath', type: 'string', value: '', description: 'Default location for seatd socket (empty for default)')
+diff --git seatd-workdir/seatd/seatd/client.c seatd-workdir/seatd/seatd/client.c
+new file mode 100644
+index 0000000..df57c42
+--- /dev/null
++++ seatd-workdir/seatd/seatd/client.c
+@@ -0,0 +1,485 @@
++#define _GNU_SOURCE
++#include <assert.h>
++#include <errno.h>
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#if defined(__FreeBSD__)
++#include <sys/ucred.h>
++#include <sys/un.h>
++#endif
++
++#include "client.h"
++#include "linked_list.h"
++#include "log.h"
++#include "poller.h"
++#include "protocol.h"
++#include "seat.h"
++#include "server.h"
++#include "terminal.h"
++
++static int get_peer(int fd, pid_t *pid, uid_t *uid, gid_t *gid) {
++#if defined(__linux__) || defined(__zinnia__)
++	struct ucred cred;
++	socklen_t len = sizeof cred;
++	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) == -1) {
++		return -1;
++	}
++	*pid = cred.pid;
++	*uid = cred.uid;
++	*gid = cred.gid;
++	return 0;
++#elif defined(__FreeBSD__)
++	struct xucred cred;
++	socklen_t len = sizeof cred;
++	if (getsockopt(fd, 0, LOCAL_PEERCRED, &cred, &len) == -1) {
++		return -1;
++	}
++#if __FreeBSD_version >= 1300030 || (__FreeBSD_version >= 1202506 && __FreeBSD_version < 1300000)
++	*pid = cred.cr_pid;
++#else
++	*pid = -1;
++#endif
++	*uid = cred.cr_uid;
++	*gid = cred.cr_ngroups > 0 ? cred.cr_groups[0] : (gid_t)-1;
++	return 0;
++#else
++	return -1;
++#endif
++}
++
++struct client *client_create(struct server *server, int client_fd) {
++	uid_t uid;
++	gid_t gid;
++	pid_t pid;
++
++	if (get_peer(client_fd, &pid, &uid, &gid) == -1) {
++		return NULL;
++	}
++
++	struct client *client = calloc(1, sizeof(struct client));
++	if (client == NULL) {
++		return NULL;
++	}
++
++	client->uid = uid;
++	client->gid = gid;
++	client->pid = pid;
++	client->session = -1;
++	client->server = server;
++	client->connection.fd = client_fd;
++	client->state = CLIENT_NEW;
++	linked_list_init(&client->devices);
++	linked_list_insert(&server->idle_clients, &client->link);
++	return client;
++}
++
++void client_destroy(struct client *client) {
++	assert(client);
++	client->server = NULL;
++	if (client->connection.fd != -1) {
++		close(client->connection.fd);
++		client->connection.fd = -1;
++	}
++	linked_list_remove(&client->link);
++	if (client->seat != NULL) {
++		seat_remove_client(client);
++	}
++	if (client->event_source != NULL) {
++		event_source_fd_destroy(client->event_source);
++		client->event_source = NULL;
++	}
++	connection_close_fds(&client->connection);
++	assert(linked_list_empty(&client->devices));
++	free(client);
++}
++
++static int client_flush(struct client *client) {
++	int ret = connection_flush(&client->connection);
++	if (ret == -1 && errno == EAGAIN) {
++		event_source_fd_update(client->event_source, EVENT_READABLE | EVENT_WRITABLE);
++	} else if (ret == -1) {
++		return -1;
++	}
++	return 0;
++}
++
++static int client_send_error(struct client *client, int error_code) {
++	struct proto_server_error errmsg = {
++		.error_code = error_code,
++	};
++	struct proto_header errheader = {
++		.opcode = SERVER_ERROR,
++		.size = sizeof errmsg,
++	};
++
++	if (connection_put(&client->connection, &errheader, sizeof errheader) == -1 ||
++	    connection_put(&client->connection, &errmsg, sizeof errmsg) == -1) {
++		log_errorf("Could not send error to client: %s", strerror(errno));
++		return -1;
++	}
++	return 0;
++}
++
++static char *client_get_seat_name(struct client *client) {
++	(void)client;
++	// TODO: Look up seat for session.
++	return "seat0";
++}
++
++static int handle_open_seat(struct client *client) {
++	char *seat_name = client_get_seat_name(client);
++	if (seat_name == NULL) {
++		log_error("Could not get name of target seat");
++		return -1;
++	}
++
++	struct seat *seat = server_get_seat(client->server, seat_name);
++	if (seat == NULL) {
++		log_errorf("Could not find seat named %s", seat_name);
++		return -1;
++	}
++
++	if (seat_add_client(seat, client) == -1) {
++		log_errorf("Could not add client to target seat: %s", strerror(errno));
++		return -1;
++	}
++	linked_list_remove(&client->link);
++	linked_list_insert(&seat->clients, &client->link);
++
++	size_t seat_name_len = strlen(seat_name);
++
++	struct proto_server_seat_opened rmsg = {
++		.seat_name_len = (uint16_t)seat_name_len,
++	};
++	struct proto_header header = {
++		.opcode = SERVER_SEAT_OPENED,
++		.size = sizeof rmsg + seat_name_len,
++	};
++
++	if (connection_put(&client->connection, &header, sizeof header) == -1 ||
++	    connection_put(&client->connection, &rmsg, sizeof rmsg) == -1 ||
++	    connection_put(&client->connection, seat_name, seat_name_len) == -1) {
++		log_errorf("Could not write response: %s", strerror(errno));
++		return -1;
++	}
++
++	seat_open_client(seat, client);
++	return 0;
++}
++
++static int handle_close_seat(struct client *client) {
++	if (client->seat == NULL) {
++		log_error("Protocol error: no seat associated with client");
++		return -1;
++	}
++
++	linked_list_remove(&client->link);
++	if (seat_remove_client(client) == -1) {
++		log_error("Could not remove client from seat");
++		return -1;
++	}
++	linked_list_insert(&client->server->idle_clients, &client->link);
++
++	struct proto_header header = {
++		.opcode = SERVER_SEAT_CLOSED,
++		.size = 0,
++	};
++
++	if (connection_put(&client->connection, &header, sizeof header) == -1) {
++		log_errorf("Could not write response: %s", strerror(errno));
++		return -1;
++	}
++
++	return 0;
++}
++
++static int handle_open_device(struct client *client, char *path) {
++	if (client->seat == NULL) {
++		log_error("Protocol error: no seat associated with client");
++		return -1;
++	}
++
++	struct seat_device *device = seat_open_device(client, path);
++	if (device == NULL) {
++		log_errorf("Could not open device: %s", strerror(errno));
++		goto fail;
++	}
++
++	int dupfd = dup(device->fd);
++	if (dupfd == -1) {
++		log_errorf("Could not dup fd: %s", strerror(errno));
++		seat_close_device(client, device);
++		goto fail;
++	}
++
++	if (connection_put_fd(&client->connection, dupfd) == -1) {
++		log_errorf("Could not queue fd for sending: %s", strerror(errno));
++		return -1;
++	}
++
++	struct proto_server_device_opened msg = {
++		.device_id = device->device_id,
++	};
++	struct proto_header header = {
++		.opcode = SERVER_DEVICE_OPENED,
++		.size = sizeof msg,
++	};
++
++	if (connection_put(&client->connection, &header, sizeof header) == -1 ||
++	    connection_put(&client->connection, &msg, sizeof msg) == -1) {
++		log_errorf("Could not write response: %s", strerror(errno));
++		return -1;
++	}
++
++	return 0;
++
++fail:
++	return client_send_error(client, errno);
++}
++
++static int handle_close_device(struct client *client, int device_id) {
++	if (client->seat == NULL) {
++		log_error("Protocol error: no seat associated with client");
++		return -1;
++	}
++
++	struct seat_device *device = seat_find_device(client, device_id);
++	if (device == NULL) {
++		log_error("No such device");
++		errno = EBADF;
++		goto fail;
++	}
++
++	if (seat_close_device(client, device) == -1) {
++		log_errorf("Could not close device: %s", strerror(errno));
++		goto fail;
++	}
++
++	struct proto_header header = {
++		.opcode = SERVER_DEVICE_CLOSED,
++		.size = 0,
++	};
++
++	if (connection_put(&client->connection, &header, sizeof header) == -1) {
++		log_errorf("Could not write response: %s", strerror(errno));
++		return -1;
++	}
++
++	return 0;
++
++fail:
++	return client_send_error(client, errno);
++}
++
++static int handle_switch_session(struct client *client, int session) {
++	if (client->seat == NULL) {
++		log_error("Protocol error: no seat associated with client");
++		return -1;
++	}
++
++	if (seat_set_next_session(client, session) == -1) {
++		goto error;
++	}
++
++	return 0;
++
++error:
++	return client_send_error(client, errno);
++}
++
++static int handle_disable_seat(struct client *client) {
++	if (client->seat == NULL) {
++		log_error("Protocol error: no seat associated with client");
++		return -1;
++	}
++
++	if (seat_ack_disable_client(client) == -1) {
++		goto error;
++	}
++
++	return 0;
++
++error:
++	return client_send_error(client, errno);
++}
++
++static int handle_ping(struct client *client) {
++	struct proto_header header = {
++		.opcode = SERVER_PONG,
++		.size = 0,
++	};
++
++	if (connection_put(&client->connection, &header, sizeof header) == -1) {
++		log_errorf("Could not write response: %s", strerror(errno));
++		return -1;
++	}
++
++	return 0;
++}
++
++static int client_handle_opcode(struct client *client, uint16_t opcode, size_t size) {
++	int res = 0;
++	switch (opcode) {
++	case CLIENT_OPEN_SEAT: {
++		if (size != 0) {
++			log_error("Protocol error: invalid open_seat message");
++			return -1;
++		}
++		res = handle_open_seat(client);
++		break;
++	}
++	case CLIENT_CLOSE_SEAT: {
++		if (size != 0) {
++			log_error("Protocol error: invalid close_seat message");
++			return -1;
++		}
++		res = handle_close_seat(client);
++		break;
++	}
++	case CLIENT_OPEN_DEVICE: {
++		char path[MAX_PATH_LEN];
++		struct proto_client_open_device msg;
++		if (sizeof msg > size || connection_get(&client->connection, &msg, sizeof msg) == -1 ||
++		    sizeof msg + msg.path_len > size || msg.path_len > MAX_PATH_LEN) {
++			log_error("Protocol error: invalid open_device message");
++			return -1;
++		}
++		if (connection_get(&client->connection, path, msg.path_len) == -1) {
++			log_error("Protocol error: invalid open_device message");
++			return -1;
++		}
++
++		res = handle_open_device(client, path);
++		break;
++	}
++	case CLIENT_CLOSE_DEVICE: {
++		struct proto_client_close_device msg;
++		if (sizeof msg > size || connection_get(&client->connection, &msg, sizeof msg) == -1) {
++			log_error("Protocol error: invalid close_device message");
++			return -1;
++		}
++
++		res = handle_close_device(client, msg.device_id);
++		break;
++	}
++	case CLIENT_SWITCH_SESSION: {
++		struct proto_client_switch_session msg;
++		if (sizeof msg > size || connection_get(&client->connection, &msg, sizeof msg) == -1) {
++			log_error("Protocol error: invalid switch_session message");
++			return -1;
++		}
++
++		res = handle_switch_session(client, msg.session);
++		break;
++	}
++	case CLIENT_DISABLE_SEAT: {
++		if (size != 0) {
++			log_error("Protocol error: invalid disable_seat message");
++			return -1;
++		}
++		res = handle_disable_seat(client);
++		break;
++	}
++	case CLIENT_PING: {
++		if (size != 0) {
++			log_error("Protocol error: invalid ping message");
++			return -1;
++		}
++		res = handle_ping(client);
++		break;
++	}
++	default:
++		log_errorf("Protocol error: unknown opcode: %d", opcode);
++		res = -1;
++		break;
++	}
++	if (res != -1) {
++		res = client_flush(client);
++	}
++	return res;
++}
++
++int client_send_disable_seat(struct client *client) {
++	struct proto_header header = {
++		.opcode = SERVER_DISABLE_SEAT,
++		.size = 0,
++	};
++	if (connection_put(&client->connection, &header, sizeof header) == -1 ||
++	    connection_flush(&client->connection) == -1) {
++		log_errorf("Could not send event: %s", strerror(errno));
++		return -1;
++	}
++	return 0;
++}
++
++int client_send_enable_seat(struct client *client) {
++	struct proto_header header = {
++		.opcode = SERVER_ENABLE_SEAT,
++		.size = 0,
++	};
++	if (connection_put(&client->connection, &header, sizeof header) == -1 ||
++	    connection_flush(&client->connection) == -1) {
++		log_errorf("Could not send event: %s", strerror(errno));
++		return -1;
++	}
++	return 0;
++}
++
++int client_handle_connection(int fd, uint32_t mask, void *data) {
++	(void)fd;
++
++	struct client *client = data;
++	if (mask & EVENT_ERROR) {
++		log_error("Connection error");
++		goto fail;
++	}
++	if (mask & EVENT_HANGUP) {
++		log_info("Client disconnected");
++		goto fail;
++	}
++
++	if (mask & EVENT_WRITABLE) {
++		int len = connection_flush(&client->connection);
++		if (len == -1 && errno != EAGAIN) {
++			log_errorf("Could not flush client connection: %s", strerror(errno));
++			goto fail;
++		} else if (len >= 0) {
++			event_source_fd_update(client->event_source, EVENT_READABLE);
++		}
++	}
++
++	if (mask & EVENT_READABLE) {
++		int len = connection_read(&client->connection);
++		if (len == -1 && errno != EAGAIN) {
++			log_errorf("Could not read client connection: %s", strerror(errno));
++			goto fail;
++		}
++		if (len == 0) {
++			log_error("Could not read client connection: zero-length read");
++			goto fail;
++		}
++
++		struct proto_header header;
++		while (connection_get(&client->connection, &header, sizeof header) != -1) {
++			if (connection_pending(&client->connection) < header.size) {
++				connection_restore(&client->connection, sizeof header);
++				break;
++			}
++			if (client_handle_opcode(client, header.opcode, header.size) == -1) {
++				goto fail;
++			}
++		}
++	}
++
++	return 0;
++
++fail:
++	client_destroy(client);
++	return -1;
++}
+diff --git seatd-workdir/seatd/seatd/poller.c seatd-workdir/seatd/seatd/poller.c
+new file mode 100644
+index 0000000..ceadb24
+--- /dev/null
++++ seatd-workdir/seatd/seatd/poller.c
+@@ -0,0 +1,327 @@
++#include <assert.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <poll.h>
++#include <signal.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++#include "linked_list.h"
++#include "poller.h"
++
++struct event_source_fd {
++	struct linked_list link; // poller::fds
++	const struct event_source_fd_impl *impl;
++	event_source_fd_func_t func;
++
++	int fd;
++	uint32_t mask;
++	void *data;
++
++	struct poller *poller;
++	bool killed;
++	ssize_t pollfd_idx;
++};
++
++struct event_source_signal {
++	struct linked_list link; // poller::signals
++	const struct event_source_signal_impl *impl;
++	event_source_signal_func_t func;
++
++	int signal;
++	void *data;
++
++	struct poller *poller;
++	bool raised;
++	bool killed;
++};
++
++/* Used for signal handling */
++struct poller *global_poller = NULL;
++
++static void signal_handler(int sig) {
++	if (global_poller == NULL) {
++		return;
++	}
++	for (struct linked_list *elem = global_poller->signals.next;
++	     elem != &global_poller->signals; elem = elem->next) {
++		struct event_source_signal *bps = (struct event_source_signal *)elem;
++		if (bps->signal == sig) {
++			bps->raised = true;
++		}
++	}
++	int saved_errno = errno;
++	if (write(global_poller->signal_fds[1], "\0", 1) == -1 && errno != EAGAIN) {
++		// This is unfortunate.
++	}
++	errno = saved_errno;
++}
++
++static int set_nonblock(int fd) {
++	int flags;
++	if ((flags = fcntl(fd, F_GETFL)) == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
++		return -1;
++	}
++	return 0;
++}
++
++int poller_init(struct poller *poller) {
++	assert(global_poller == NULL);
++
++	if (pipe(poller->signal_fds) == -1) {
++		return -1;
++	}
++	if (set_nonblock(poller->signal_fds[0]) == -1) {
++		return -1;
++	}
++	if (set_nonblock(poller->signal_fds[1]) == -1) {
++		return -1;
++	}
++
++	linked_list_init(&poller->fds);
++	linked_list_init(&poller->signals);
++	poller->pollfds = NULL;
++	poller->pollfds_len = 0;
++	poller->dirty = true;
++	poller->fd_event_sources = 1;
++	global_poller = poller;
++
++	return 0;
++}
++
++int poller_finish(struct poller *poller) {
++	while (!linked_list_empty(&poller->fds)) {
++		struct event_source_fd *bpfd = (struct event_source_fd *)poller->fds.next;
++		linked_list_remove(&bpfd->link);
++		free(bpfd);
++	}
++	while (!linked_list_empty(&poller->signals)) {
++		struct event_source_signal *bps = (struct event_source_signal *)poller->signals.next;
++
++		struct sigaction sa;
++		sa.sa_handler = SIG_DFL;
++		sigemptyset(&sa.sa_mask);
++		sa.sa_flags = 0;
++		sigaction(bps->signal, &sa, NULL);
++
++		linked_list_remove(&bps->link);
++		free(bps);
++	}
++	free(poller->pollfds);
++	global_poller = NULL;
++	return 0;
++}
++
++struct event_source_fd *poller_add_fd(struct poller *poller, int fd, uint32_t mask,
++				      event_source_fd_func_t func, void *data) {
++	struct event_source_fd *bpfd = calloc(1, sizeof(struct event_source_fd));
++	if (bpfd == NULL) {
++		return NULL;
++	}
++	bpfd->fd = fd;
++	bpfd->mask = mask;
++	bpfd->data = data;
++	bpfd->func = func;
++	bpfd->poller = poller;
++	bpfd->pollfd_idx = -1;
++	poller->fd_event_sources += 1;
++	poller->dirty = true;
++	linked_list_insert(&poller->fds, &bpfd->link);
++	return (struct event_source_fd *)bpfd;
++}
++
++int event_source_fd_destroy(struct event_source_fd *event_source) {
++	struct event_source_fd *bpfd = (struct event_source_fd *)event_source;
++	struct poller *poller = bpfd->poller;
++	poller->fd_event_sources -= 1;
++	poller->dirty = true;
++	bpfd->killed = true;
++	return 0;
++}
++
++int event_source_fd_update(struct event_source_fd *event_source, uint32_t mask) {
++	struct event_source_fd *bpfd = (struct event_source_fd *)event_source;
++	struct poller *poller = bpfd->poller;
++	event_source->mask = mask;
++	poller->dirty = true;
++	return 0;
++}
++
++struct event_source_signal *poller_add_signal(struct poller *poller, int signal,
++					      event_source_signal_func_t func, void *data) {
++
++	struct event_source_signal *bps = calloc(1, sizeof(struct event_source_signal));
++	if (bps == NULL) {
++		return NULL;
++	}
++
++	bps->signal = signal;
++	bps->data = data;
++	bps->func = func;
++	bps->poller = poller;
++
++	struct sigaction sa;
++	sa.sa_handler = &signal_handler;
++	sigemptyset(&sa.sa_mask);
++	sa.sa_flags = 0;
++	sigaction(signal, &sa, NULL);
++
++	linked_list_insert(&poller->signals, &bps->link);
++
++	return (struct event_source_signal *)bps;
++}
++
++int event_source_signal_destroy(struct event_source_signal *event_source) {
++	struct event_source_signal *bps = (struct event_source_signal *)event_source;
++	struct poller *poller = bps->poller;
++
++	int refcnt = 0;
++	for (struct linked_list *elem = poller->signals.next; elem != &poller->signals;
++	     elem = elem->next) {
++		struct event_source_signal *b = (struct event_source_signal *)elem;
++		if (b->signal == bps->signal && !b->killed) {
++			refcnt++;
++		}
++	}
++
++	if (refcnt == 0) {
++		struct sigaction sa;
++		sa.sa_handler = SIG_DFL;
++		sigemptyset(&sa.sa_mask);
++		sa.sa_flags = 0;
++		sigaction(bps->signal, &sa, NULL);
++	}
++
++	poller->dirty = true;
++	bps->killed = true;
++	return 0;
++}
++
++static int event_mask_to_poll_mask(uint32_t event_mask) {
++	int poll_mask = 0;
++	if (event_mask & EVENT_READABLE) {
++		poll_mask |= POLLIN;
++	}
++	if (event_mask & EVENT_WRITABLE) {
++		poll_mask |= POLLOUT;
++	}
++	return poll_mask;
++}
++
++static uint32_t poll_mask_to_event_mask(int poll_mask) {
++	uint32_t event_mask = 0;
++	if (poll_mask & POLLIN) {
++		event_mask |= EVENT_READABLE;
++	}
++	if (poll_mask & POLLOUT) {
++		event_mask |= EVENT_WRITABLE;
++	}
++	if (poll_mask & POLLERR) {
++		event_mask |= EVENT_ERROR;
++	}
++	if (poll_mask & POLLHUP) {
++		event_mask |= EVENT_HANGUP;
++	}
++	return event_mask;
++}
++
++static int regenerate(struct poller *poller) {
++	if (poller->fd_event_sources > poller->pollfds_len) {
++		struct pollfd *fds =
++			realloc(poller->pollfds, poller->fd_event_sources * sizeof(struct pollfd));
++		if (fds == NULL) {
++			return -1;
++		}
++		poller->pollfds = fds;
++		poller->pollfds_len = poller->fd_event_sources;
++	}
++
++	size_t idx = 0;
++	poller->pollfds[idx++] = (struct pollfd){
++		.fd = poller->signal_fds[0],
++		.events = POLLIN,
++	};
++
++	for (struct linked_list *elem = poller->fds.next; elem != &poller->fds; elem = elem->next) {
++		struct event_source_fd *bpfd = (struct event_source_fd *)elem;
++		if (bpfd->killed) {
++			elem = elem->prev;
++			linked_list_remove(&bpfd->link);
++			free(bpfd);
++		} else {
++			bpfd->pollfd_idx = idx++;
++			assert(bpfd->pollfd_idx < (ssize_t)poller->pollfds_len);
++			poller->pollfds[bpfd->pollfd_idx] = (struct pollfd){
++				.fd = bpfd->fd,
++				.events = event_mask_to_poll_mask(bpfd->mask),
++			};
++		}
++	}
++	assert(idx == poller->fd_event_sources);
++
++	for (struct linked_list *elem = poller->signals.next; elem != &poller->signals;
++	     elem = elem->next) {
++		struct event_source_signal *bps = (struct event_source_signal *)elem;
++		if (bps->killed) {
++			elem = elem->prev;
++			linked_list_remove(&bps->link);
++			free(bps);
++		}
++	}
++
++	return 0;
++}
++
++static void dispatch(struct poller *poller) {
++	if ((poller->pollfds[0].revents & POLLIN) != 0) {
++		char garbage[8];
++		while (read(poller->signal_fds[0], &garbage, sizeof garbage) != -1) {
++		}
++
++		for (struct linked_list *elem = poller->signals.next; elem != &poller->signals;
++		     elem = elem->next) {
++			struct event_source_signal *bps = (struct event_source_signal *)elem;
++			if (!bps->raised || bps->killed) {
++				continue;
++			}
++			bps->func(bps->signal, bps->data);
++			bps->raised = false;
++		}
++	}
++
++	for (struct linked_list *elem = poller->fds.next; elem != &poller->fds; elem = elem->next) {
++		struct event_source_fd *bpfd = (struct event_source_fd *)elem;
++		if (bpfd->pollfd_idx == -1 || bpfd->killed) {
++			continue;
++		}
++		assert(bpfd->pollfd_idx < (ssize_t)poller->pollfds_len);
++		short revents = poller->pollfds[bpfd->pollfd_idx].revents;
++		if (revents == 0) {
++			continue;
++		}
++		bpfd->func(poller->pollfds[bpfd->pollfd_idx].fd, poll_mask_to_event_mask(revents),
++			   bpfd->data);
++	}
++}
++
++int poller_poll(struct poller *poller) {
++	if (poller->dirty) {
++		if (regenerate(poller) == -1) {
++			return -1;
++		}
++		poller->dirty = false;
++	}
++
++	while (poll(poller->pollfds, poller->fd_event_sources, -1) == -1) {
++		if (errno != EINTR) {
++			return -1;
++		}
++	}
++
++	dispatch(poller);
++
++	return 0;
++}
+diff --git seatd-workdir/seatd/seatd/seat.c seatd-workdir/seatd/seatd/seat.c
+new file mode 100644
+index 0000000..354273f
+--- /dev/null
++++ seatd-workdir/seatd/seatd/seat.c
+@@ -0,0 +1,670 @@
++#include <assert.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <limits.h>
++#include <stdbool.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#include "client.h"
++#include "drm.h"
++#include "evdev.h"
++#include "linked_list.h"
++#include "log.h"
++#include "protocol.h"
++#include "seat.h"
++#include "terminal.h"
++
++static int seat_close_client(struct client *client);
++static int vt_close(int vt);
++
++struct seat *seat_create(const char *seat_name, bool vt_bound) {
++	struct seat *seat = calloc(1, sizeof(struct seat));
++	if (seat == NULL) {
++		return NULL;
++	}
++	linked_list_init(&seat->clients);
++	seat->vt_bound = vt_bound;
++	seat->seat_name = strdup(seat_name);
++	seat->cur_vt = 0;
++	if (seat->seat_name == NULL) {
++		free(seat);
++		return NULL;
++	}
++	if (vt_bound) {
++		log_infof("Created VT-bound seat %s", seat_name);
++	} else {
++		log_infof("Created seat %s", seat_name);
++	}
++	return seat;
++}
++
++void seat_destroy(struct seat *seat) {
++	assert(seat);
++	while (!linked_list_empty(&seat->clients)) {
++		struct client *client = (struct client *)seat->clients.next;
++		assert(client->seat == seat);
++		client_destroy(client);
++	}
++	linked_list_remove(&seat->link);
++	free(seat->seat_name);
++	free(seat);
++}
++
++static void seat_update_vt(struct seat *seat) {
++	int tty0fd = terminal_open(0);
++	if (tty0fd == -1) {
++		log_errorf("Could not open tty0 to update VT: %s", strerror(errno));
++		return;
++	}
++	seat->cur_vt = terminal_current_vt(tty0fd);
++	close(tty0fd);
++}
++
++static int vt_open(int vt) {
++	assert(vt != -1);
++	int ttyfd = terminal_open(vt);
++	if (ttyfd == -1) {
++		log_errorf("Could not open terminal for VT %d: %s", vt, strerror(errno));
++		return -1;
++	}
++
++	terminal_set_process_switching(ttyfd, true);
++	terminal_set_keyboard(ttyfd, false);
++	terminal_set_graphics(ttyfd, true);
++	close(ttyfd);
++	return 0;
++}
++
++static int vt_close(int vt) {
++	int ttyfd = terminal_open(vt);
++	if (ttyfd == -1) {
++		log_errorf("Could not open terminal to clean up VT %d: %s", vt, strerror(errno));
++		return -1;
++	}
++	terminal_set_process_switching(ttyfd, true);
++	terminal_set_keyboard(ttyfd, true);
++	terminal_set_graphics(ttyfd, false);
++	close(ttyfd);
++	return 0;
++}
++
++static int vt_switch(struct seat *seat, int vt) {
++	int ttyfd = terminal_open(seat->cur_vt);
++	if (ttyfd == -1) {
++		log_errorf("Could not open terminal to switch to VT %d: %s", vt, strerror(errno));
++		return -1;
++	}
++	terminal_set_process_switching(ttyfd, true);
++	terminal_switch_vt(ttyfd, vt);
++	close(ttyfd);
++	return 0;
++}
++
++static int vt_ack(struct seat *seat, bool release) {
++	int tty0fd = terminal_open(seat->cur_vt);
++	if (tty0fd == -1) {
++		log_errorf("Could not open tty0 to ack VT signal: %s", strerror(errno));
++		return -1;
++	}
++	if (release) {
++		terminal_ack_release(tty0fd);
++	} else {
++		terminal_ack_acquire(tty0fd);
++	}
++	close(tty0fd);
++	return 0;
++}
++
++int seat_add_client(struct seat *seat, struct client *client) {
++	assert(seat);
++	assert(client);
++
++	if (client->seat != NULL) {
++		log_error("Could not add client: client is already a member of a seat");
++		errno = EBUSY;
++		return -1;
++	}
++
++	if (seat->vt_bound && seat->active_client != NULL &&
++	    seat->active_client->state != CLIENT_PENDING_DISABLE) {
++		log_error("Could not add client: seat is VT-bound and has an active client");
++		errno = EBUSY;
++		return -1;
++	}
++
++	if (client->session != -1) {
++		log_error("Could not add client: client cannot be reused");
++		errno = EINVAL;
++		return -1;
++	}
++
++	if (seat->vt_bound) {
++		seat_update_vt(seat);
++		if (seat->cur_vt == -1) {
++			log_error("Could not determine VT for client");
++			errno = EINVAL;
++			return -1;
++		}
++		if (seat->active_client != NULL) {
++			for (struct linked_list *elem = seat->clients.next; elem != &seat->clients;
++			     elem = elem->next) {
++				struct client *client = (struct client *)elem;
++				if (client->session == seat->cur_vt) {
++					log_error("Could not add client: seat is VT-bound and already has pending client");
++					errno = EBUSY;
++					return -1;
++				}
++			}
++		}
++		client->session = seat->cur_vt;
++	} else {
++		client->session = seat->session_cnt++;
++	}
++
++	client->seat = seat;
++	log_infof("Added client %d to %s", client->session, seat->seat_name);
++
++	return 0;
++}
++
++int seat_remove_client(struct client *client) {
++	assert(client);
++	assert(client->seat);
++
++	struct seat *seat = client->seat;
++	if (seat->next_client == client) {
++		seat->next_client = NULL;
++	}
++
++	while (!linked_list_empty(&client->devices)) {
++		struct seat_device *device = (struct seat_device *)client->devices.next;
++		seat_close_device(client, device);
++	}
++
++	seat_close_client(client);
++
++	client->seat = NULL;
++	log_infof("Removed client %d from %s", client->session, seat->seat_name);
++
++	return 0;
++}
++
++struct seat_device *seat_find_device(struct client *client, int device_id) {
++	assert(client);
++	assert(client->seat);
++	assert(device_id != 0);
++
++	for (struct linked_list *elem = client->devices.next; elem != &client->devices;
++	     elem = elem->next) {
++		struct seat_device *seat_device = (struct seat_device *)elem;
++		if (seat_device->device_id == device_id) {
++			return seat_device;
++		}
++	}
++	errno = ENOENT;
++	return NULL;
++}
++
++struct seat_device *seat_open_device(struct client *client, const char *path) {
++	assert(client);
++	assert(client->seat);
++	assert(strlen(path) > 0);
++	struct seat *seat = client->seat;
++
++	log_debugf("Opening device %s for client %d on %s", path, client->session, seat->seat_name);
++
++	if (client->state != CLIENT_ACTIVE) {
++		log_error("Could open device: client is not active");
++		errno = EPERM;
++		return NULL;
++	}
++	assert(seat->active_client == client);
++
++	char sanitized_path[PATH_MAX];
++	if (realpath(path, sanitized_path) == NULL) {
++		log_errorf("Could not canonicalize path %s: %s", path, strerror(errno));
++		return NULL;
++	}
++
++	enum seat_device_type type;
++	if (path_is_evdev(sanitized_path)) {
++		type = SEAT_DEVICE_TYPE_EVDEV;
++	} else if (path_is_drm(sanitized_path)) {
++		type = SEAT_DEVICE_TYPE_DRM;
++	} else {
++		log_errorf("%s is not a supported device type ", sanitized_path);
++		errno = ENOENT;
++		return NULL;
++	}
++
++	int device_id = 1;
++	size_t device_count = 0;
++	struct seat_device *device = NULL;
++	for (struct linked_list *elem = client->devices.next; elem != &client->devices;
++	     elem = elem->next) {
++		struct seat_device *old_device = (struct seat_device *)elem;
++
++		if (strcmp(old_device->path, sanitized_path) == 0) {
++			old_device->ref_cnt++;
++			device = old_device;
++			goto done;
++		}
++
++		if (old_device->device_id >= device_id) {
++			device_id = old_device->device_id + 1;
++		}
++		device_count++;
++	}
++
++	if (device_count >= MAX_SEAT_DEVICES) {
++		log_error("Client exceeded max seat devices");
++		errno = EMFILE;
++		return NULL;
++	}
++
++	int fd = open(sanitized_path, O_RDWR | O_NOCTTY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK);
++	if (fd == -1) {
++		log_errorf("Could not open file: %s", strerror(errno));
++		return NULL;
++	}
++
++	switch (type) {
++	case SEAT_DEVICE_TYPE_DRM:
++		if (drm_set_master(fd) == -1) {
++			log_errorf("Could not make device fd drm master: %s", strerror(errno));
++		}
++		break;
++	case SEAT_DEVICE_TYPE_EVDEV:
++		// Nothing to do here
++		break;
++	default:
++		log_error("Invalid seat device type");
++		abort();
++	}
++
++	device = calloc(1, sizeof(struct seat_device));
++	if (device == NULL) {
++		log_errorf("Allocation failed: %s", strerror(errno));
++		close(fd);
++		errno = ENOMEM;
++		return NULL;
++	}
++
++	device->path = strdup(sanitized_path);
++	if (device->path == NULL) {
++		log_errorf("Allocation failed: %s", strerror(errno));
++		close(fd);
++		free(device);
++		return NULL;
++	}
++
++	device->ref_cnt = 1;
++	device->type = type;
++	device->fd = fd;
++	device->device_id = device_id;
++	device->active = true;
++	linked_list_insert(&client->devices, &device->link);
++
++done:
++
++	return device;
++}
++
++static int seat_deactivate_device(struct seat_device *seat_device) {
++	assert(seat_device && seat_device->fd > 0);
++
++	if (!seat_device->active) {
++		return 0;
++	}
++	switch (seat_device->type) {
++	case SEAT_DEVICE_TYPE_DRM:
++		if (drm_drop_master(seat_device->fd) == -1) {
++			log_errorf("Could not revoke drm master on device fd: %s", strerror(errno));
++			return -1;
++		}
++		break;
++	case SEAT_DEVICE_TYPE_EVDEV:
++		if (evdev_revoke(seat_device->fd) == -1) {
++			log_errorf("Could not revoke evdev on device fd: %s", strerror(errno));
++			return -1;
++		}
++		break;
++	default:
++		log_error("Invalid seat device type");
++		abort();
++	}
++	seat_device->active = false;
++	return 0;
++}
++
++int seat_close_device(struct client *client, struct seat_device *seat_device) {
++	assert(client);
++	assert(client->seat);
++	assert(seat_device && seat_device->fd != -1);
++
++	log_debugf("Closing device %s for client %d on %s", seat_device->path, client->session,
++		   client->seat->seat_name);
++
++	seat_device->ref_cnt--;
++	if (seat_device->ref_cnt > 0) {
++		return 0;
++	}
++
++	linked_list_remove(&seat_device->link);
++	if (seat_device->fd != -1) {
++		seat_deactivate_device(seat_device);
++		close(seat_device->fd);
++	}
++	free(seat_device->path);
++	free(seat_device);
++	return 0;
++}
++
++static int seat_activate_device(struct client *client, struct seat_device *seat_device) {
++	assert(client);
++	assert(client->seat);
++	assert(seat_device && seat_device->fd > 0);
++
++	if (seat_device->active) {
++		return 0;
++	}
++	switch (seat_device->type) {
++	case SEAT_DEVICE_TYPE_DRM:
++		if (drm_set_master(seat_device->fd) == -1) {
++			log_errorf("Could not make device fd drm master: %s", strerror(errno));
++		}
++		seat_device->active = true;
++		break;
++	case SEAT_DEVICE_TYPE_EVDEV:
++		errno = EINVAL;
++		return -1;
++	default:
++		log_error("Invalid seat device type");
++		abort();
++	}
++
++	return 0;
++}
++
++static int seat_activate(struct seat *seat) {
++	assert(seat);
++
++	if (seat->active_client != NULL) {
++		return 0;
++	}
++
++	struct client *next_client = NULL;
++	if (seat->next_client != NULL) {
++		log_debugf("Activating next queued client on %s", seat->seat_name);
++		next_client = seat->next_client;
++		seat->next_client = NULL;
++	} else if (linked_list_empty(&seat->clients)) {
++		log_infof("No clients on %s to activate", seat->seat_name);
++		return -1;
++	} else if (seat->vt_bound && seat->cur_vt == -1) {
++		return -1;
++	} else if (seat->vt_bound) {
++		for (struct linked_list *elem = seat->clients.next; elem != &seat->clients;
++		     elem = elem->next) {
++			struct client *client = (struct client *)elem;
++			if (client->session == seat->cur_vt) {
++				log_debugf("Activating client belonging to VT %d", seat->cur_vt);
++				next_client = client;
++				goto done;
++			}
++		}
++
++		log_infof("No clients belonging to VT %d to activate", seat->cur_vt);
++		return -1;
++	} else {
++		log_debugf("Activating first client on %s", seat->seat_name);
++		next_client = (struct client *)seat->clients.next;
++	}
++
++done:
++	return seat_open_client(seat, next_client);
++}
++
++int seat_open_client(struct seat *seat, struct client *client) {
++	assert(seat);
++	assert(client);
++
++	if (client->state != CLIENT_NEW && client->state != CLIENT_DISABLED) {
++		log_error("Could not enable client: client is not new or disabled");
++		errno = EALREADY;
++		return -1;
++	}
++
++	if (seat->active_client != NULL) {
++		log_error("Could not enable client: seat already has an active client");
++		errno = EBUSY;
++		return -1;
++	}
++
++	if (seat->vt_bound && vt_open(client->session) == -1) {
++		log_error("Could not open VT for client");
++		goto error;
++	}
++
++	for (struct linked_list *elem = client->devices.next; elem != &client->devices;
++	     elem = elem->next) {
++		struct seat_device *device = (struct seat_device *)elem;
++		if (seat_activate_device(client, device) == -1) {
++			log_errorf("Could not activate %s: %s", device->path, strerror(errno));
++		}
++	}
++
++	client->state = CLIENT_ACTIVE;
++	seat->active_client = client;
++	if (client_send_enable_seat(client) == -1) {
++		log_error("Could not send enable signal to client");
++		goto error;
++	}
++
++	log_infof("Opened client %d on %s", client->session, seat->seat_name);
++	return 0;
++
++error:
++	if (seat->vt_bound) {
++		vt_close(seat->cur_vt);
++	}
++	return -1;
++}
++
++static int seat_close_client(struct client *client) {
++	assert(client);
++	assert(client->seat);
++
++	struct seat *seat = client->seat;
++
++	while (!linked_list_empty(&client->devices)) {
++		struct seat_device *device = (struct seat_device *)client->devices.next;
++		if (seat_close_device(client, device) == -1) {
++			log_errorf("Could not close %s: %s", device->path, strerror(errno));
++		}
++	}
++
++	bool was_current = seat->active_client == client;
++	if (was_current) {
++		seat->active_client = NULL;
++		seat_activate(seat);
++	}
++
++	if (seat->vt_bound) {
++		if (was_current && seat->active_client == NULL) {
++			// This client was current, but there were no clients
++			// waiting to take this VT, so clean it up.
++			log_debug("Closing active VT");
++			vt_close(seat->cur_vt);
++		} else if (!was_current && client->state != CLIENT_CLOSED) {
++			// This client was not current, but as the client was
++			// running, we need to clean up the VT.
++			log_debug("Closing inactive VT");
++			vt_close(client->session);
++		}
++	}
++
++	client->state = CLIENT_CLOSED;
++	log_infof("Closed client %d on %s", client->session, seat->seat_name);
++
++	return 0;
++}
++
++static int seat_disable_client(struct client *client) {
++	assert(client);
++	assert(client->seat);
++
++	struct seat *seat = client->seat;
++
++	if (client->state != CLIENT_ACTIVE) {
++		log_error("Could not disable client: client is not active");
++		errno = EBUSY;
++		return -1;
++	}
++	assert(seat->active_client = client);
++
++	// We *deactivate* all remaining fds. These may later be reactivated.
++	// The reason we cannot just close them is that certain device fds, such
++	// as for DRM, must maintain the exact same file description for their
++	// contexts to remain valid.
++	for (struct linked_list *elem = client->devices.next; elem != &client->devices;
++	     elem = elem->next) {
++		struct seat_device *device = (struct seat_device *)elem;
++		if (seat_deactivate_device(device) == -1) {
++			log_errorf("Could not deactivate %s: %s", device->path, strerror(errno));
++		}
++	}
++
++	client->state = CLIENT_PENDING_DISABLE;
++	if (client_send_disable_seat(seat->active_client) == -1) {
++		log_error("Could not send disable event");
++		return -1;
++	}
++
++	log_infof("Disabling client %d on %s", client->session, seat->seat_name);
++	return 0;
++}
++
++int seat_ack_disable_client(struct client *client) {
++	assert(client);
++	assert(client->seat);
++
++	struct seat *seat = client->seat;
++	if (client->state != CLIENT_PENDING_DISABLE) {
++		log_error("Could not ack disable: client is not pending disable");
++		errno = EBUSY;
++		return -1;
++	}
++
++	client->state = CLIENT_DISABLED;
++	log_infof("Disabled client %d on %s", client->session, seat->seat_name);
++
++	if (seat->active_client != client) {
++		return 0;
++	}
++
++	seat->active_client = NULL;
++	seat_activate(seat);
++
++	// If we're VT-bound, we've either de-activated a client on a foreign
++	// VT, in which case we need to do nothing, or disabled the current VT,
++	// in which case seat_activate would just immediately re-enable it.
++	return 0;
++}
++
++int seat_set_next_session(struct client *client, int session) {
++	assert(client);
++	assert(client->seat);
++
++	struct seat *seat = client->seat;
++
++	if (client->state != CLIENT_ACTIVE) {
++		log_error("Could not set next session: client is not active");
++		errno = EPERM;
++		return -1;
++	}
++	assert(seat->active_client == client);
++
++	if (session <= 0) {
++		log_errorf("Could not set next session: invalid session value %d", session);
++		errno = EINVAL;
++		return -1;
++	}
++
++	if (session == client->session) {
++		log_info("Could not set next session: requested session is already active");
++		return 0;
++	}
++
++	if (seat->next_client != NULL) {
++		log_info("Could not set next session: switch is already queued");
++		return 0;
++	}
++
++	if (seat->vt_bound) {
++		log_infof("Switching from VT %d to VT %d", seat->cur_vt, session);
++		if (vt_switch(seat, session) == -1) {
++			log_error("Could not switch VT");
++			return -1;
++		}
++		return 0;
++	}
++
++	struct client *target = NULL;
++	for (struct linked_list *elem = seat->clients.next; elem != &seat->clients;
++	     elem = elem->next) {
++		struct client *c = (struct client *)elem;
++		if (c->session == session) {
++			target = c;
++			break;
++		}
++	}
++
++	if (target == NULL) {
++		log_error("Could not set next session: no such client");
++		errno = EINVAL;
++		return -1;
++	}
++
++	log_infof("Queuing switch to client %d on %s", session, seat->seat_name);
++	seat->next_client = target;
++	seat_disable_client(seat->active_client);
++	return 0;
++}
++
++int seat_vt_activate(struct seat *seat) {
++	assert(seat);
++	if (!seat->vt_bound) {
++		log_debug("VT activation on non VT-bound seat, ignoring");
++		return -1;
++	}
++	seat_update_vt(seat);
++	log_debug("Activating VT");
++	vt_ack(seat, false);
++	if (seat->active_client == NULL) {
++		seat_activate(seat);
++	}
++	return 0;
++}
++
++int seat_vt_release(struct seat *seat) {
++	assert(seat);
++	if (!seat->vt_bound) {
++		log_debug("VT release request on non VT-bound seat, ignoring");
++		return -1;
++	}
++	seat_update_vt(seat);
++
++	log_debug("Releasing VT");
++	if (seat->active_client != NULL) {
++		seat_disable_client(seat->active_client);
++	}
++
++	vt_ack(seat, true);
++	seat->cur_vt = -1;
++	return 0;
++}
+diff --git seatd-workdir/seatd/seatd/seatd.c seatd-workdir/seatd/seatd/seatd.c
+new file mode 100644
+index 0000000..053d44b
+--- /dev/null
++++ seatd-workdir/seatd/seatd/seatd.c
+@@ -0,0 +1,183 @@
++#include <errno.h>
++#include <grp.h>
++#include <poll.h>
++#include <pwd.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <sys/stat.h>
++#include <sys/un.h>
++
++#include "client.h"
++#include "log.h"
++#include "poller.h"
++#include "server.h"
++
++#define LISTEN_BACKLOG 16
++
++static int open_socket(const char *path, int uid, int gid) {
++	union {
++		struct sockaddr_un unix;
++		struct sockaddr generic;
++	} addr = {{0}};
++	int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
++	if (fd == -1) {
++		log_errorf("Could not create socket: %s", strerror(errno));
++		return -1;
++	}
++
++	addr.unix.sun_family = AF_UNIX;
++	strncpy(addr.unix.sun_path, path, sizeof addr.unix.sun_path - 1);
++	socklen_t size = offsetof(struct sockaddr_un, sun_path) + strlen(addr.unix.sun_path);
++	if (bind(fd, &addr.generic, size) == -1) {
++		log_errorf("Could not bind socket: %s", strerror(errno));
++		goto error;
++	}
++	if (listen(fd, LISTEN_BACKLOG) == -1) {
++		log_errorf("Could not listen on socket: %s", strerror(errno));
++		goto error;
++	}
++	if (uid != -1 || gid != -1) {
++		if (chown(path, uid, gid) == -1) {
++			log_errorf("Could not chown socket to uid %d, gid %d: %s", uid, gid,
++				   strerror(errno));
++			goto error;
++		}
++		if (chmod(path, 0770) == -1) {
++			log_errorf("Could not chmod socket: %s", strerror(errno));
++			goto error;
++		}
++	}
++	return fd;
++error:
++	close(fd);
++	return -1;
++}
++
++int main(int argc, char *argv[]) {
++	char *loglevel = getenv("SEATD_LOGLEVEL");
++	enum libseat_log_level level = LIBSEAT_LOG_LEVEL_ERROR;
++	if (loglevel != NULL) {
++		if (strcmp(loglevel, "silent") == 0) {
++			level = LIBSEAT_LOG_LEVEL_SILENT;
++		} else if (strcmp(loglevel, "info") == 0) {
++			level = LIBSEAT_LOG_LEVEL_INFO;
++		} else if (strcmp(loglevel, "debug") == 0) {
++			level = LIBSEAT_LOG_LEVEL_DEBUG;
++		}
++	}
++	log_init();
++	libseat_set_log_level(level);
++
++	const char *usage = "Usage: seatd [options]\n"
++			    "\n"
++			    "  -h		Show this help message\n"
++			    "  -n <fd>          FD to notify readiness on\n"
++			    "  -u <user>	User to own the seatd socket\n"
++			    "  -g <group>	Group to own the seatd socket\n"
++			    "  -s <path>	Where to create the seatd socket\n"
++			    "  -v		Show the version number\n"
++			    "\n";
++
++	int c;
++	int uid = -1, gid = -1;
++	int readiness = -1;
++	const char *socket_path = getenv("SEATD_SOCK");
++	while ((c = getopt(argc, argv, "vhn:s:g:u:")) != -1) {
++		switch (c) {
++		case 'n':
++			readiness = atoi(optarg);
++			if (readiness < 0) {
++				fprintf(stderr, "Invalid readiness fd: %s\n", optarg);
++				return 1;
++			}
++			break;
++		case 's':
++			socket_path = optarg;
++			break;
++		case 'u': {
++			struct passwd *pw = getpwnam(optarg);
++			if (pw == NULL) {
++				fprintf(stderr, "Could not find user by name '%s'.\n", optarg);
++				return 1;
++			} else {
++				uid = pw->pw_uid;
++			}
++			break;
++		}
++		case 'g': {
++			struct group *gr = getgrnam(optarg);
++			if (gr == NULL) {
++				fprintf(stderr, "Could not find group by name '%s'.\n", optarg);
++				return 1;
++			} else {
++				gid = gr->gr_gid;
++			}
++			break;
++		}
++		case 'v':
++			printf("seatd version %s\n", SEATD_VERSION);
++			return 0;
++		case 'h':
++			printf("%s", usage);
++			return 0;
++		case '?':
++			fprintf(stderr, "Try '%s -h' for more information.\n", argv[0]);
++			return 1;
++		default:
++			abort();
++		}
++	}
++
++	if (socket_path == NULL) {
++		socket_path = SEATD_DEFAULTPATH;
++		struct stat st;
++		if (stat(socket_path, &st) == 0) {
++			log_info("Removing leftover seatd socket");
++			unlink(socket_path);
++		}
++	}
++
++	struct server server = {0};
++	if (server_init(&server) == -1) {
++		log_errorf("server_create failed: %s", strerror(errno));
++		return 1;
++	}
++
++	int socket_fd = open_socket(socket_path, uid, gid);
++	if (socket_fd == -1) {
++		log_error("Could not create server socket");
++		server_finish(&server);
++		return 1;
++	}
++	if (poller_add_fd(&server.poller, socket_fd, EVENT_READABLE, server_handle_connection,
++			  &server) == NULL) {
++		log_errorf("Could not add socket to poller: %s", strerror(errno));
++		close(socket_fd);
++		server_finish(&server);
++		return 1;
++	}
++
++	log_info("seatd started");
++
++	if (readiness != -1) {
++		if (write(readiness, "\n", 1) == -1) {
++			log_errorf("Could not write readiness signal: %s\n", strerror(errno));
++		}
++		close(readiness);
++	}
++
++	while (server.running) {
++		if (poller_poll(&server.poller) == -1) {
++			log_errorf("Poller failed: %s", strerror(errno));
++			return 1;
++		}
++	}
++
++	server_finish(&server);
++	unlink(socket_path);
++	log_info("seatd stopped");
++	return 0;
++}
+diff --git seatd-workdir/seatd/seatd/server.c seatd-workdir/seatd/seatd/server.c
+new file mode 100644
+index 0000000..0a08f50
+--- /dev/null
++++ seatd-workdir/seatd/seatd/server.c
+@@ -0,0 +1,165 @@
++#include <assert.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <stddef.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/un.h>
++#include <unistd.h>
++
++#include "client.h"
++#include "log.h"
++#include "poller.h"
++#include "seat.h"
++#include "server.h"
++#include "terminal.h"
++
++static int server_handle_vt_acq(int signal, void *data);
++static int server_handle_vt_rel(int signal, void *data);
++static int server_handle_kill(int signal, void *data);
++
++int server_init(struct server *server) {
++	if (poller_init(&server->poller) == -1) {
++		log_errorf("could not initialize poller: %s", strerror(errno));
++		return -1;
++	}
++
++	linked_list_init(&server->seats);
++	linked_list_init(&server->idle_clients);
++
++	if (poller_add_signal(&server->poller, SIGUSR1, server_handle_vt_rel, server) == NULL ||
++	    poller_add_signal(&server->poller, SIGUSR2, server_handle_vt_acq, server) == NULL ||
++	    poller_add_signal(&server->poller, SIGINT, server_handle_kill, server) == NULL ||
++	    poller_add_signal(&server->poller, SIGTERM, server_handle_kill, server) == NULL) {
++		server_finish(server);
++		return -1;
++	}
++
++	char *vtenv = getenv("SEATD_VTBOUND");
++
++	// TODO: create more seats:
++	struct seat *seat = seat_create("seat0", vtenv == NULL || strcmp(vtenv, "1") == 0);
++	if (seat == NULL) {
++		server_finish(server);
++		return -1;
++	}
++
++	linked_list_insert(&server->seats, &seat->link);
++	server->running = true;
++	return 0;
++}
++
++void server_finish(struct server *server) {
++	assert(server);
++	while (!linked_list_empty(&server->idle_clients)) {
++		struct client *client = (struct client *)server->idle_clients.next;
++		client_destroy(client);
++	}
++	while (!linked_list_empty(&server->seats)) {
++		struct seat *seat = (struct seat *)server->seats.next;
++		seat_destroy(seat);
++	}
++	poller_finish(&server->poller);
++}
++
++struct seat *server_get_seat(struct server *server, const char *seat_name) {
++	for (struct linked_list *elem = server->seats.next; elem != &server->seats;
++	     elem = elem->next) {
++		struct seat *seat = (struct seat *)elem;
++		if (strcmp(seat->seat_name, seat_name) == 0) {
++			return seat;
++		}
++	}
++	return NULL;
++}
++
++static int server_handle_vt_acq(int signal, void *data) {
++	(void)signal;
++	struct server *server = data;
++	struct seat *seat = server_get_seat(server, "seat0");
++	if (seat == NULL) {
++		return -1;
++	}
++
++	seat_vt_activate(seat);
++	return 0;
++}
++
++static int server_handle_vt_rel(int signal, void *data) {
++	(void)signal;
++	struct server *server = data;
++	struct seat *seat = server_get_seat(server, "seat0");
++	if (seat == NULL) {
++		return -1;
++	}
++
++	seat_vt_release(seat);
++	return 0;
++}
++
++static int server_handle_kill(int signal, void *data) {
++	(void)signal;
++	struct server *server = data;
++	server->running = false;
++	return 0;
++}
++
++static int set_nonblock(int fd) {
++	int flags;
++	if ((flags = fcntl(fd, F_GETFD)) == -1 || fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
++		log_errorf("Could not set FD_CLOEXEC on socket: %s", strerror(errno));
++		return -1;
++	}
++	if ((flags = fcntl(fd, F_GETFL)) == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
++		log_errorf("Could not set O_NONBLOCK on socket: %s", strerror(errno));
++		return -1;
++	}
++	return 0;
++}
++
++int server_add_client(struct server *server, int fd) {
++	if (set_nonblock(fd) != 0) {
++		close(fd);
++		log_errorf("Could not prepare new client socket: %s", strerror(errno));
++		return -1;
++	}
++
++	struct client *client = client_create(server, fd);
++	client->event_source =
++		poller_add_fd(&server->poller, fd, EVENT_READABLE, client_handle_connection, client);
++	if (client->event_source == NULL) {
++		log_errorf("Could not add client socket to poller: %s", strerror(errno));
++		client_destroy(client);
++		return -1;
++	}
++	log_infof("New client connected (pid: %d, uid: %d, gid: %d)", client->pid, client->uid,
++		  client->gid);
++	return 0;
++}
++
++int server_handle_connection(int fd, uint32_t mask, void *data) {
++	struct server *server = data;
++	if (mask & (EVENT_ERROR | EVENT_HANGUP)) {
++		shutdown(fd, SHUT_RDWR);
++		server->running = false;
++		log_errorf("Server socket received an error: %s", strerror(errno));
++		return -1;
++	}
++
++	if (mask & EVENT_READABLE) {
++		int new_fd = accept(fd, NULL, NULL);
++		if (fd == -1) {
++			log_errorf("Could not accept client connection: %s", strerror(errno));
++			return 0;
++		}
++
++		if (server_add_client(server, new_fd) == -1) {
++			return 0;
++		}
++	}
++	return 0;
++}
+diff --git seatd-workdir/seatd/seatd-launch/seatd-launch.c seatd-workdir/seatd/seatd-launch/seatd-launch.c
+new file mode 100644
+index 0000000..69ca86a
+--- /dev/null
++++ seatd-workdir/seatd/seatd-launch/seatd-launch.c
+@@ -0,0 +1,193 @@
++#include <errno.h>
++#include <poll.h>
++#include <signal.h>
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++int main(int argc, char *argv[]) {
++	(void)argc;
++
++	const char *usage = "Usage: seatd-launch [options] [--] command\n"
++			    "\n"
++			    "  -h		Show this help message\n"
++			    "  -s <path>	Where to create the seatd socket\n"
++			    "  -v		Show the version number\n"
++			    "\n";
++
++	int c;
++	char *sockpath = NULL;
++	while ((c = getopt(argc, argv, "vhs:")) != -1) {
++		switch (c) {
++		case 's':
++			sockpath = optarg;
++			break;
++		case 'v':
++			printf("seatd-launch version %s\n", SEATD_VERSION);
++			return 0;
++		case 'h':
++			printf("%s", usage);
++			return 0;
++		case '?':
++			fprintf(stderr, "Try '%s -h' for more information.\n", argv[0]);
++			return 1;
++		default:
++			abort();
++		}
++	}
++
++	if (optind >= argc) {
++		fprintf(stderr, "A command must be specified\n\n%s", usage);
++		return 1;
++	}
++	char **command = &argv[optind];
++
++	char sockbuf[256];
++	if (sockpath == NULL) {
++		sprintf(sockbuf, "/tmp/seatd.%d.sock", getpid());
++		sockpath = sockbuf;
++	}
++
++	unlink(sockpath);
++
++	int fds[2];
++	if (pipe(fds) == -1) {
++		perror("Could not create pipe");
++		goto error;
++	}
++
++	pid_t seatd_child = fork();
++	if (seatd_child == -1) {
++		perror("Could not fork seatd process");
++		goto error;
++	} else if (seatd_child == 0) {
++		close(fds[0]);
++
++		char pipebuf[16] = {0};
++		snprintf(pipebuf, sizeof pipebuf, "%d", fds[1]);
++
++		char *env[2] = {NULL, NULL};
++		char loglevelbuf[32] = {0};
++		char *cur_loglevel = getenv("SEATD_LOGLEVEL");
++		if (cur_loglevel != NULL) {
++			snprintf(loglevelbuf, sizeof loglevelbuf, "SEATD_LOGLEVEL=%s", cur_loglevel);
++			env[0] = loglevelbuf;
++		}
++
++		char *command[] = {"seatd", "-n", pipebuf, "-s", sockpath, NULL};
++		execve(SEATD_INSTALLPATH, command, env);
++		perror("Could not start seatd");
++		_exit(1);
++	}
++	close(fds[1]);
++
++	// Wait for seatd to be ready
++	char buf[1] = {0};
++	while (true) {
++		pid_t p = waitpid(seatd_child, NULL, WNOHANG);
++		if (p == seatd_child) {
++			fprintf(stderr, "seatd exited prematurely\n");
++			goto error_seatd;
++		} else if (p == -1 && (errno != EINTR && errno != ECHILD)) {
++			perror("Could not wait for seatd process");
++			goto error_seatd;
++		}
++
++		struct pollfd fd = {
++			.fd = fds[0],
++			.events = POLLIN,
++		};
++
++		// We poll with timeout to avoid a racing on a blocking read
++		if (poll(&fd, 1, 1000) == -1) {
++			if (errno == EAGAIN || errno == EINTR) {
++				continue;
++			} else {
++				perror("Could not poll notification fd");
++				goto error_seatd;
++			}
++		}
++
++		if (fd.revents & POLLIN) {
++			ssize_t n = read(fds[0], buf, 1);
++			if (n == -1 && errno != EINTR) {
++				perror("Could not read from pipe");
++				goto error_seatd;
++			} else if (n > 0) {
++				break;
++			}
++		}
++	}
++	close(fds[0]);
++
++	uid_t uid = getuid();
++	gid_t gid = getgid();
++
++	// Restrict access to the socket to just us
++	if (chown(sockpath, uid, gid) == -1) {
++		perror("Could not chown seatd socket");
++		goto error_seatd;
++	}
++	if (chmod(sockpath, 0700) == -1) {
++		perror("Could not chmod socket");
++		goto error_seatd;
++	}
++
++	// Drop privileges
++	if (setgid(gid) == -1) {
++		perror("Could not set gid to drop privileges");
++		goto error_seatd;
++	}
++	if (setuid(uid) == -1) {
++		perror("Could not set uid to drop privileges");
++		goto error_seatd;
++	}
++
++	pid_t child = fork();
++	if (child == -1) {
++		perror("Could not fork target process");
++		goto error_seatd;
++	} else if (child == 0) {
++		setenv("SEATD_SOCK", sockpath, 1);
++		execvp(command[0], command);
++		perror("Could not start target");
++		_exit(1);
++	}
++
++	int status = 0;
++	while (true) {
++		pid_t p = waitpid(child, &status, 0);
++		if (p == child) {
++			break;
++		} else if (p == -1 && errno != EINTR) {
++			perror("Could not wait for target process");
++			goto error_seatd;
++		}
++	}
++
++	if (unlink(sockpath) != 0) {
++		perror("Could not unlink socket");
++	}
++	if (kill(seatd_child, SIGTERM) != 0) {
++		perror("Could not kill seatd");
++	}
++
++	if (WIFEXITED(status)) {
++		return WEXITSTATUS(status);
++	} else if (WIFSIGNALED(status)) {
++		return 128 + WTERMSIG(status);
++	} else {
++		abort(); // unreachable
++	}
++
++error_seatd:
++	unlink(sockpath);
++	kill(seatd_child, SIGTERM);
++error:
++	return 1;
++}
+diff --git seatd-workdir/seatd/tests/connection.c seatd-workdir/seatd/tests/connection.c
+new file mode 100644
+index 0000000..551d799
+--- /dev/null
++++ seatd-workdir/seatd/tests/connection.c
+@@ -0,0 +1,176 @@
++#include <errno.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#include "connection.h"
++#include "test.h"
++
++static void test_send_one_byte(void) {
++	int fds[2];
++	socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
++	struct connection c1 = {.fd = fds[0]};
++	struct connection c2 = {.fd = fds[1]};
++
++	char in = 85, out = 0;
++
++	test_assert(connection_put(&c1, &in, sizeof in) == 0);
++	test_assert(connection_flush(&c1) == sizeof in);
++
++	test_assert(connection_read(&c2) == sizeof out);
++	test_assert(connection_pending(&c2) == sizeof out);
++	test_assert(connection_get(&c2, &out, sizeof out) == sizeof out);
++	test_assert(out == in);
++
++	test_assert(connection_pending(&c2) == 0);
++	close(fds[0]);
++	close(fds[1]);
++}
++
++static void test_short_read(void) {
++	int fds[2];
++	socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
++	struct connection c1 = {.fd = fds[0]};
++	struct connection c2 = {.fd = fds[1]};
++
++	char in = 85, out = 0;
++	int out_large = 0;
++
++	test_assert(connection_put(&c1, &in, sizeof in) == 0);
++	test_assert(connection_flush(&c1) > 0);
++
++	test_assert(connection_read(&c2) > 0);
++
++	test_assert(connection_pending(&c2) == sizeof out);
++	test_assert(connection_get(&c2, &out, sizeof out_large) == -1);
++	test_assert(errno == EAGAIN);
++
++	test_assert(connection_pending(&c2) == sizeof out);
++	test_assert(connection_get(&c2, &out, sizeof out) == sizeof out);
++
++	test_assert(out == in);
++
++	test_assert(connection_pending(&c2) == 0);
++	close(fds[0]);
++	close(fds[1]);
++}
++
++static void test_long_write(void) {
++	int fds[2];
++	socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
++	struct connection c1 = {.fd = fds[0]};
++	struct connection c2 = {.fd = fds[1]};
++
++	char in[CONNECTION_BUFFER_SIZE + 1];
++	memset(in, 0, sizeof in);
++
++	test_assert(connection_put(&c1, &in, sizeof in) == -1);
++	test_assert(errno = EAGAIN);
++
++	test_assert(connection_read(&c2) == -1 && errno == EAGAIN);
++	test_assert(connection_pending(&c2) == 0);
++	close(fds[0]);
++	close(fds[1]);
++}
++
++static void test_send_one_int(void) {
++	int fds[2];
++	socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
++	struct connection c1 = {.fd = fds[0]};
++	struct connection c2 = {.fd = fds[1]};
++
++	int in = 0xDEADBEEF, out = 0;
++
++	test_assert(connection_put(&c1, &in, sizeof in) == 0);
++	test_assert(connection_flush(&c1) == sizeof in);
++
++	test_assert(connection_read(&c2) == sizeof out);
++	test_assert(connection_pending(&c2) == sizeof out);
++	test_assert(connection_get(&c2, &out, sizeof out) == sizeof out);
++
++	test_assert(out == in);
++
++	test_assert(connection_pending(&c2) == 0);
++	close(fds[0]);
++	close(fds[1]);
++}
++
++static void test_restore(void) {
++	int fds[2];
++	socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
++	struct connection c1 = {.fd = fds[0]};
++	struct connection c2 = {.fd = fds[1]};
++
++	int in = 0xDEADBEEF, out = 0;
++
++	test_assert(connection_put(&c1, &in, sizeof in) == 0);
++	test_assert(connection_flush(&c1) == sizeof in);
++
++	test_assert(connection_read(&c2) == sizeof out);
++	test_assert(connection_pending(&c2) == sizeof out);
++	test_assert(connection_get(&c2, &out, sizeof out) == sizeof out);
++
++	test_assert(out == in);
++
++	test_assert(connection_pending(&c2) == 0);
++
++	connection_restore(&c2, sizeof out);
++	test_assert(connection_pending(&c2) == sizeof out);
++	test_assert(connection_get(&c2, &out, sizeof out) == sizeof out);
++
++	test_assert(out == in);
++
++	test_assert(connection_pending(&c2) == 0);
++	close(fds[0]);
++	close(fds[1]);
++}
++
++static void test_send_variable_sequence(void) {
++	int fds[2];
++	socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
++	struct connection c1 = {.fd = fds[0]};
++	struct connection c2 = {.fd = fds[1]};
++
++	char in1 = 85, out1 = 0;
++	int in2 = 0xDEADBEEF, out2 = 0;
++	uint64_t in3 = 0xCAFEDEADBEEF, out3 = 0;
++	char in4 = 85, out4 = 0;
++
++	test_assert(connection_put(&c1, &in1, sizeof in1) == 0);
++	test_assert(connection_put(&c1, &in2, sizeof in2) == 0);
++	test_assert(connection_put(&c1, &in3, sizeof in3) == 0);
++	test_assert(connection_put(&c1, &in4, sizeof in4) == 0);
++	test_assert(connection_flush(&c1) > 0);
++
++	test_assert(connection_read(&c2) > 0);
++	test_assert(connection_pending(&c2) > 0);
++	test_assert(connection_get(&c2, &out1, sizeof out1) == sizeof out1);
++	test_assert(connection_get(&c2, &out2, sizeof out2) == sizeof out2);
++	test_assert(connection_get(&c2, &out3, sizeof out3) == sizeof out3);
++	test_assert(connection_get(&c2, &out4, sizeof out4) == sizeof out4);
++
++	test_assert(out1 == in1);
++	test_assert(out2 == in2);
++	test_assert(out3 == in3);
++	test_assert(out4 == in4);
++
++	test_assert(connection_pending(&c2) == 0);
++	close(fds[0]);
++	close(fds[1]);
++}
++
++int main(int argc, char *argv[]) {
++	(void)argc;
++	(void)argv;
++
++	test_run(test_send_one_byte);
++	test_run(test_short_read);
++	test_run(test_long_write);
++	test_run(test_send_one_int);
++	test_run(test_restore);
++	test_run(test_send_variable_sequence);
++}
+diff --git seatd-workdir/seatd/tests/linked_list.c seatd-workdir/seatd/tests/linked_list.c
+new file mode 100644
+index 0000000..6d7a995
+--- /dev/null
++++ seatd-workdir/seatd/tests/linked_list.c
+@@ -0,0 +1,291 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "linked_list.h"
++#include "test.h"
++
++struct list_elem {
++	struct linked_list link;
++	char *content;
++};
++
++static void test_linked_list_init(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	// Both next and prev should point to self
++	test_assert(list.next == &list && list.prev == &list);
++
++	// The list should be empty
++	test_assert(linked_list_empty(&list));
++}
++
++static void test_linked_list_single_insert(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, NULL};
++	linked_list_insert(&list, &elem1.link);
++
++	// Both next and prev on list should point to the elem
++	test_assert(list.next == &elem1.link && list.prev == &elem1.link);
++
++	// Both next and prev on elem should point to the list
++	test_assert(elem1.link.next == &list && elem1.link.prev == &list);
++
++	// The list and element should not be empty
++	test_assert(!linked_list_empty(&list));
++	test_assert(!linked_list_empty(&elem1.link));
++}
++
++static void test_linked_list_single_remove(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, NULL};
++	linked_list_insert(&list, &elem1.link);
++	linked_list_remove(&elem1.link);
++
++	// Both next and prev on elem be NULL
++	test_assert(elem1.link.next == NULL && elem1.link.prev == NULL);
++
++	// Both next and prev should point to self
++	test_assert(list.next == &list && list.prev == &list);
++
++	// The list should be empty
++	test_assert(linked_list_empty(&list));
++}
++
++static void test_linked_list_alternate_remove(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, NULL};
++	linked_list_insert(&list, &elem1.link);
++	linked_list_remove(&list);
++
++	// Both next and prev on list be NULL
++	test_assert(list.next == NULL && list.prev == NULL);
++
++	// Both next and prev should point to self
++	test_assert(elem1.link.next == &elem1.link && elem1.link.prev == &elem1.link);
++
++	// The elem should be empty
++	test_assert(linked_list_empty(&elem1.link));
++}
++
++static void test_linked_list_sequential_remove(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, NULL}, elem2 = {{0}, NULL}, elem3 = {{0}, NULL};
++	linked_list_insert(&list, &elem1.link);
++	linked_list_insert(&elem1.link, &elem2.link);
++	linked_list_insert(&elem2.link, &elem3.link);
++
++	// The order should now be list→elem1→elem2→elem3→list
++	test_assert(list.next == &elem1.link && list.prev == &elem3.link);
++	test_assert(elem1.link.next == &elem2.link && elem1.link.prev == &list);
++	test_assert(elem2.link.next == &elem3.link && elem2.link.prev == &elem1.link);
++	test_assert(elem3.link.next == &list && elem3.link.prev == &elem2.link);
++
++	linked_list_remove(list.next);
++
++	// The order should now be list→elem2→elem3→list
++	test_assert(list.next == &elem2.link && list.prev == &elem3.link);
++	test_assert(elem2.link.next == &elem3.link && elem2.link.prev == &list);
++	test_assert(elem3.link.next == &list && elem3.link.prev == &elem2.link);
++	test_assert(elem1.link.next == NULL && elem1.link.prev == NULL);
++
++	linked_list_remove(list.next);
++
++	// The order should now be list→elem3→list
++	test_assert(list.next == &elem3.link && list.prev == &elem3.link);
++	test_assert(elem3.link.next == &list && elem3.link.prev == &list);
++	test_assert(elem1.link.next == NULL && elem1.link.prev == NULL);
++	test_assert(elem2.link.next == NULL && elem2.link.prev == NULL);
++
++	linked_list_remove(list.next);
++
++	// The list should now be empty
++	test_assert(elem1.link.next == NULL && elem1.link.prev == NULL);
++	test_assert(elem2.link.next == NULL && elem2.link.prev == NULL);
++	test_assert(elem3.link.next == NULL && elem3.link.prev == NULL);
++	test_assert(list.next == &list && list.prev == &list);
++	test_assert(linked_list_empty(&list));
++}
++
++static void test_linked_list_insert_after(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, NULL}, elem2 = {{0}, NULL}, elem3 = {{0}, NULL};
++	linked_list_insert(&list, &elem1.link);
++	linked_list_insert(&elem1.link, &elem3.link);
++	linked_list_insert(&elem1.link, &elem2.link);
++
++	// The order should now be list→elem1→elem2→elem3→list
++	test_assert(list.next == &elem1.link && list.prev == &elem3.link);
++	test_assert(elem1.link.next == &elem2.link && elem1.link.prev == &list);
++	test_assert(elem2.link.next == &elem3.link && elem2.link.prev == &elem1.link);
++	test_assert(elem3.link.next == &list && elem3.link.prev == &elem2.link);
++}
++
++static void test_linked_list_remove_loop(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, NULL}, elem2 = {{0}, NULL}, elem3 = {{0}, NULL};
++	linked_list_insert(&list, &elem1.link);
++	linked_list_insert(&elem1.link, &elem2.link);
++	linked_list_insert(&elem2.link, &elem3.link);
++
++	size_t cnt = 0;
++	while (!linked_list_empty(&list)) {
++		struct list_elem *elem = (struct list_elem *)list.next;
++		linked_list_remove(&elem->link);
++		cnt++;
++	}
++	test_assert(cnt == 3);
++
++	// Link should now be empty, and next and prev on all elements hsould be NULL
++	test_assert(linked_list_empty(&list));
++	test_assert(elem1.link.next == NULL && elem1.link.prev == NULL);
++	test_assert(elem2.link.next == NULL && elem2.link.prev == NULL);
++	test_assert(elem3.link.next == NULL && elem3.link.prev == NULL);
++}
++
++static void test_linked_list_manual_iterate(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, "elem1"};
++	struct list_elem elem2 = {{0}, "elem2"};
++	struct list_elem elem3 = {{0}, "elem3"};
++	linked_list_insert(&list, &elem1.link);
++	linked_list_insert(&elem1.link, &elem2.link);
++	linked_list_insert(&elem2.link, &elem3.link);
++
++	struct list_elem *ptr = NULL;
++
++	ptr = (struct list_elem *)list.next;
++	test_assert(strcmp("elem1", ptr->content) == 0);
++
++	ptr = (struct list_elem *)ptr->link.next;
++	test_assert(strcmp("elem2", ptr->content) == 0);
++
++	ptr = (struct list_elem *)ptr->link.next;
++	test_assert(strcmp("elem3", ptr->content) == 0);
++
++	test_assert(ptr->link.next == &list);
++}
++
++static void test_linked_list_loop_iterate(void) {
++	struct linked_list list;
++	linked_list_init(&list);
++
++	struct list_elem elem1 = {{0}, "elem"};
++	struct list_elem elem2 = {{0}, "elem"};
++	struct list_elem elem3 = {{0}, "elem"};
++	linked_list_insert(&list, &elem1.link);
++	linked_list_insert(&elem1.link, &elem2.link);
++	linked_list_insert(&elem1.link, &elem3.link);
++
++	size_t cnt = 0;
++	for (struct linked_list *ptr = list.next; ptr != &list; ptr = ptr->next) {
++		struct list_elem *elem = (struct list_elem *)ptr;
++		test_assert(strcmp("elem", elem->content) == 0);
++		cnt++;
++	}
++	test_assert(cnt == 3);
++}
++
++static void test_linked_list_take_empty(void) {
++	struct linked_list list1, list2;
++	linked_list_init(&list1);
++	linked_list_init(&list2);
++
++	linked_list_take(&list2, &list1);
++
++	test_assert(linked_list_empty(&list1));
++	test_assert(linked_list_empty(&list2));
++}
++
++static void test_linked_list_take_single(void) {
++	struct linked_list list1, list2;
++	linked_list_init(&list1);
++	linked_list_init(&list2);
++
++	struct list_elem elem1 = {{0}, NULL};
++	linked_list_insert(&list1, &elem1.link);
++
++	linked_list_take(&list2, &list1);
++
++	test_assert(linked_list_empty(&list1));
++	test_assert(list2.next == &elem1.link && list2.prev == &elem1.link);
++	test_assert(elem1.link.next == &list2 && elem1.link.prev == &list2);
++}
++
++static void test_linked_list_take_many(void) {
++	struct linked_list list1, list2;
++	linked_list_init(&list1);
++	linked_list_init(&list2);
++
++	struct list_elem elem1 = {{0}, NULL};
++	struct list_elem elem2 = {{0}, NULL};
++	linked_list_insert(&list1, &elem2.link);
++	linked_list_insert(&list1, &elem1.link);
++
++	linked_list_take(&list2, &list1);
++
++	test_assert(linked_list_empty(&list1));
++	test_assert(list2.next == &elem1.link && list2.prev == &elem2.link);
++	test_assert(elem1.link.next == &elem2.link && elem1.link.prev == &list2);
++	test_assert(elem2.link.next == &list2 && elem2.link.prev == &elem1.link);
++}
++
++static void test_linked_list_take_concat(void) {
++	struct linked_list list1, list2;
++	linked_list_init(&list1);
++	linked_list_init(&list2);
++
++	struct list_elem elem1 = {{0}, NULL};
++	struct list_elem elem2 = {{0}, NULL};
++	struct list_elem elem3 = {{0}, NULL};
++	struct list_elem elem4 = {{0}, NULL};
++	linked_list_insert(&list1, &elem2.link);
++	linked_list_insert(&list1, &elem1.link);
++	linked_list_insert(&list2, &elem4.link);
++	linked_list_insert(&list2, &elem3.link);
++
++	linked_list_take(&list2, &list1);
++
++	test_assert(linked_list_empty(&list1));
++	test_assert(list2.next == &elem1.link && list2.prev == &elem4.link);
++	test_assert(elem1.link.next == &elem2.link && elem1.link.prev == &list2);
++	test_assert(elem2.link.next == &elem3.link && elem2.link.prev == &elem1.link);
++	test_assert(elem3.link.next == &elem4.link && elem3.link.prev == &elem2.link);
++	test_assert(elem4.link.next == &list2 && elem4.link.prev == &elem3.link);
++}
++
++int main(int argc, char *argv[]) {
++	(void)argc;
++	(void)argv;
++
++	test_run(test_linked_list_init);
++	test_run(test_linked_list_single_insert);
++	test_run(test_linked_list_single_remove);
++	test_run(test_linked_list_alternate_remove);
++	test_run(test_linked_list_sequential_remove);
++	test_run(test_linked_list_insert_after);
++	test_run(test_linked_list_remove_loop);
++	test_run(test_linked_list_manual_iterate);
++	test_run(test_linked_list_loop_iterate);
++	test_run(test_linked_list_take_empty);
++	test_run(test_linked_list_take_single);
++	test_run(test_linked_list_take_many);
++	test_run(test_linked_list_take_concat);
++
++	return 0;
++}
+diff --git seatd-workdir/seatd/tests/poller.c seatd-workdir/seatd/tests/poller.c
+new file mode 100644
+index 0000000..382d9d2
+--- /dev/null
++++ seatd-workdir/seatd/tests/poller.c
+@@ -0,0 +1,191 @@
++#include <signal.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#include "poller.h"
++#include "test.h"
++
++static void test_poller_init(void) {
++	struct poller poller;
++	test_assert(poller_init(&poller) == 0);
++	poller_finish(&poller);
++}
++
++struct test_fd {
++	int fd;
++	uint32_t events;
++};
++
++static int test_fd_event(int fd, uint32_t mask, void *data) {
++	struct test_fd *d = data;
++	d->fd = fd;
++	d->events = mask;
++	return 0;
++}
++
++static void test_poller_single_fd(void) {
++	struct poller poller;
++	test_assert(poller_init(&poller) == 0);
++
++	int fds[2];
++	test_assert(pipe(fds) == 0);
++
++	struct test_fd evd;
++	struct event_source_fd *ev =
++		poller_add_fd(&poller, fds[0], EVENT_READABLE, test_fd_event, &evd);
++	test_assert(ev != NULL);
++
++	evd.fd = 0;
++	evd.events = 0;
++	test_assert(write(fds[1], "\0", 1) == 1);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(evd.fd == fds[0]);
++	test_assert(evd.events == EVENT_READABLE);
++
++	evd.fd = 0;
++	evd.events = 0;
++	test_assert(write(fds[1], "\0", 1) == 1);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(evd.fd == fds[0]);
++	test_assert(evd.events == EVENT_READABLE);
++
++	close(fds[0]);
++	close(fds[1]);
++	poller_finish(&poller);
++}
++
++static void test_poller_multi_fd(void) {
++	struct poller poller;
++	test_assert(poller_init(&poller) == 0);
++
++	char dummy[8];
++	int fdsa[2], fdsb[2];
++	test_assert(pipe(fdsa) == 0);
++	test_assert(pipe(fdsb) == 0);
++
++	struct test_fd evd1, evd2;
++	struct event_source_fd *ev1 =
++		poller_add_fd(&poller, fdsa[0], EVENT_READABLE, test_fd_event, &evd1);
++	struct event_source_fd *ev2 =
++		poller_add_fd(&poller, fdsb[0], EVENT_READABLE, test_fd_event, &evd2);
++	test_assert(ev1 != NULL);
++	test_assert(ev2 != NULL);
++
++	evd1.fd = evd2.fd = 0;
++	evd1.events = evd2.events = 0;
++	test_assert(write(fdsa[1], "\0", 1) == 1);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(read(fdsa[0], &dummy, sizeof dummy) == 1);
++	test_assert(evd1.fd == fdsa[0]);
++	test_assert(evd1.events == EVENT_READABLE);
++	test_assert(evd2.fd == 0);
++	test_assert(evd2.events == 0);
++
++	evd1.fd = evd2.fd = 0;
++	evd1.events = evd2.events = 0;
++	test_assert(write(fdsb[1], "\0", 1) == 1);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(read(fdsb[0], &dummy, sizeof dummy) == 1);
++	test_assert(evd1.fd == 0);
++	test_assert(evd1.events == 0);
++	test_assert(evd2.fd == fdsb[0]);
++	test_assert(evd2.events == EVENT_READABLE);
++
++	evd1.fd = evd2.fd = 0;
++	evd1.events = evd2.events = 0;
++	test_assert(write(fdsa[1], "\0", 1) == 1);
++	test_assert(write(fdsb[1], "\0", 1) == 1);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(read(fdsa[0], &dummy, sizeof dummy) == 1);
++	test_assert(read(fdsb[0], &dummy, sizeof dummy) == 1);
++	test_assert(evd1.fd == fdsa[0]);
++	test_assert(evd1.events == EVENT_READABLE);
++	test_assert(evd2.fd == fdsb[0]);
++	test_assert(evd2.events == EVENT_READABLE);
++
++	close(fdsa[0]);
++	close(fdsa[1]);
++	close(fdsb[0]);
++	close(fdsb[1]);
++	poller_finish(&poller);
++}
++
++struct test_signal {
++	int signal;
++};
++
++static int test_signal_event(int signal, void *data) {
++	struct test_signal *d = data;
++	d->signal = signal;
++	return 0;
++}
++
++static void test_poller_single_signal(void) {
++	struct poller poller;
++	test_assert(poller_init(&poller) == 0);
++
++	struct test_signal evd;
++	struct event_source_signal *ev =
++		poller_add_signal(&poller, SIGRTMIN, test_signal_event, &evd);
++	test_assert(ev != NULL);
++
++	evd.signal = 0;
++	test_assert(kill(getpid(), SIGRTMIN) == 0);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(evd.signal == SIGRTMIN);
++
++	evd.signal = 0;
++	test_assert(kill(getpid(), SIGRTMIN) == 0);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(evd.signal == SIGRTMIN);
++
++	poller_finish(&poller);
++}
++
++static void test_poller_multi_signal(void) {
++	struct poller poller;
++	test_assert(poller_init(&poller) == 0);
++
++	struct test_signal evd1, evd2;
++	struct event_source_signal *ev1 =
++		poller_add_signal(&poller, SIGRTMIN, test_signal_event, &evd1);
++	struct event_source_signal *ev2 =
++		poller_add_signal(&poller, SIGRTMIN + 1, test_signal_event, &evd2);
++	test_assert(ev1 != NULL);
++	test_assert(ev2 != NULL);
++
++	evd1.signal = evd2.signal = 0;
++	test_assert(kill(getpid(), SIGRTMIN) == 0);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(evd1.signal == SIGRTMIN);
++	test_assert(evd2.signal == 0);
++
++	evd1.signal = evd2.signal = 0;
++	test_assert(kill(getpid(), SIGRTMIN + 1) == 0);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(evd1.signal == 0);
++	test_assert(evd2.signal == SIGRTMIN + 1);
++
++	evd1.signal = evd2.signal = 0;
++	test_assert(kill(getpid(), SIGRTMIN) == 0);
++	test_assert(kill(getpid(), SIGRTMIN + 1) == 0);
++	test_assert(poller_poll(&poller) == 0);
++	test_assert(evd1.signal == SIGRTMIN);
++	test_assert(evd2.signal == SIGRTMIN + 1);
++
++	poller_finish(&poller);
++}
++
++int main(int argc, char *argv[]) {
++	(void)argc;
++	(void)argv;
++
++	test_run(test_poller_init);
++	test_run(test_poller_single_fd);
++	test_run(test_poller_multi_fd);
++	test_run(test_poller_single_signal);
++	test_run(test_poller_multi_signal);
++}

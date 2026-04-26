@@ -1,4 +1,106 @@
-diff -urN --no-dereference weston-clean/tools/zunitc/src/zunitc_impl.c weston-workdir/tools/zunitc/src/zunitc_impl.c
+diff --git weston-clean/frontend/main.c weston-workdir/frontend/main.c
+index d135e77..6b5cc56 100644
+--- weston-clean/frontend/main.c
++++ weston-workdir/frontend/main.c
+@@ -45,7 +45,11 @@
+ #include <libevdev/libevdev.h>
+ #include <linux/input.h>
+ #include <sys/time.h>
++#if defined(__zinnia__)
++#include <limits.h>
++#else
+ #include <linux/limits.h>
++#endif
+ 
+ #include "weston.h"
+ #include <libweston/libweston.h>
+diff --git weston-clean/libweston/backend-drm/drm-internal.h weston-workdir/libweston/backend-drm/drm-internal.h
+index 6118e1a..2f3d070 100644
+--- weston-clean/libweston/backend-drm/drm-internal.h
++++ weston-workdir/libweston/backend-drm/drm-internal.h
+@@ -37,7 +37,9 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <linux/input.h>
++#if !defined(__zinnia__)
+ #include <linux/vt.h>
++#endif
+ #include <assert.h>
+ #include <sys/mman.h>
+ #include <time.h>
+diff --git weston-clean/libweston/backend-drm/drm.c weston-workdir/libweston/backend-drm/drm.c
+index 11a5c3d..33c1115 100644
+--- weston-clean/libweston/backend-drm/drm.c
++++ weston-workdir/libweston/backend-drm/drm.c
+@@ -37,7 +37,9 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <linux/input.h>
++#if !defined(__zinnia__)
+ #include <linux/vt.h>
++#endif
+ #include <assert.h>
+ #include <sys/mman.h>
+ #include <time.h>
+diff --git weston-clean/libweston/backend-drm/libbacklight.c weston-workdir/libweston/backend-drm/libbacklight.c
+index 973d15f..c2726be 100644
+--- weston-clean/libweston/backend-drm/libbacklight.c
++++ weston-workdir/libweston/backend-drm/libbacklight.c
+@@ -36,11 +36,15 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
++#if !defined(__zinnia__)
+ #include <linux/types.h>
++#endif
+ #include <dirent.h>
+ #include <drm.h>
+ #include <fcntl.h>
++#if !defined(__zinnia__)
+ #include <malloc.h>
++#endif
+ #include <libgen.h>
+ #include <string.h>
+ #include <errno.h>
+diff --git weston-clean/libweston/input.c weston-workdir/libweston/input.c
+index 0aee74d..ddf62e2 100644
+--- weston-clean/libweston/input.c
++++ weston-workdir/libweston/input.c
+@@ -34,7 +34,11 @@
+ #include <sys/mman.h>
+ #include <assert.h>
+ #include <unistd.h>
++#if defined(__zinnia__)
++#include <float.h>
++#else
+ #include <values.h>
++#endif
+ #include <fcntl.h>
+ #include <limits.h>
+ #include <errno.h>
+diff --git weston-clean/libweston/linux-sync-file-uapi.h weston-workdir/libweston/linux-sync-file-uapi.h
+index cd30665..1c29f85 100644
+--- weston-clean/libweston/linux-sync-file-uapi.h
++++ weston-workdir/libweston/linux-sync-file-uapi.h
+@@ -3,8 +3,16 @@
+ #ifndef WESTON_LINUX_SYNC_FILE_UAPI_H
+ #define WESTON_LINUX_SYNC_FILE_UAPI_H
+ 
++#if defined(__zinnia__)
++#include <sys/ioccom.h>
++#include <stdint.h>
++typedef int32_t __s32;
++typedef uint32_t __u32;
++typedef uint64_t __u64;
++#else
+ #include <linux/ioctl.h>
+ #include <linux/types.h>
++#endif
+ 
+ struct sync_fence_info {
+ 	char obj_name[32];
+diff --git weston-clean/tools/zunitc/src/zunitc_impl.c weston-workdir/tools/zunitc/src/zunitc_impl.c
+index 9b460fa..5ecbfce 100644
 --- weston-clean/tools/zunitc/src/zunitc_impl.c
 +++ weston-workdir/tools/zunitc/src/zunitc_impl.c
 @@ -37,6 +37,7 @@

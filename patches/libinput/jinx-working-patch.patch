@@ -1,0 +1,17 @@
+diff --git libinput-clean/meson.build libinput-workdir/meson.build
+index 0c02b0d..d3847c6 100644
+--- libinput-clean/meson.build
++++ libinput-workdir/meson.build
+@@ -115,9 +115,9 @@ if cc.has_header_symbol('dirent.h', 'versionsort', prefix : prefix)
+ 	config_h.set('HAVE_VERSIONSORT', '1')
+ endif
+ 
+-if cc.get_define('SYS_pidfd_open', prefix: '#include <sys/syscall.h>') != ''
+-	config_h.set('HAVE_PIDFD_OPEN', '1')
+-endif
++# if cc.get_define('SYS_pidfd_open', prefix: '#include <sys/syscall.h>') != ''
++# 	config_h.set('HAVE_PIDFD_OPEN', '1')
++# endif
+ 
+ if cc.has_function('sigabbrev_np', prefix: '#define _GNU_SOURCE 1\n#include <string.h>')
+ 	config_h.set('HAVE_SIGABBREV_NP', '1')

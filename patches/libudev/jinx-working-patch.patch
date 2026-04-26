@@ -1,0 +1,3650 @@
+diff --git libudev-workdir/.cache/clangd/index/libudev.h.A001EC11026DA75E.idx libudev-workdir/.cache/clangd/index/libudev.h.A001EC11026DA75E.idx
+new file mode 100644
+index 0000000..4e02456
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/libudev.h.A001EC11026DA75E.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev.c.42761030908A2450.idx libudev-workdir/.cache/clangd/index/udev.c.42761030908A2450.idx
+new file mode 100644
+index 0000000..b1f6c51
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev.c.42761030908A2450.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_config.c.E1155B1F3AC98917.idx libudev-workdir/.cache/clangd/index/udev_config.c.E1155B1F3AC98917.idx
+new file mode 100644
+index 0000000..07f151e
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_config.c.E1155B1F3AC98917.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_config.h.144C4CD0BF838857.idx libudev-workdir/.cache/clangd/index/udev_config.h.144C4CD0BF838857.idx
+new file mode 100644
+index 0000000..f1e8fd1
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_config.h.144C4CD0BF838857.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_device.c.B1C96DC980AF7295.idx libudev-workdir/.cache/clangd/index/udev_device.c.B1C96DC980AF7295.idx
+new file mode 100644
+index 0000000..2b253c3
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_device.c.B1C96DC980AF7295.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_enumerate.c.4601683613E4586A.idx libudev-workdir/.cache/clangd/index/udev_enumerate.c.4601683613E4586A.idx
+new file mode 100644
+index 0000000..759768d
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_enumerate.c.4601683613E4586A.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_hwdb.c.FCF23EE42DB3296A.idx libudev-workdir/.cache/clangd/index/udev_hwdb.c.FCF23EE42DB3296A.idx
+new file mode 100644
+index 0000000..8ff934f
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_hwdb.c.FCF23EE42DB3296A.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_internal.h.EA2DC15508B8ECA2.idx libudev-workdir/.cache/clangd/index/udev_internal.h.EA2DC15508B8ECA2.idx
+new file mode 100644
+index 0000000..ad18ebb
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_internal.h.EA2DC15508B8ECA2.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_list.c.62DBE5F4D7C61D28.idx libudev-workdir/.cache/clangd/index/udev_list.c.62DBE5F4D7C61D28.idx
+new file mode 100644
+index 0000000..d0edcaa
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_list.c.62DBE5F4D7C61D28.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_monitor.c.AE4224C77015F5F3.idx libudev-workdir/.cache/clangd/index/udev_monitor.c.AE4224C77015F5F3.idx
+new file mode 100644
+index 0000000..7f1d7bd
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_monitor.c.AE4224C77015F5F3.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_queue.c.A2C17BB131312368.idx libudev-workdir/.cache/clangd/index/udev_queue.c.A2C17BB131312368.idx
+new file mode 100644
+index 0000000..9710b13
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_queue.c.A2C17BB131312368.idx differ
+diff --git libudev-workdir/.cache/clangd/index/udev_util.c.355E21A045F5FEC2.idx libudev-workdir/.cache/clangd/index/udev_util.c.355E21A045F5FEC2.idx
+new file mode 100644
+index 0000000..5fe3f69
+Binary files /dev/null and libudev-workdir/.cache/clangd/index/udev_util.c.355E21A045F5FEC2.idx differ
+diff --git libudev-clean/README.md libudev-workdir/README.md
+index 86a3575..5e707f0 100644
+--- libudev-clean/README.md
++++ libudev-workdir/README.md
+@@ -1,3 +1,65 @@
+ # libudev-freestanding
+ 
+-Drop-in replacement for libudev without systemd
++Drop-in replacement for libudev without systemd.
++
++## Device configuration
++
++Devices are described by static config files under `/etc/udev/devices.d/`
++(override with the `UDEV_DEVICES_DIR` environment variable). Each file
++follows Linux's uevent format: `KEY=VALUE` lines, `#` for comments, blank
++lines ignored. Filenames are not significant â€” every regular file in the
++directory is parsed.
++
++### Recognized keys
++
++| Key            | Meaning                                                                              |
++| -------------- | ------------------------------------------------------------------------------------ |
++| `NAME`         | **Required.** Device sysname (e.g. `card0`, `event0`, `i8042`).                      |
++| `SUBSYSTEM`    | **Required.** Subsystem name (e.g. `drm`, `input`, `platform`).                      |
++| `DEVNAME`      | **Absolute** path to the `/dev` node. `stat()`ed at load to learn the device number. |
++| `DEVTYPE`      | Device subtype (e.g. `drm_minor`, `partition`).                                      |
++| `DRIVER`       | Driver name.                                                                         |
++| `PARENT`       | Parent device, as `<name>` (same subsystem) or `<subsystem>/<name>`.                 |
++| `ATTR{name}=v` | A sysattr value (udev-rule syntax). Repeatable. Read-only at runtime.                |
++
++The syspath is synthesised as `/sys/devices/<SUBSYSTEM>/<NAME>`. Filenames
++in the config dir have no semantic meaning.
++
++Any other `KEY=VALUE` line becomes a plain device property exposed via
++`udev_device_get_property_value()` and the property iterator.
++
++### Example
++
++`/etc/udev/devices.d/card0`:
++
++```
++NAME=card0
++SUBSYSTEM=drm
++DEVNAME=/dev/drm/card0
++DEVTYPE=drm_minor
++```
++
++`/etc/udev/devices.d/event0`:
++
++```
++NAME=event0
++SUBSYSTEM=input
++DEVNAME=/dev/input/event0
++PARENT=platform/i8042
++ID_INPUT=1
++ID_INPUT_KEYBOARD=1
++ATTR{name}=AT Translated Set 2 keyboard
++```
++
++## Limitations
++
++The build is config-driven only; there are no runtime probes of `/sys`.
++The following APIs are stubbed:
++
++- `udev_monitor_*` returns a real, never-readable pipe fd; no events ever
++  arrive. `udev_monitor_receive_device()` always returns `NULL` with `errno`
++  set to `EAGAIN`.
++- `udev_queue_*` always reports an empty, idle queue.
++- `udev_hwdb_*` lookups always return an empty result.
++- `udev_device_set_sysattr_value()` returns `-EROFS`; the registry is
++  read-only.
+diff --git libudev-workdir/build/.gitignore libudev-workdir/build/.gitignore
+new file mode 100644
+index 0000000..95a0ba1
+--- /dev/null
++++ libudev-workdir/build/.gitignore
+@@ -0,0 +1,2 @@
++# This file is autogenerated by Meson. If you change or delete it, it won't be recreated.
++*
+diff --git libudev-workdir/build/.hgignore libudev-workdir/build/.hgignore
+new file mode 100644
+index 0000000..80dc5ea
+--- /dev/null
++++ libudev-workdir/build/.hgignore
+@@ -0,0 +1,3 @@
++# This file is autogenerated by Meson. If you change or delete it, it won't be recreated.
++syntax: glob
++**/*
+diff --git libudev-workdir/build/.ninja_deps libudev-workdir/build/.ninja_deps
+new file mode 100644
+index 0000000..2b0d027
+Binary files /dev/null and libudev-workdir/build/.ninja_deps differ
+diff --git libudev-workdir/build/.ninja_log libudev-workdir/build/.ninja_log
+new file mode 100644
+index 0000000..ff02590
+--- /dev/null
++++ libudev-workdir/build/.ninja_log
+@@ -0,0 +1,30 @@
++# ninja log v7
++1	32	1776601307593781148	libudev.so.p/udev_queue.c.o	f99ddc5f02b23c63
++0	33	1776601307596158340	libudev.so.p/udev_list.c.o	58b7afe573de4df5
++0	44	1776601307605092030	libudev.so.p/udev_enumerate.c.o	b615955b0f3b4fc7
++0	45	1776601307607547892	libudev.so.p/udev_config.c.o	e00b7c8b40cee469
++0	57	1776601307618092652	libudev.so.p/udev_device.c.o	bfbec1aca472993
++1	65	1776601307594027726	libudev.so.p/udev_util.c.o	1f8f264384dbfd01
++0	66	1776601307593646354	libudev.so.p/udev.c.o	4bba95c940db0526
++0	80	1776601307593703939	libudev.so.p/udev_hwdb.c.o	f9fe45c7beee5b0a
++0	35	1776601324437001326	libudev.so.p/udev_monitor.c.o	1899f7188b13e6eb
++35	49	1776601324452274271	libudev.so	7501db49df97b462
++1	16	1776608947156156479	libudev.so.p/udev_config.c.o	e00b7c8b40cee469
++1	29	1776608947156542711	libudev.so.p/udev_hwdb.c.o	f9fe45c7beee5b0a
++2	30	1776608947156863549	libudev.so.p/udev_queue.c.o	f99ddc5f02b23c63
++1	30	1776608947156316239	libudev.so.p/udev.c.o	4bba95c940db0526
++1	31	1776608947155342299	libudev.so.p/udev_list.c.o	58b7afe573de4df5
++1	36	1776608947156615477	libudev.so.p/udev_monitor.c.o	1899f7188b13e6eb
++2	53	1776608947156939087	libudev.so.p/udev_util.c.o	1f8f264384dbfd01
++1	54	1776608947156394223	libudev.so.p/udev_device.c.o	bfbec1aca472993
++0	41	1776608977740817981	libudev.so.p/udev_enumerate.c.o	b615955b0f3b4fc7
++41	55	1776608977781788437	libudev.so	7501db49df97b462
++0	5	1776610483786674212	libudev.so.p/udev_device.c.o	bfbec1aca472993
++0	53	1776610483785599458	libudev.so.p/udev_config.c.o	e00b7c8b40cee469
++53	66	1776610483838602019	libudev.so	7501db49df97b462
++1	53	1776610919422647853	libudev.so.p/udev_config.c.o	e00b7c8b40cee469
++53	67	1776610919474650366	libudev.so	7501db49df97b462
++0	78	1776611627261498355	libudev.so.p/udev_config.c.o	e00b7c8b40cee469
++78	97	1776611627339770305	libudev.so	7501db49df97b462
++1	69	1776612535996448030	libudev.so.p/udev_config.c.o	e00b7c8b40cee469
++69	86	1776612536064451345	libudev.so	7501db49df97b462
+diff --git libudev-workdir/build/build.ninja libudev-workdir/build/build.ninja
+new file mode 100644
+index 0000000..43fdd6a
+--- /dev/null
++++ libudev-workdir/build/build.ninja
+@@ -0,0 +1,182 @@
++# This is the build file for project "libudev-freestanding"
++# It is autogenerated by the Meson build system.
++# Do not edit by hand.
++
++ninja_required_version = 1.8.2
++
++# Rules for module scanning.
++
++# Rules for compiling.
++
++rule c_COMPILER
++ command = /usr/bin/ccache cc $ARGS -MD -MQ $out -MF $DEPFILE -o $out -c $in
++ deps = gcc
++ depfile = $DEPFILE_UNQUOTED
++ description = Compiling C object $out
++
++# Rules for linking.
++
++rule c_LINKER
++ command = cc $ARGS -o $out $in $LINK_ARGS
++ description = Linking target $out
++
++rule SHSYM
++ command = /usr/bin/meson --internal symbolextractor /home/marvin/repos/zinnia/sources/libudev-workdir/build $in $IMPLIB $out $CROSS
++ description = Generating symbol file $out
++ restat = 1
++
++# Other rules
++
++rule CUSTOM_COMMAND
++ command = $COMMAND
++ description = $DESC
++ restat = 1
++
++rule REGENERATE_BUILD
++ command = /usr/bin/meson --internal regenerate /home/marvin/repos/zinnia/sources/libudev-workdir .
++ description = Regenerating build files
++ generator = 1
++
++# Phony build target, always out of date
++
++build PHONY: phony 
++
++# Build rules for targets
++
++build libudev.so.p/udev_list.c.o: c_COMPILER ../udev_list.c
++ DEPFILE = libudev.so.p/udev_list.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_list.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev_config.c.o: c_COMPILER ../udev_config.c
++ DEPFILE = libudev.so.p/udev_config.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_config.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev.c.o: c_COMPILER ../udev.c
++ DEPFILE = libudev.so.p/udev.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev_device.c.o: c_COMPILER ../udev_device.c
++ DEPFILE = libudev.so.p/udev_device.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_device.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev_enumerate.c.o: c_COMPILER ../udev_enumerate.c
++ DEPFILE = libudev.so.p/udev_enumerate.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_enumerate.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev_hwdb.c.o: c_COMPILER ../udev_hwdb.c
++ DEPFILE = libudev.so.p/udev_hwdb.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_hwdb.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev_monitor.c.o: c_COMPILER ../udev_monitor.c
++ DEPFILE = libudev.so.p/udev_monitor.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_monitor.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev_queue.c.o: c_COMPILER ../udev_queue.c
++ DEPFILE = libudev.so.p/udev_queue.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_queue.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/udev_util.c.o: c_COMPILER ../udev_util.c
++ DEPFILE = libudev.so.p/udev_util.c.o.d
++ DEPFILE_UNQUOTED = libudev.so.p/udev_util.c.o.d
++ ARGS = -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC
++
++build libudev.so.p/libudev.so.symbols: SHSYM libudev.so
++ IMPLIB = libudev.so
++
++build libudev.so: c_LINKER libudev.so.p/udev_list.c.o libudev.so.p/udev_config.c.o libudev.so.p/udev.c.o libudev.so.p/udev_device.c.o libudev.so.p/udev_enumerate.c.o libudev.so.p/udev_hwdb.c.o libudev.so.p/udev_monitor.c.o libudev.so.p/udev_queue.c.o libudev.so.p/udev_util.c.o
++ LINK_ARGS = -Wl,--as-needed -Wl,--no-undefined -shared -fPIC -Wl,-soname,libudev.so
++
++# Test rules
++
++build test: phony meson-internal__test
++
++build meson-internal__test: CUSTOM_COMMAND all meson-test-prereq PHONY
++ COMMAND = /usr/bin/meson test --no-rebuild --print-errorlogs
++ DESC = Running$ all$ tests
++ pool = console
++
++build benchmark: phony meson-internal__benchmark
++
++build meson-internal__benchmark: CUSTOM_COMMAND all meson-benchmark-prereq PHONY
++ COMMAND = /usr/bin/meson test --benchmark --logbase benchmarklog --num-processes=1 --no-rebuild
++ DESC = Running$ benchmark$ suite
++ pool = console
++
++# Install rules
++
++build install: phony meson-internal__install
++
++build meson-internal__install: CUSTOM_COMMAND PHONY | all
++ DESC = Installing$ files
++ COMMAND = /usr/bin/meson install --no-rebuild
++ pool = console
++
++build dist: phony meson-internal__dist
++
++build meson-internal__dist: CUSTOM_COMMAND PHONY
++ DESC = Creating$ source$ packages
++ COMMAND = /usr/bin/meson dist
++ pool = console
++
++# Suffix
++
++build scan-build: phony meson-internal__scan-build
++
++build meson-internal__scan-build: CUSTOM_COMMAND PHONY
++ COMMAND = /usr/bin/meson --internal scanbuild /home/marvin/repos/zinnia/sources/libudev-workdir /home/marvin/repos/zinnia/sources/libudev-workdir/build subprojects /usr/bin/meson setup
++ pool = console
++
++build clang-format: phony meson-internal__clang-format
++
++build meson-internal__clang-format: CUSTOM_COMMAND PHONY
++ COMMAND = /usr/bin/meson --internal clangformat /home/marvin/repos/zinnia/sources/libudev-workdir /home/marvin/repos/zinnia/sources/libudev-workdir/build --color always
++ pool = console
++
++build clang-format-check: phony meson-internal__clang-format-check
++
++build meson-internal__clang-format-check: CUSTOM_COMMAND PHONY
++ COMMAND = /usr/bin/meson --internal clangformat /home/marvin/repos/zinnia/sources/libudev-workdir /home/marvin/repos/zinnia/sources/libudev-workdir/build --check --color always
++ pool = console
++
++build ctags: phony meson-internal__ctags
++
++build meson-internal__ctags: CUSTOM_COMMAND PHONY
++ COMMAND = /usr/bin/meson --internal tags ctags /home/marvin/repos/zinnia/sources/libudev-workdir
++ pool = console
++
++build uninstall: phony meson-internal__uninstall
++
++build meson-internal__uninstall: CUSTOM_COMMAND PHONY
++ COMMAND = /usr/bin/meson --internal uninstall
++ pool = console
++
++build all: phony libudev.so
++
++build meson-test-prereq: phony 
++
++build meson-benchmark-prereq: phony 
++
++build clean: phony meson-internal__clean
++
++build meson-internal__clean: CUSTOM_COMMAND PHONY
++ COMMAND = /usr/bin/ninja -t clean
++ description = Cleaning
++
++build build.ninja: REGENERATE_BUILD ../meson.build meson-private/coredata.dat
++ pool = console
++
++build reconfigure: REGENERATE_BUILD PHONY
++ pool = console
++
++build ../meson.build meson-private/coredata.dat: phony 
++
++default all
++
+diff --git libudev-workdir/build/compile_commands.json libudev-workdir/build/compile_commands.json
+new file mode 100644
+index 0000000..7882218
+--- /dev/null
++++ libudev-workdir/build/compile_commands.json
+@@ -0,0 +1,56 @@
++[
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_list.c.o -MF libudev.so.p/udev_list.c.o.d -o libudev.so.p/udev_list.c.o -c ../udev_list.c",
++    "file": "../udev_list.c",
++    "output": "libudev.so.p/udev_list.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_config.c.o -MF libudev.so.p/udev_config.c.o.d -o libudev.so.p/udev_config.c.o -c ../udev_config.c",
++    "file": "../udev_config.c",
++    "output": "libudev.so.p/udev_config.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev.c.o -MF libudev.so.p/udev.c.o.d -o libudev.so.p/udev.c.o -c ../udev.c",
++    "file": "../udev.c",
++    "output": "libudev.so.p/udev.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_device.c.o -MF libudev.so.p/udev_device.c.o.d -o libudev.so.p/udev_device.c.o -c ../udev_device.c",
++    "file": "../udev_device.c",
++    "output": "libudev.so.p/udev_device.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_enumerate.c.o -MF libudev.so.p/udev_enumerate.c.o.d -o libudev.so.p/udev_enumerate.c.o -c ../udev_enumerate.c",
++    "file": "../udev_enumerate.c",
++    "output": "libudev.so.p/udev_enumerate.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_hwdb.c.o -MF libudev.so.p/udev_hwdb.c.o.d -o libudev.so.p/udev_hwdb.c.o -c ../udev_hwdb.c",
++    "file": "../udev_hwdb.c",
++    "output": "libudev.so.p/udev_hwdb.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_monitor.c.o -MF libudev.so.p/udev_monitor.c.o.d -o libudev.so.p/udev_monitor.c.o -c ../udev_monitor.c",
++    "file": "../udev_monitor.c",
++    "output": "libudev.so.p/udev_monitor.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_queue.c.o -MF libudev.so.p/udev_queue.c.o.d -o libudev.so.p/udev_queue.c.o -c ../udev_queue.c",
++    "file": "../udev_queue.c",
++    "output": "libudev.so.p/udev_queue.c.o"
++  },
++  {
++    "directory": "/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++    "command": "/usr/bin/ccache cc -Ilibudev.so.p -I. -I.. -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O0 -g -fPIC -MD -MQ libudev.so.p/udev_util.c.o -MF libudev.so.p/udev_util.c.o.d -o libudev.so.p/udev_util.c.o -c ../udev_util.c",
++    "file": "../udev_util.c",
++    "output": "libudev.so.p/udev_util.c.o"
++  }
++]
+diff --git libudev-workdir/build/libudev.so libudev-workdir/build/libudev.so
+new file mode 100755
+index 0000000..ac4c8ca
+Binary files /dev/null and libudev-workdir/build/libudev.so differ
+diff --git libudev-workdir/build/libudev.so.p/udev.c.o libudev-workdir/build/libudev.so.p/udev.c.o
+new file mode 100644
+index 0000000..93785af
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_config.c.o libudev-workdir/build/libudev.so.p/udev_config.c.o
+new file mode 100644
+index 0000000..09c73ed
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_config.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_device.c.o libudev-workdir/build/libudev.so.p/udev_device.c.o
+new file mode 100644
+index 0000000..b6e0d77
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_device.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_enumerate.c.o libudev-workdir/build/libudev.so.p/udev_enumerate.c.o
+new file mode 100644
+index 0000000..87b4c1f
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_enumerate.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_hwdb.c.o libudev-workdir/build/libudev.so.p/udev_hwdb.c.o
+new file mode 100644
+index 0000000..3337dfa
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_hwdb.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_list.c.o libudev-workdir/build/libudev.so.p/udev_list.c.o
+new file mode 100644
+index 0000000..b0c6608
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_list.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_monitor.c.o libudev-workdir/build/libudev.so.p/udev_monitor.c.o
+new file mode 100644
+index 0000000..49e2cb0
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_monitor.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_queue.c.o libudev-workdir/build/libudev.so.p/udev_queue.c.o
+new file mode 100644
+index 0000000..41b0e85
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_queue.c.o differ
+diff --git libudev-workdir/build/libudev.so.p/udev_util.c.o libudev-workdir/build/libudev.so.p/udev_util.c.o
+new file mode 100644
+index 0000000..ca641ff
+Binary files /dev/null and libudev-workdir/build/libudev.so.p/udev_util.c.o differ
+diff --git libudev-workdir/build/meson-info/intro-benchmarks.json libudev-workdir/build/meson-info/intro-benchmarks.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-benchmarks.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-buildoptions.json libudev-workdir/build/meson-info/intro-buildoptions.json
+new file mode 100644
+index 0000000..4ff0271
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-buildoptions.json
+@@ -0,0 +1,619 @@
++[
++  {
++    "name": "auto_features",
++    "value": "auto",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "enabled",
++      "disabled",
++      "auto"
++    ],
++    "type": "combo",
++    "description": "Override value of all 'auto' features"
++  },
++  {
++    "name": "backend",
++    "value": "ninja",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "ninja",
++      "vs",
++      "vs2010",
++      "vs2012",
++      "vs2013",
++      "vs2015",
++      "vs2017",
++      "vs2019",
++      "vs2022",
++      "vs2026",
++      "xcode",
++      "none"
++    ],
++    "type": "combo",
++    "description": "Backend to use"
++  },
++  {
++    "name": "genvslite",
++    "value": "vs2022",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "vs2022",
++      "vs2026"
++    ],
++    "type": "combo",
++    "description": "Setup multiple buildtype-suffixed ninja-backend build directories, and a [builddir]_vs containing a Visual Studio meta-backend with multiple configurations that calls into them"
++  },
++  {
++    "name": "buildtype",
++    "value": "debug",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "plain",
++      "debug",
++      "debugoptimized",
++      "release",
++      "minsize",
++      "custom"
++    ],
++    "type": "combo",
++    "description": "Build type to use"
++  },
++  {
++    "name": "debug",
++    "value": true,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Enable debug symbols and other information"
++  },
++  {
++    "name": "default_library",
++    "value": "shared",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "shared",
++      "static",
++      "both"
++    ],
++    "type": "combo",
++    "description": "Default library type"
++  },
++  {
++    "name": "default_both_libraries",
++    "value": "shared",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "shared",
++      "static",
++      "auto"
++    ],
++    "type": "combo",
++    "description": "Default library type for both_libraries"
++  },
++  {
++    "name": "install_umask",
++    "value": 18,
++    "section": "core",
++    "machine": "any",
++    "type": "integer",
++    "description": "Default umask to apply on permissions of installed files"
++  },
++  {
++    "name": "layout",
++    "value": "mirror",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "mirror",
++      "flat"
++    ],
++    "type": "combo",
++    "description": "Build directory layout"
++  },
++  {
++    "name": "optimization",
++    "value": "0",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "plain",
++      "0",
++      "g",
++      "1",
++      "2",
++      "3",
++      "s"
++    ],
++    "type": "combo",
++    "description": "Optimization level"
++  },
++  {
++    "name": "prefer_static",
++    "value": false,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Whether to try static linking before shared linking"
++  },
++  {
++    "name": "strip",
++    "value": false,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Strip targets on install"
++  },
++  {
++    "name": "unity",
++    "value": "off",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "on",
++      "off",
++      "subprojects"
++    ],
++    "type": "combo",
++    "description": "Unity build"
++  },
++  {
++    "name": "unity_size",
++    "value": 4,
++    "section": "core",
++    "machine": "any",
++    "type": "integer",
++    "description": "Unity block size"
++  },
++  {
++    "name": "warning_level",
++    "value": "1",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "0",
++      "1",
++      "2",
++      "3",
++      "everything"
++    ],
++    "type": "combo",
++    "description": "Compiler warning level to use"
++  },
++  {
++    "name": "werror",
++    "value": false,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Treat warnings as errors"
++  },
++  {
++    "name": "wrap_mode",
++    "value": "default",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "default",
++      "nofallback",
++      "nodownload",
++      "forcefallback",
++      "nopromote"
++    ],
++    "type": "combo",
++    "description": "Wrap mode"
++  },
++  {
++    "name": "force_fallback_for",
++    "value": [],
++    "section": "core",
++    "machine": "any",
++    "type": "array",
++    "description": "Force fallback for those subprojects"
++  },
++  {
++    "name": "vsenv",
++    "value": false,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Activate Visual Studio environment"
++  },
++  {
++    "name": "os2_emxomf",
++    "value": false,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Use OMF format on OS/2"
++  },
++  {
++    "name": "pkgconfig.relocatable",
++    "value": false,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Generate pkgconfig files as relocatable"
++  },
++  {
++    "name": "python.bytecompile",
++    "value": 0,
++    "section": "core",
++    "machine": "any",
++    "type": "integer",
++    "description": "Whether to compile bytecode"
++  },
++  {
++    "name": "python.install_env",
++    "value": "prefix",
++    "section": "core",
++    "machine": "any",
++    "choices": [
++      "auto",
++      "prefix",
++      "system",
++      "venv"
++    ],
++    "type": "combo",
++    "description": "Which python environment to install to"
++  },
++  {
++    "name": "python.platlibdir",
++    "value": "",
++    "section": "core",
++    "machine": "any",
++    "type": "string",
++    "description": "Directory for site-specific, platform-specific files."
++  },
++  {
++    "name": "python.purelibdir",
++    "value": "",
++    "section": "core",
++    "machine": "any",
++    "type": "string",
++    "description": "Directory for site-specific, non-platform-specific files."
++  },
++  {
++    "name": "python.allow_limited_api",
++    "value": true,
++    "section": "core",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Whether to allow use of the Python Limited API"
++  },
++  {
++    "name": "python.build_config",
++    "value": "",
++    "section": "core",
++    "machine": "any",
++    "type": "string",
++    "description": "Config file containing the build details for the target Python installation."
++  },
++  {
++    "name": "pkg_config_path",
++    "value": [],
++    "section": "core",
++    "machine": "host",
++    "type": "array",
++    "description": "List of additional paths for pkg-config to search"
++  },
++  {
++    "name": "cmake_prefix_path",
++    "value": [],
++    "section": "core",
++    "machine": "host",
++    "type": "array",
++    "description": "List of additional prefixes for cmake to search"
++  },
++  {
++    "name": "backend_max_links",
++    "value": 0,
++    "section": "backend",
++    "machine": "any",
++    "type": "integer",
++    "description": "Maximum number of linker processes to run or 0 for no limit"
++  },
++  {
++    "name": "b_colorout",
++    "value": "always",
++    "section": "base",
++    "machine": "any",
++    "choices": [
++      "auto",
++      "always",
++      "never"
++    ],
++    "type": "combo",
++    "description": "Use colored output"
++  },
++  {
++    "name": "b_ndebug",
++    "value": "false",
++    "section": "base",
++    "machine": "any",
++    "choices": [
++      "true",
++      "false",
++      "if-release"
++    ],
++    "type": "combo",
++    "description": "Disable asserts"
++  },
++  {
++    "name": "b_lundef",
++    "value": true,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Use -Wl,--no-undefined when linking"
++  },
++  {
++    "name": "b_pgo",
++    "value": "off",
++    "section": "base",
++    "machine": "any",
++    "choices": [
++      "off",
++      "generate",
++      "use"
++    ],
++    "type": "combo",
++    "description": "Use profile guided optimization"
++  },
++  {
++    "name": "b_lto",
++    "value": false,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Use link time optimization"
++  },
++  {
++    "name": "b_lto_threads",
++    "value": 0,
++    "section": "base",
++    "machine": "any",
++    "type": "integer",
++    "description": "Use multiple threads for Link Time Optimization"
++  },
++  {
++    "name": "b_pie",
++    "value": false,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Build executables as position independent"
++  },
++  {
++    "name": "b_asneeded",
++    "value": true,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Use -Wl,--as-needed when linking"
++  },
++  {
++    "name": "b_sanitize",
++    "value": [],
++    "section": "base",
++    "machine": "any",
++    "type": "array",
++    "description": "Code sanitizer to use"
++  },
++  {
++    "name": "b_thinlto_cache",
++    "value": false,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Use LLVM ThinLTO caching for faster incremental builds"
++  },
++  {
++    "name": "b_coverage",
++    "value": false,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Enable coverage tracking."
++  },
++  {
++    "name": "b_staticpic",
++    "value": true,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Build static libraries as position independent"
++  },
++  {
++    "name": "b_pch",
++    "value": true,
++    "section": "base",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Use precompiled headers"
++  },
++  {
++    "name": "b_thinlto_cache_dir",
++    "value": "",
++    "section": "base",
++    "machine": "any",
++    "type": "string",
++    "description": "Directory to store ThinLTO cache objects"
++  },
++  {
++    "name": "c_args",
++    "value": [],
++    "section": "compiler",
++    "machine": "host",
++    "type": "array",
++    "description": "Extra arguments passed to the c compiler"
++  },
++  {
++    "name": "c_link_args",
++    "value": [],
++    "section": "compiler",
++    "machine": "host",
++    "type": "array",
++    "description": "Extra arguments passed to the c linker"
++  },
++  {
++    "name": "c_std",
++    "value": "none",
++    "section": "compiler",
++    "machine": "host",
++    "choices": [
++      "none",
++      "c89",
++      "c99",
++      "c11",
++      "c17",
++      "c18",
++      "c2x",
++      "c23",
++      "c2y",
++      "gnu89",
++      "gnu99",
++      "gnu11",
++      "gnu17",
++      "gnu18",
++      "gnu2x",
++      "gnu23",
++      "gnu2y"
++    ],
++    "type": "combo",
++    "description": "c language standard to use"
++  },
++  {
++    "name": "prefix",
++    "value": "/usr/local",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Installation prefix"
++  },
++  {
++    "name": "bindir",
++    "value": "bin",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Executable directory"
++  },
++  {
++    "name": "datadir",
++    "value": "share",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Data file directory"
++  },
++  {
++    "name": "includedir",
++    "value": "include",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Header file directory"
++  },
++  {
++    "name": "infodir",
++    "value": "share/info",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Info page directory"
++  },
++  {
++    "name": "libdir",
++    "value": "lib64",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Library directory"
++  },
++  {
++    "name": "licensedir",
++    "value": "",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Licenses directory"
++  },
++  {
++    "name": "libexecdir",
++    "value": "libexec",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Library executable directory"
++  },
++  {
++    "name": "localedir",
++    "value": "share/locale",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Locale data directory"
++  },
++  {
++    "name": "localstatedir",
++    "value": "/var/local",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Localstate data directory"
++  },
++  {
++    "name": "mandir",
++    "value": "share/man",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Manual page directory"
++  },
++  {
++    "name": "sbindir",
++    "value": "sbin",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "System executable directory"
++  },
++  {
++    "name": "sharedstatedir",
++    "value": "/var/local/lib",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Architecture-independent data directory"
++  },
++  {
++    "name": "sysconfdir",
++    "value": "etc",
++    "section": "directory",
++    "machine": "any",
++    "type": "string",
++    "description": "Sysconf data directory"
++  },
++  {
++    "name": "errorlogs",
++    "value": true,
++    "section": "test",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Whether to print the logs from failing tests"
++  },
++  {
++    "name": "stdsplit",
++    "value": true,
++    "section": "test",
++    "machine": "any",
++    "type": "boolean",
++    "description": "Split stdout and stderr in test logs"
++  }
++]
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-buildsystem_files.json libudev-workdir/build/meson-info/intro-buildsystem_files.json
+new file mode 100644
+index 0000000..12352e8
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-buildsystem_files.json
+@@ -0,0 +1,3 @@
++[
++  "/home/marvin/repos/zinnia/sources/libudev-workdir/meson.build"
++]
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-compilers.json libudev-workdir/build/meson-info/intro-compilers.json
+new file mode 100644
+index 0000000..571e57f
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-compilers.json
+@@ -0,0 +1,40 @@
++{
++  "host": {
++    "c": {
++      "id": "gcc",
++      "exelist": [
++        "/usr/bin/ccache",
++        "cc"
++      ],
++      "linker_exelist": [
++        "cc"
++      ],
++      "file_suffixes": [
++        "c"
++      ],
++      "default_suffix": "c",
++      "version": "15.2.1",
++      "full_version": "cc (SUSE Linux) 15.2.1 20260202",
++      "linker_id": "ld.bfd"
++    }
++  },
++  "build": {
++    "c": {
++      "id": "gcc",
++      "exelist": [
++        "/usr/bin/ccache",
++        "cc"
++      ],
++      "linker_exelist": [
++        "cc"
++      ],
++      "file_suffixes": [
++        "c"
++      ],
++      "default_suffix": "c",
++      "version": "15.2.1",
++      "full_version": "cc (SUSE Linux) 15.2.1 20260202",
++      "linker_id": "ld.bfd"
++    }
++  }
++}
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-dependencies.json libudev-workdir/build/meson-info/intro-dependencies.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-dependencies.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-install_plan.json libudev-workdir/build/meson-info/intro-install_plan.json
+new file mode 100644
+index 0000000..dcb166c
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-install_plan.json
+@@ -0,0 +1,25 @@
++{
++  "targets": {
++    "/home/marvin/repos/zinnia/sources/libudev-workdir/build/libudev.so": {
++      "destination": "{libdir_shared}/libudev.so",
++      "tag": "runtime",
++      "subproject": null,
++      "install_rpath": null,
++      "build_rpaths": []
++    }
++  },
++  "data": {
++    "/home/marvin/repos/zinnia/sources/libudev-workdir/build/meson-private/libudev.pc": {
++      "destination": "{libdir}/pkgconfig/libudev.pc",
++      "tag": "devel",
++      "subproject": null
++    }
++  },
++  "headers": {
++    "/home/marvin/repos/zinnia/sources/libudev-workdir/libudev.h": {
++      "destination": "{includedir}/libudev.h",
++      "tag": "devel",
++      "subproject": null
++    }
++  }
++}
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-installed.json libudev-workdir/build/meson-info/intro-installed.json
+new file mode 100644
+index 0000000..f5a1872
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-installed.json
+@@ -0,0 +1,5 @@
++{
++  "/home/marvin/repos/zinnia/sources/libudev-workdir/build/libudev.so": "/usr/local/lib64/libudev.so",
++  "/home/marvin/repos/zinnia/sources/libudev-workdir/build/meson-private/libudev.pc": "/usr/local/lib64/pkgconfig/libudev.pc",
++  "/home/marvin/repos/zinnia/sources/libudev-workdir/libudev.h": "/usr/local/include/libudev.h"
++}
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-machines.json libudev-workdir/build/meson-info/intro-machines.json
+new file mode 100644
+index 0000000..117e511
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-machines.json
+@@ -0,0 +1,35 @@
++{
++  "host": {
++    "system": "linux",
++    "cpu_family": "x86_64",
++    "cpu": "x86_64",
++    "endian": "little",
++    "kernel": "linux",
++    "subsystem": "linux",
++    "is_64_bit": true,
++    "exe_suffix": "",
++    "object_suffix": "o"
++  },
++  "build": {
++    "system": "linux",
++    "cpu_family": "x86_64",
++    "cpu": "x86_64",
++    "endian": "little",
++    "kernel": "linux",
++    "subsystem": "linux",
++    "is_64_bit": true,
++    "exe_suffix": "",
++    "object_suffix": "o"
++  },
++  "target": {
++    "system": "linux",
++    "cpu_family": "x86_64",
++    "cpu": "x86_64",
++    "endian": "little",
++    "kernel": "linux",
++    "subsystem": "linux",
++    "is_64_bit": true,
++    "exe_suffix": "",
++    "object_suffix": "o"
++  }
++}
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-projectinfo.json libudev-workdir/build/meson-info/intro-projectinfo.json
+new file mode 100644
+index 0000000..17543db
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-projectinfo.json
+@@ -0,0 +1,10 @@
++{
++  "version": "259",
++  "descriptive_name": "libudev-freestanding",
++  "license": [
++    "unknown"
++  ],
++  "license_files": [],
++  "subproject_dir": "subprojects",
++  "subprojects": []
++}
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-targets.json libudev-workdir/build/meson-info/intro-targets.json
+new file mode 100644
+index 0000000..88f02eb
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-targets.json
+@@ -0,0 +1,67 @@
++[
++  {
++    "name": "libudev",
++    "id": "libudev@sha",
++    "type": "shared library",
++    "defined_in": "/home/marvin/repos/zinnia/sources/libudev-workdir/meson.build",
++    "filename": [
++      "/home/marvin/repos/zinnia/sources/libudev-workdir/build/libudev.so"
++    ],
++    "build_by_default": true,
++    "target_sources": [
++      {
++        "language": "c",
++        "machine": "host",
++        "compiler": [
++          "/usr/bin/ccache",
++          "cc"
++        ],
++        "parameters": [
++          "-I/home/marvin/repos/zinnia/sources/libudev-workdir/build/libudev.so.p",
++          "-I/home/marvin/repos/zinnia/sources/libudev-workdir/build",
++          "-I/home/marvin/repos/zinnia/sources/libudev-workdir",
++          "-fdiagnostics-color=always",
++          "-D_FILE_OFFSET_BITS=64",
++          "-Wall",
++          "-Winvalid-pch",
++          "-O0",
++          "-g",
++          "-fPIC"
++        ],
++        "sources": [
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_list.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_config.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_device.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_enumerate.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_hwdb.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_monitor.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_queue.c",
++          "/home/marvin/repos/zinnia/sources/libudev-workdir/udev_util.c"
++        ],
++        "generated_sources": [],
++        "unity_sources": []
++      },
++      {
++        "linker": [
++          "cc"
++        ],
++        "parameters": [
++          "-Wl,--as-needed",
++          "-Wl,--no-undefined",
++          "-shared",
++          "-fPIC",
++          "-Wl,-soname,libudev.so"
++        ]
++      }
++    ],
++    "extra_files": [],
++    "subproject": null,
++    "dependencies": [],
++    "depends": [],
++    "installed": true,
++    "install_filename": [
++      "/usr/local/lib64/libudev.so"
++    ]
++  }
++]
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/intro-tests.json libudev-workdir/build/meson-info/intro-tests.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ libudev-workdir/build/meson-info/intro-tests.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-info/meson-info.json libudev-workdir/build/meson-info/meson-info.json
+new file mode 100644
+index 0000000..2736f99
+--- /dev/null
++++ libudev-workdir/build/meson-info/meson-info.json
+@@ -0,0 +1 @@
++{"meson_version": {"full": "1.10.2", "major": 1, "minor": 10, "patch": 2}, "directories": {"source": "/home/marvin/repos/zinnia/sources/libudev-workdir", "build": "/home/marvin/repos/zinnia/sources/libudev-workdir/build", "info": "/home/marvin/repos/zinnia/sources/libudev-workdir/build/meson-info"}, "introspection": {"version": {"full": "1.0.0", "major": 1, "minor": 0, "patch": 0}, "information": {"benchmarks": {"file": "intro-benchmarks.json", "updated": true}, "buildoptions": {"file": "intro-buildoptions.json", "updated": true}, "buildsystem_files": {"file": "intro-buildsystem_files.json", "updated": true}, "compilers": {"file": "intro-compilers.json", "updated": true}, "dependencies": {"file": "intro-dependencies.json", "updated": true}, "installed": {"file": "intro-installed.json", "updated": true}, "install_plan": {"file": "intro-install_plan.json", "updated": true}, "machines": {"file": "intro-machines.json", "updated": true}, "projectinfo": {"file": "intro-projectinfo.json", "updated": true}, "targets": {"file": "intro-targets.json", "updated": true}, "tests": {"file": "intro-tests.json", "updated": true}}}, "build_files_updated": true, "error": false}
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-logs/meson-log.txt libudev-workdir/build/meson-logs/meson-log.txt
+new file mode 100644
+index 0000000..8de1b24
+--- /dev/null
++++ libudev-workdir/build/meson-logs/meson-log.txt
+@@ -0,0 +1,56 @@
++Build started at 2026-04-19T16:28:58.667979
++Main binary: /usr/bin/python3.13
++Build Options: 
++Python system: Linux
++The Meson build system
++Version: 1.10.2
++Source dir: /home/marvin/repos/zinnia/sources/libudev-workdir
++Build dir: /home/marvin/repos/zinnia/sources/libudev-workdir/build
++Build type: native build
++Project name: libudev-freestanding
++Project version: 259
++C compiler for the host machine: /usr/bin/ccache cc (gcc 15.2.1 "cc (SUSE Linux) 15.2.1 20260202")
++C linker for the host machine: cc ld.bfd 2.45.0.20251103-2
++-----------
++Detecting archiver via: `gcc-ar --version` -> 0
++stdout:
++GNU ar (GNU Binutils; openSUSE Tumbleweed) 2.45.0.20251103-2
++Copyright (C) 2025 Free Software Foundation, Inc.
++This program is free software; you may redistribute it under the terms of
++the GNU General Public License version 3 or (at your option) any later version.
++This program has absolutely no warranty.
++-----------
++C compiler for the build machine: /usr/bin/ccache cc (gcc 15.2.1 "cc (SUSE Linux) 15.2.1 20260202")
++C linker for the build machine: cc ld.bfd 2.45.0.20251103-2
++-----------
++Detecting archiver via: `gcc-ar --version` -> 0
++stdout:
++GNU ar (GNU Binutils; openSUSE Tumbleweed) 2.45.0.20251103-2
++Copyright (C) 2025 Free Software Foundation, Inc.
++This program is free software; you may redistribute it under the terms of
++the GNU General Public License version 3 or (at your option) any later version.
++This program has absolutely no warranty.
++-----------
++Build machine cpu family: x86_64
++Build machine cpu: x86_64
++Host machine cpu family: x86_64
++Host machine cpu: x86_64
++Target machine cpu family: x86_64
++Target machine cpu: x86_64
++Pkg-config binary missing from cross or native file, or env var undefined.
++Trying a default Pkg-config fallback at pkg-config
++Found pkg-config: YES (/usr/bin/pkg-config) 2.5.1
++Build targets in project: 1
++
++Found ninja-1.13.2 at /usr/bin/ninja
++Running compile:
++Working directory:  /home/marvin/repos/zinnia/sources/libudev-workdir/build/meson-private/tmptc5p9yxw
++Code:
++
++-----------
++Command line: `cc /home/marvin/repos/zinnia/sources/libudev-workdir/build/meson-private/tmptc5p9yxw/testfile.c -o /home/marvin/repos/zinnia/sources/libudev-workdir/build/meson-private/tmptc5p9yxw/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs` -> 0
++stdout:
++install: /usr/lib64/gcc/x86_64-suse-linux/15/
++programs: =/usr/lib64/gcc/x86_64-suse-linux/15/:/usr/lib64/gcc/x86_64-suse-linux/15/:/usr/lib64/gcc/x86_64-suse-linux/:/usr/lib64/gcc/x86_64-suse-linux/15/:/usr/lib64/gcc/x86_64-suse-linux/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../../x86_64-suse-linux/bin/x86_64-suse-linux/15/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../../x86_64-suse-linux/bin/
++libraries: =/usr/lib64/gcc/x86_64-suse-linux/15/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../../x86_64-suse-linux/lib/x86_64-suse-linux/15/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../../x86_64-suse-linux/lib/../lib64/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../x86_64-suse-linux/15/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../../lib64/:/lib/x86_64-suse-linux/15/:/lib/../lib64/:/usr/lib/x86_64-suse-linux/15/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../../x86_64-suse-linux/lib/:/usr/lib64/gcc/x86_64-suse-linux/15/../../../:/lib/:/usr/lib/
++-----------
+diff --git libudev-workdir/build/meson-logs/meson-setup.txt libudev-workdir/build/meson-logs/meson-setup.txt
+new file mode 100644
+index 0000000..73a48a5
+--- /dev/null
++++ libudev-workdir/build/meson-logs/meson-setup.txt
+@@ -0,0 +1,15 @@
++The Meson build system
++Version: 1.10.2
++Source dir: /home/marvin/repos/zinnia/sources/libudev-workdir
++Build dir: /home/marvin/repos/zinnia/sources/libudev-workdir/build
++Build type: native build
++Project name: libudev-freestanding
++Project version: 259
++C compiler for the host machine: /usr/bin/ccache cc (gcc 15.2.1 "cc (SUSE Linux) 15.2.1 20260202")
++C linker for the host machine: cc ld.bfd 2.45.0.20251103-2
++Host machine cpu family: x86_64
++Host machine cpu: x86_64
++Found pkg-config: YES (/usr/bin/pkg-config) 2.5.1
++Build targets in project: 1
++
++Found ninja-1.13.2 at /usr/bin/ninja
+diff --git libudev-workdir/build/meson-private/build.dat libudev-workdir/build/meson-private/build.dat
+new file mode 100644
+index 0000000..6516b4f
+Binary files /dev/null and libudev-workdir/build/meson-private/build.dat differ
+diff --git libudev-workdir/build/meson-private/cmd_line.txt libudev-workdir/build/meson-private/cmd_line.txt
+new file mode 100644
+index 0000000..6e871cd
+--- /dev/null
++++ libudev-workdir/build/meson-private/cmd_line.txt
+@@ -0,0 +1,4 @@
++[options]
++
++[properties]
++
+diff --git libudev-workdir/build/meson-private/coredata.dat libudev-workdir/build/meson-private/coredata.dat
+new file mode 100644
+index 0000000..51f5817
+Binary files /dev/null and libudev-workdir/build/meson-private/coredata.dat differ
+diff --git libudev-workdir/build/meson-private/coredata.dat.prev libudev-workdir/build/meson-private/coredata.dat.prev
+new file mode 100644
+index 0000000..856c564
+Binary files /dev/null and libudev-workdir/build/meson-private/coredata.dat.prev differ
+diff --git libudev-workdir/build/meson-private/install.dat libudev-workdir/build/meson-private/install.dat
+new file mode 100644
+index 0000000..1418864
+Binary files /dev/null and libudev-workdir/build/meson-private/install.dat differ
+diff --git libudev-workdir/build/meson-private/libudev.pc libudev-workdir/build/meson-private/libudev.pc
+new file mode 100644
+index 0000000..8ff7b4f
+--- /dev/null
++++ libudev-workdir/build/meson-private/libudev.pc
+@@ -0,0 +1,9 @@
++prefix=/usr/local
++includedir=${prefix}/include
++libdir=${prefix}/lib64
++
++Name: libudev
++Description: Library to access udev device information
++Version: 259
++Libs: -L${libdir} -ludev
++Cflags: -I${includedir}
+diff --git libudev-workdir/build/meson-private/meson.lock libudev-workdir/build/meson-private/meson.lock
+new file mode 100644
+index 0000000..e69de29
+diff --git libudev-workdir/build/meson-private/meson_benchmark_setup.dat libudev-workdir/build/meson-private/meson_benchmark_setup.dat
+new file mode 100644
+index 0000000..92c3c88
+--- /dev/null
++++ libudev-workdir/build/meson-private/meson_benchmark_setup.dat
+@@ -0,0 +1 @@
++€]”.
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-private/meson_test_setup.dat libudev-workdir/build/meson-private/meson_test_setup.dat
+new file mode 100644
+index 0000000..92c3c88
+--- /dev/null
++++ libudev-workdir/build/meson-private/meson_test_setup.dat
+@@ -0,0 +1 @@
++€]”.
+\ No newline at end of file
+diff --git libudev-workdir/build/meson-private/sanitycheckc.c libudev-workdir/build/meson-private/sanitycheckc.c
+new file mode 100644
+index 0000000..a27020e
+--- /dev/null
++++ libudev-workdir/build/meson-private/sanitycheckc.c
+@@ -0,0 +1 @@
++int main(void) { int class=0; return class; }
+diff --git libudev-workdir/build/meson-private/sanitycheckc.exe libudev-workdir/build/meson-private/sanitycheckc.exe
+new file mode 100755
+index 0000000..47eb3a7
+Binary files /dev/null and libudev-workdir/build/meson-private/sanitycheckc.exe differ
+diff --git libudev-workdir/build/meson-uninstalled/libudev-uninstalled.pc libudev-workdir/build/meson-uninstalled/libudev-uninstalled.pc
+new file mode 100644
+index 0000000..7cb5fcd
+--- /dev/null
++++ libudev-workdir/build/meson-uninstalled/libudev-uninstalled.pc
+@@ -0,0 +1,10 @@
++prefix=/home/marvin/repos/zinnia/sources/libudev-workdir/build
++includedir=${prefix}/include
++libdir=${prefix}/lib64
++srcdir=/home/marvin/repos/zinnia/sources/libudev-workdir
++
++Name: libudev
++Description: Library to access udev device information
++Version: 259
++Libs: -L${prefix} -ludev
++Cflags: -I${prefix} -I${srcdir}
+diff --git libudev-workdir/build/meson-vscode.env libudev-workdir/build/meson-vscode.env
+new file mode 100644
+index 0000000..357239a
+--- /dev/null
++++ libudev-workdir/build/meson-vscode.env
+@@ -0,0 +1,5 @@
++PKG_CONFIG_PATH="/home/marvin/repos/zinnia/sources/libudev-workdir/build/meson-uninstalled"
++PKG_CONFIG="/usr/bin/pkg-config"
++LD_LIBRARY_PATH="/home/marvin/repos/zinnia/sources/libudev-workdir/build/"
++MESON_DEVENV="1"
++MESON_PROJECT_NAME="libudev-freestanding"
+diff --git libudev-workdir/examples/devices.d/drm-card0 libudev-workdir/examples/devices.d/drm-card0
+new file mode 100644
+index 0000000..2b3a0a3
+--- /dev/null
++++ libudev-workdir/examples/devices.d/drm-card0
+@@ -0,0 +1,4 @@
++NAME=card0
++SUBSYSTEM=drm
++DEVNAME=/dev/drm/card0
++DEVTYPE=drm_minor
+diff --git libudev-workdir/examples/devices.d/i8042 libudev-workdir/examples/devices.d/i8042
+new file mode 100644
+index 0000000..bcec879
+--- /dev/null
++++ libudev-workdir/examples/devices.d/i8042
+@@ -0,0 +1,3 @@
++NAME=i8042
++SUBSYSTEM=platform
++DRIVER=i8042
+diff --git libudev-workdir/examples/devices.d/input-event0 libudev-workdir/examples/devices.d/input-event0
+new file mode 100644
+index 0000000..2b54f6e
+--- /dev/null
++++ libudev-workdir/examples/devices.d/input-event0
+@@ -0,0 +1,7 @@
++NAME=event0
++SUBSYSTEM=input
++DEVNAME=/dev/input/event0
++PARENT=platform/i8042
++ID_INPUT=1
++ID_INPUT_KEYBOARD=1
++ATTR{name}=AT Translated Set 2 keyboard
+diff --git libudev-workdir/examples/devices.d/input-event1 libudev-workdir/examples/devices.d/input-event1
+new file mode 100644
+index 0000000..a9441ac
+--- /dev/null
++++ libudev-workdir/examples/devices.d/input-event1
+@@ -0,0 +1,7 @@
++NAME=event1
++SUBSYSTEM=input
++DEVNAME=/dev/input/event1
++PARENT=platform/i8042
++ID_INPUT=1
++ID_INPUT_MOUSE=1
++ATTR{name}=ImExPS/2 Generic Explorer Mouse
+diff --git libudev-clean/meson.build libudev-workdir/meson.build
+index 0ae287b..36bbe54 100644
+--- libudev-clean/meson.build
++++ libudev-workdir/meson.build
+@@ -3,7 +3,7 @@ project('libudev-freestanding', 'c', version: '259')
+ libudev = library(
+     'libudev',
+     'udev_list.c',
+-    'sysdeps' / target_machine.system() + '.c',
++    'udev_config.c',
+     'udev.c',
+     'udev_device.c',
+     'udev_enumerate.c',
+diff --git libudev-clean/sysdeps/linux.c libudev-clean/sysdeps/linux.c
+deleted file mode 100644
+index a58ae8a..0000000
+--- libudev-clean/sysdeps/linux.c
++++ /dev/null
+@@ -1,792 +0,0 @@
+-#include "sysdeps.h"
+-#include <dirent.h>
+-#include <errno.h>
+-#include <fcntl.h>
+-#include <limits.h>
+-#include <linux/netlink.h>
+-#include <stdint.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <sys/mman.h>
+-#include <sys/socket.h>
+-#include <sys/stat.h>
+-#include <sys/sysmacros.h>
+-#include <unistd.h>
+-
+-static char* read_symlink_basename(const char* syspath, const char* name) {
+-    char path[PATH_MAX];
+-    char target[PATH_MAX];
+-    ssize_t len;
+-
+-    snprintf(path, sizeof(path), "%s/%s", syspath, name);
+-    len = readlink(path, target, sizeof(target) - 1);
+-    if (len < 0)
+-        return NULL;
+-    target[len] = '\0';
+-
+-    char* base = strrchr(target, '/');
+-    return strdup(base ? base + 1 : target);
+-}
+-
+-static char* read_file_contents(const char* path, size_t max_size) {
+-    int fd = open(path, O_RDONLY | O_CLOEXEC);
+-    if (fd < 0)
+-        return NULL;
+-
+-    char* buf = malloc(max_size + 1);
+-    if (!buf) {
+-        close(fd);
+-        return NULL;
+-    }
+-
+-    ssize_t total = 0;
+-    while ((size_t)total < max_size) {
+-        ssize_t n = read(fd, buf + total, max_size - total);
+-        if (n < 0) {
+-            if (errno == EINTR)
+-                continue;
+-            free(buf);
+-            close(fd);
+-            return NULL;
+-        }
+-        if (n == 0)
+-            break;
+-        total += n;
+-    }
+-    close(fd);
+-
+-    // Reject binary content
+-    for (ssize_t i = 0; i < total; i++) {
+-        if (buf[i] == '\0') {
+-            free(buf);
+-            return NULL;
+-        }
+-    }
+-
+-    // Strip trailing whitespace
+-    while (total > 0 && (buf[total - 1] == '\n' || buf[total - 1] == '\r' || buf[total - 1] == ' '))
+-        total--;
+-
+-    buf[total] = '\0';
+-    return buf;
+-}
+-
+-static int path_has_uevent(const char* path) {
+-    char uevent[PATH_MAX];
+-    snprintf(uevent, sizeof(uevent), "%s/uevent", path);
+-    return access(uevent, F_OK) == 0;
+-}
+-
+-char* udev_sysdep_resolve_syspath(const char* syspath) {
+-    if (!syspath)
+-        return NULL;
+-
+-    // Must start with /sys/
+-    if (strncmp(syspath, "/sys/", 5) != 0)
+-        return NULL;
+-
+-    char resolved[PATH_MAX];
+-    if (!realpath(syspath, resolved))
+-        return NULL;
+-
+-    // Resolved path must still be under /sys/
+-    if (strncmp(resolved, "/sys/", 5) != 0)
+-        return NULL;
+-
+-    // Must have a uevent file (i.e., it's a real device)
+-    if (!path_has_uevent(resolved))
+-        return NULL;
+-
+-    return strdup(resolved);
+-}
+-
+-int udev_sysdep_read_uevent(const char* syspath, udev_sysdep_uevent_cb cb, void* userdata) {
+-    char path[PATH_MAX];
+-    snprintf(path, sizeof(path), "%s/uevent", syspath);
+-
+-    FILE* f = fopen(path, "re");
+-    if (!f)
+-        return -errno;
+-
+-    char line[4096];
+-    while (fgets(line, sizeof(line), f)) {
+-        // Strip newline
+-        size_t len = strlen(line);
+-        if (len > 0 && line[len - 1] == '\n')
+-            line[len - 1] = '\0';
+-
+-        char* eq = strchr(line, '=');
+-        if (!eq)
+-            continue;
+-
+-        *eq = '\0';
+-        cb(line, eq + 1, userdata);
+-    }
+-
+-    fclose(f);
+-    return 0;
+-}
+-
+-char* udev_sysdep_get_subsystem(const char* syspath) {
+-    return read_symlink_basename(syspath, "subsystem");
+-}
+-
+-char* udev_sysdep_get_driver(const char* syspath) {
+-    return read_symlink_basename(syspath, "driver");
+-}
+-
+-char* udev_sysdep_read_sysattr(const char* syspath, const char* sysattr) {
+-    if (!syspath || !sysattr)
+-        return NULL;
+-
+-    // Reject attributes with path separators
+-    if (strchr(sysattr, '/'))
+-        return NULL;
+-
+-    char path[PATH_MAX];
+-    snprintf(path, sizeof(path), "%s/%s", syspath, sysattr);
+-
+-    // Only read regular files or symlinks to regular files
+-    struct stat st;
+-    if (stat(path, &st) < 0)
+-        return NULL;
+-    if (!S_ISREG(st.st_mode))
+-        return NULL;
+-
+-    return read_file_contents(path, 4096);
+-}
+-
+-int udev_sysdep_write_sysattr(const char* syspath, const char* sysattr, const char* value) {
+-    if (!syspath || !sysattr || !value)
+-        return -EINVAL;
+-
+-    if (strchr(sysattr, '/'))
+-        return -EINVAL;
+-
+-    char path[PATH_MAX];
+-    snprintf(path, sizeof(path), "%s/%s", syspath, sysattr);
+-
+-    int fd = open(path, O_WRONLY | O_CLOEXEC);
+-    if (fd < 0)
+-        return -errno;
+-
+-    size_t len = strlen(value);
+-    ssize_t written = write(fd, value, len);
+-    close(fd);
+-
+-    if (written < 0)
+-        return -errno;
+-    if ((size_t)written != len)
+-        return -EIO;
+-
+-    return 0;
+-}
+-
+-int udev_sysdep_list_sysattrs(const char* syspath, udev_sysdep_sysattr_list_cb cb, void* userdata) {
+-    DIR* dir = opendir(syspath);
+-    if (!dir)
+-        return -errno;
+-
+-    struct dirent* de;
+-    while ((de = readdir(dir))) {
+-        if (de->d_name[0] == '.')
+-            continue;
+-
+-        // Skip uevent - it's not a useful sysattr
+-        if (strcmp(de->d_name, "uevent") == 0)
+-            continue;
+-
+-        // Skip directories (but allow symlinks)
+-        if (de->d_type == DT_DIR)
+-            continue;
+-
+-        // For unknown types or symlinks, stat to check
+-        if (de->d_type == DT_UNKNOWN || de->d_type == DT_LNK) {
+-            char path[PATH_MAX];
+-            struct stat st;
+-            snprintf(path, sizeof(path), "%s/%s", syspath, de->d_name);
+-            if (stat(path, &st) < 0)
+-                continue;
+-            if (S_ISDIR(st.st_mode))
+-                continue;
+-        }
+-
+-        cb(de->d_name, userdata);
+-    }
+-
+-    closedir(dir);
+-    return 0;
+-}
+-
+-char* udev_sysdep_resolve_devnum(char type, dev_t devnum) {
+-    char path[PATH_MAX];
+-    char resolved[PATH_MAX];
+-
+-    snprintf(path, sizeof(path), "/sys/dev/%s/%u:%u", type == 'b' ? "block" : "char", major(devnum), minor(devnum));
+-
+-    if (!realpath(path, resolved))
+-        return NULL;
+-
+-    return strdup(resolved);
+-}
+-
+-char* udev_sysdep_resolve_devnode(const char* syspath) {
+-    char* result = NULL;
+-    char path[PATH_MAX];
+-    snprintf(path, sizeof(path), "%s/uevent", syspath);
+-
+-    FILE* f = fopen(path, "re");
+-    if (!f)
+-        return NULL;
+-
+-    char line[4096];
+-    while (fgets(line, sizeof(line), f)) {
+-        size_t len = strlen(line);
+-        if (len > 0 && line[len - 1] == '\n')
+-            line[len - 1] = '\0';
+-
+-        if (strncmp(line, "DEVNAME=", 8) == 0) {
+-            const char* devname = line + 8;
+-            if (devname[0] == '/') {
+-                result = strdup(devname);
+-            } else {
+-                char devpath[PATH_MAX];
+-                snprintf(devpath, sizeof(devpath), "/dev/%s", devname);
+-                result = strdup(devpath);
+-            }
+-            break;
+-        }
+-    }
+-
+-    fclose(f);
+-    return result;
+-}
+-
+-char* udev_sysdep_get_parent_syspath(const char* syspath) {
+-    if (!syspath)
+-        return NULL;
+-
+-    // Must be under /sys/devices/ for parent resolution
+-    if (strncmp(syspath, "/sys/devices/", 13) != 0)
+-        return NULL;
+-
+-    char* parent = strdup(syspath);
+-    if (!parent)
+-        return NULL;
+-
+-    while (1) {
+-        char* slash = strrchr(parent, '/');
+-        if (!slash || slash == parent) {
+-            free(parent);
+-            return NULL;
+-        }
+-
+-        *slash = '\0';
+-
+-        // Stop at /sys/devices
+-        if (strcmp(parent, "/sys/devices") == 0) {
+-            free(parent);
+-            return NULL;
+-        }
+-
+-        // Check if this is a valid device (has uevent)
+-        if (path_has_uevent(parent))
+-            return parent;
+-    }
+-}
+-
+-static void enumerate_devices_recursive(const char* dirpath, udev_sysdep_enumerate_cb cb, void* userdata) {
+-    printf("enumerate_devices_recursive(%s, %p, %p)\n", dirpath, cb, userdata);
+-
+-    DIR* dir = opendir(dirpath);
+-    if (!dir)
+-        return;
+-
+-    struct dirent* de;
+-    while ((de = readdir(dir))) {
+-        if (de->d_name[0] == '.')
+-            continue;
+-
+-        char path[PATH_MAX];
+-        snprintf(path, sizeof(path), "%s/%s", dirpath, de->d_name);
+-
+-        struct stat st;
+-        if (lstat(path, &st) < 0)
+-            continue;
+-
+-        // Only recurse into real directories, never follow symlinks
+-        // (sysfs symlinks create cycles between /sys/devices and /sys/bus etc.)
+-        if (!S_ISDIR(st.st_mode))
+-            continue;
+-
+-        if (path_has_uevent(path))
+-            cb(path, userdata);
+-
+-        enumerate_devices_recursive(path, cb, userdata);
+-    }
+-
+-    closedir(dir);
+-}
+-
+-int udev_sysdep_enumerate_devices(udev_sysdep_enumerate_cb cb, void* userdata) {
+-    enumerate_devices_recursive("/sys/devices", cb, userdata);
+-    return 0;
+-}
+-
+-int udev_sysdep_enumerate_subsystems(udev_sysdep_enumerate_cb cb, void* userdata) {
+-    const char* paths[] = {"/sys/bus", "/sys/class", NULL};
+-
+-    for (int i = 0; paths[i]; i++) {
+-        DIR* dir = opendir(paths[i]);
+-        if (!dir)
+-            continue;
+-
+-        struct dirent* de;
+-        while ((de = readdir(dir))) {
+-            if (de->d_name[0] == '.')
+-                continue;
+-
+-            char path[PATH_MAX];
+-            char resolved[PATH_MAX];
+-            snprintf(path, sizeof(path), "%s/%s", paths[i], de->d_name);
+-
+-            if (!realpath(path, resolved))
+-                continue;
+-
+-            cb(resolved, userdata);
+-        }
+-        closedir(dir);
+-    }
+-
+-    return 0;
+-}
+-
+-int udev_sysdep_read_udev_db(
+-    const char* syspath,
+-    const char* subsystem,
+-    dev_t devnum,
+-    udev_sysdep_udevdb_cb cb,
+-    void* userdata
+-) {
+-    char path[PATH_MAX];
+-
+-    if (devnum > 0) {
+-        // Determine block vs char from subsystem or by checking /sys/dev
+-        char type = 'c';
+-        if (subsystem && strcmp(subsystem, "block") == 0)
+-            type = 'b';
+-
+-        // Also check if the device directory exists under /sys/dev/block
+-        char check[PATH_MAX];
+-        snprintf(check, sizeof(check), "/sys/dev/block/%u:%u", major(devnum), minor(devnum));
+-        if (access(check, F_OK) == 0)
+-            type = 'b';
+-
+-        snprintf(path, sizeof(path), "/run/udev/data/%c%u:%u", type, major(devnum), minor(devnum));
+-    } else if (subsystem) {
+-        // Extract sysname from syspath
+-        const char* sysname = strrchr(syspath, '/');
+-        if (!sysname)
+-            return -EINVAL;
+-        sysname++;
+-        snprintf(path, sizeof(path), "/run/udev/data/+%s:%s", subsystem, sysname);
+-    } else {
+-        return -EINVAL;
+-    }
+-
+-    FILE* f = fopen(path, "re");
+-    if (!f)
+-        return -errno;
+-
+-    char line[4096];
+-    while (fgets(line, sizeof(line), f)) {
+-        size_t len = strlen(line);
+-        if (len > 0 && line[len - 1] == '\n')
+-            line[len - 1] = '\0';
+-
+-        if (len < 2 || line[1] != ':')
+-            continue;
+-
+-        cb(line[0], line + 2, userdata);
+-    }
+-
+-    fclose(f);
+-    return 0;
+-}
+-
+-// --- Monitor ---
+-
+-struct udev_sysdep_monitor {
+-    int fd;
+-};
+-
+-struct udev_sysdep_monitor* udev_sysdep_monitor_new(void) {
+-    int fd = socket(AF_NETLINK, SOCK_DGRAM | SOCK_CLOEXEC | SOCK_NONBLOCK, NETLINK_KOBJECT_UEVENT);
+-    if (fd < 0)
+-        return NULL;
+-
+-    struct udev_sysdep_monitor* mon = calloc(1, sizeof(*mon));
+-    if (!mon) {
+-        close(fd);
+-        return NULL;
+-    }
+-    mon->fd = fd;
+-    return mon;
+-}
+-
+-void udev_sysdep_monitor_free(struct udev_sysdep_monitor* mon) {
+-    if (!mon)
+-        return;
+-    if (mon->fd >= 0)
+-        close(mon->fd);
+-    free(mon);
+-}
+-
+-int udev_sysdep_monitor_enable(struct udev_sysdep_monitor* mon) {
+-    if (!mon)
+-        return -EINVAL;
+-
+-    struct sockaddr_nl addr = {
+-        .nl_family = AF_NETLINK,
+-        .nl_groups = 1, // KOBJECT_UEVENT multicast group
+-    };
+-
+-    if (bind(mon->fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+-        return -errno;
+-
+-    return 0;
+-}
+-
+-int udev_sysdep_monitor_get_fd(struct udev_sysdep_monitor* mon) {
+-    if (!mon)
+-        return -EINVAL;
+-    return mon->fd;
+-}
+-
+-int udev_sysdep_monitor_set_buf_size(struct udev_sysdep_monitor* mon, int size) {
+-    if (!mon)
+-        return -EINVAL;
+-    if (setsockopt(mon->fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)) < 0)
+-        return -errno;
+-    return 0;
+-}
+-
+-int udev_sysdep_monitor_receive(
+-    struct udev_sysdep_monitor* mon,
+-    char** action,
+-    char** devpath,
+-    char** subsystem,
+-    udev_sysdep_monitor_cb cb,
+-    void* userdata
+-) {
+-    if (!mon)
+-        return -EINVAL;
+-
+-    char buf[8192];
+-    ssize_t len = recv(mon->fd, buf, sizeof(buf) - 1, 0);
+-    if (len < 0)
+-        return -errno;
+-    if (len == 0)
+-        return -EIO;
+-
+-    buf[len] = '\0';
+-
+-    *action = NULL;
+-    *devpath = NULL;
+-    *subsystem = NULL;
+-
+-    // Skip the header (first NUL-terminated string: "ACTION@DEVPATH")
+-    const char* header = buf;
+-    size_t header_len = strlen(header);
+-
+-    // Parse header: ACTION@DEVPATH
+-    const char* at = strchr(header, '@');
+-    if (at) {
+-        *action = strndup(header, at - header);
+-        *devpath = strdup(at + 1);
+-    }
+-
+-    // Parse KEY=VALUE pairs after header
+-    const char* pos = header + header_len + 1;
+-    const char* end = buf + len;
+-
+-    while (pos < end) {
+-        size_t entry_len = strlen(pos);
+-        if (entry_len == 0) {
+-            pos++;
+-            continue;
+-        }
+-
+-        const char* eq = strchr(pos, '=');
+-        if (eq) {
+-            char* key = strndup(pos, eq - pos);
+-            const char* value = eq + 1;
+-
+-            if (strcmp(key, "ACTION") == 0 && !*action)
+-                *action = strdup(value);
+-            else if (strcmp(key, "DEVPATH") == 0 && !*devpath)
+-                *devpath = strdup(value);
+-            else if (strcmp(key, "SUBSYSTEM") == 0)
+-                *subsystem = strdup(value);
+-
+-            cb(key, value, userdata);
+-            free(key);
+-        }
+-
+-        pos += entry_len + 1;
+-    }
+-
+-    if (!*action || !*devpath) {
+-        free(*action);
+-        free(*devpath);
+-        free(*subsystem);
+-        *action = NULL;
+-        *devpath = NULL;
+-        *subsystem = NULL;
+-        return -EINVAL;
+-    }
+-
+-    return 0;
+-}
+-
+-// --- Queue ---
+-
+-#include <sys/eventfd.h>
+-
+-struct udev_sysdep_queue {
+-    int fd;
+-};
+-
+-struct udev_sysdep_queue* udev_sysdep_queue_new(void) {
+-    // Create an eventfd that is immediately ready (signaled with 1)
+-    int fd = eventfd(1, EFD_CLOEXEC | EFD_NONBLOCK);
+-    if (fd < 0)
+-        return NULL;
+-
+-    struct udev_sysdep_queue* queue = calloc(1, sizeof(*queue));
+-    if (!queue) {
+-        close(fd);
+-        return NULL;
+-    }
+-    queue->fd = fd;
+-    return queue;
+-}
+-
+-void udev_sysdep_queue_free(struct udev_sysdep_queue* queue) {
+-    if (!queue)
+-        return;
+-    if (queue->fd >= 0)
+-        close(queue->fd);
+-    free(queue);
+-}
+-
+-int udev_sysdep_queue_get_fd(struct udev_sysdep_queue* queue) {
+-    if (!queue)
+-        return -EINVAL;
+-    return queue->fd;
+-}
+-
+-int udev_sysdep_queue_flush(struct udev_sysdep_queue* queue) {
+-    if (!queue || queue->fd < 0)
+-        return 0;
+-
+-    uint64_t val;
+-    read(queue->fd, &val, sizeof(val));
+-
+-    val = 1;
+-    write(queue->fd, &val, sizeof(val));
+-
+-    return 0;
+-}
+-
+-struct hwdb_header {
+-    char signature[8]; // "KSLPHHRH"
+-    uint64_t tool_version;
+-    uint64_t file_size;
+-    uint64_t header_size;
+-    uint64_t node_size;
+-    uint64_t child_entry_size;
+-    uint64_t value_entry_size;
+-    uint64_t strings_len;
+-    uint64_t nodes_len;
+-};
+-
+-struct hwdb_trie_node {
+-    uint64_t prefix_off;
+-    uint8_t children_count;
+-    uint8_t padding[3];
+-    uint32_t values_count;
+-};
+-
+-struct hwdb_trie_child {
+-    uint8_t c;
+-    uint8_t padding[7];
+-    uint64_t child_off;
+-};
+-
+-struct hwdb_trie_value {
+-    uint64_t key_off;
+-    uint64_t value_off;
+-};
+-
+-struct udev_sysdep_hwdb {
+-    void* map;
+-    size_t map_size;
+-    const struct hwdb_header* header;
+-};
+-
+-struct udev_sysdep_hwdb* udev_sysdep_hwdb_open(void) {
+-    static const char* hwdb_paths[] = {
+-        "/etc/udev/hwdb.bin",
+-        "/usr/lib/udev/hwdb.bin",
+-        "/lib/udev/hwdb.bin",
+-        NULL,
+-    };
+-
+-    int fd = -1;
+-    for (int i = 0; hwdb_paths[i]; i++) {
+-        fd = open(hwdb_paths[i], O_RDONLY | O_CLOEXEC);
+-        if (fd >= 0)
+-            break;
+-    }
+-    if (fd < 0)
+-        return NULL;
+-
+-    struct stat st;
+-    if (fstat(fd, &st) < 0 || st.st_size < (off_t)sizeof(struct hwdb_header)) {
+-        close(fd);
+-        return NULL;
+-    }
+-
+-    void* map = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+-    close(fd);
+-    if (map == MAP_FAILED)
+-        return NULL;
+-
+-    const struct hwdb_header* hdr = map;
+-    if (memcmp(hdr->signature, "KSLPHHRH", 8) != 0) {
+-        munmap(map, st.st_size);
+-        return NULL;
+-    }
+-
+-    struct udev_sysdep_hwdb* hwdb = calloc(1, sizeof(*hwdb));
+-    if (!hwdb) {
+-        munmap(map, st.st_size);
+-        return NULL;
+-    }
+-
+-    hwdb->map = map;
+-    hwdb->map_size = st.st_size;
+-    hwdb->header = hdr;
+-
+-    return hwdb;
+-}
+-
+-void udev_sysdep_hwdb_close(struct udev_sysdep_hwdb* hwdb) {
+-    if (!hwdb)
+-        return;
+-    if (hwdb->map)
+-        munmap(hwdb->map, hwdb->map_size);
+-    free(hwdb);
+-}
+-
+-static const char* hwdb_string(const struct udev_sysdep_hwdb* hwdb, uint64_t off) {
+-    if (off >= hwdb->map_size)
+-        return "";
+-    return (const char*)hwdb->map + off;
+-}
+-
+-static const struct hwdb_trie_node* hwdb_node(const struct udev_sysdep_hwdb* hwdb, uint64_t off) {
+-    if (off + sizeof(struct hwdb_trie_node) > hwdb->map_size)
+-        return NULL;
+-    return (const struct hwdb_trie_node*)((const char*)hwdb->map + off);
+-}
+-
+-static void hwdb_collect_values(
+-    const struct udev_sysdep_hwdb* hwdb,
+-    const struct hwdb_trie_node* node,
+-    udev_sysdep_hwdb_cb cb,
+-    void* userdata
+-) {
+-    if (!node)
+-        return;
+-
+-    const struct hwdb_trie_value* values =
+-        (const struct hwdb_trie_value*)((const char*)node + sizeof(*node) +
+-                                        node->children_count * sizeof(struct hwdb_trie_child));
+-
+-    for (uint32_t i = 0; i < node->values_count; i++) {
+-        const char* key = hwdb_string(hwdb, values[i].key_off);
+-        const char* value = hwdb_string(hwdb, values[i].value_off);
+-        cb(key, value, userdata);
+-    }
+-}
+-
+-static void hwdb_search(
+-    const struct udev_sysdep_hwdb* hwdb,
+-    const struct hwdb_trie_node* node,
+-    const char* search,
+-    size_t search_pos,
+-    udev_sysdep_hwdb_cb cb,
+-    void* userdata
+-) {
+-    if (!node)
+-        return;
+-
+-    // Match prefix of this node
+-    const char* prefix = hwdb_string(hwdb, node->prefix_off);
+-    size_t prefix_len = strlen(prefix);
+-
+-    for (size_t i = 0; i < prefix_len; i++) {
+-        if (search[search_pos] == '\0') {
+-            // Search string exhausted before prefix matched
+-            return;
+-        }
+-        if (search[search_pos] != prefix[i])
+-            return;
+-        search_pos++;
+-    }
+-
+-    // Collect values at this node (prefix match)
+-    hwdb_collect_values(hwdb, node, cb, userdata);
+-
+-    // If search string is exhausted, we're done
+-    if (search[search_pos] == '\0')
+-        return;
+-
+-    // Find matching child
+-    const struct hwdb_trie_child* children = (const struct hwdb_trie_child*)((const char*)node + sizeof(*node));
+-
+-    for (uint8_t i = 0; i < node->children_count; i++) {
+-        if ((char)children[i].c == search[search_pos]) {
+-            const struct hwdb_trie_node* child = hwdb_node(hwdb, children[i].child_off);
+-            hwdb_search(hwdb, child, search, search_pos + 1, cb, userdata);
+-            break;
+-        }
+-        if (children[i].c == '*') {
+-            // Wildcard: try all remaining positions
+-            const struct hwdb_trie_node* child = hwdb_node(hwdb, children[i].child_off);
+-            for (size_t j = search_pos; search[j] != '\0'; j++) {
+-                hwdb_search(hwdb, child, search, j, cb, userdata);
+-            }
+-            hwdb_search(hwdb, child, search, strlen(search), cb, userdata);
+-        }
+-    }
+-}
+-
+-int udev_sysdep_hwdb_lookup(
+-    struct udev_sysdep_hwdb* hwdb,
+-    const char* modalias,
+-    udev_sysdep_hwdb_cb cb,
+-    void* userdata
+-) {
+-    if (!hwdb || !modalias)
+-        return -EINVAL;
+-
+-    // Root node is right after the header
+-    const struct hwdb_trie_node* root = hwdb_node(hwdb, hwdb->header->header_size);
+-    hwdb_search(hwdb, root, modalias, 0, cb, userdata);
+-
+-    return 0;
+-}
+diff --git libudev-clean/sysdeps/sysdeps.h libudev-clean/sysdeps/sysdeps.h
+deleted file mode 100644
+index f87cdb4..0000000
+--- libudev-clean/sysdeps/sysdeps.h
++++ /dev/null
+@@ -1,117 +0,0 @@
+-#ifndef _LIBUDEV_SYSDEPS_H_
+-#define _LIBUDEV_SYSDEPS_H_
+-
+-#include <sys/types.h>
+-
+-// Validate and canonicalize a syspath.
+-// Returns heap-allocated canonical syspath, or NULL on failure.
+-char* udev_sysdep_resolve_syspath(const char* syspath);
+-
+-// Read the uevent file for a device at the given syspath.
+-// Calls cb(key, value, userdata) for each KEY=VALUE line.
+-// Returns 0 on success, negative errno on failure.
+-typedef void (*udev_sysdep_uevent_cb)(const char* key, const char* value, void* userdata);
+-int udev_sysdep_read_uevent(const char* syspath, udev_sysdep_uevent_cb cb, void* userdata);
+-
+-// Get the subsystem for a device (e.g. "block", "net").
+-// Returns heap-allocated string, or NULL.
+-char* udev_sysdep_get_subsystem(const char* syspath);
+-
+-// Get the driver for a device.
+-// Returns heap-allocated string, or NULL.
+-char* udev_sysdep_get_driver(const char* syspath);
+-
+-// Read a sysattr value. Returns heap-allocated string with trailing
+-// whitespace stripped, or NULL on failure.
+-char* udev_sysdep_read_sysattr(const char* syspath, const char* sysattr);
+-
+-// Write a sysattr value.
+-// Returns 0 on success, negative errno on failure.
+-int udev_sysdep_write_sysattr(const char* syspath, const char* sysattr, const char* value);
+-
+-// List sysattr names for a device.
+-// Calls cb(name, userdata) for each attribute.
+-// Returns 0 on success, negative errno on failure.
+-typedef void (*udev_sysdep_sysattr_list_cb)(const char* name, void* userdata);
+-int udev_sysdep_list_sysattrs(const char* syspath, udev_sysdep_sysattr_list_cb cb, void* userdata);
+-
+-// Resolve a device number to its syspath.
+-// type is 'b' for block, 'c' for char.
+-// Returns heap-allocated syspath, or NULL.
+-char* udev_sysdep_resolve_devnum(char type, dev_t devnum);
+-
+-// Get the /dev node path for a device.
+-// Returns heap-allocated path, or NULL.
+-char* udev_sysdep_resolve_devnode(const char* syspath);
+-
+-// Get the parent device's syspath.
+-// Returns heap-allocated syspath, or NULL if at root.
+-char* udev_sysdep_get_parent_syspath(const char* syspath);
+-
+-// Enumerate all device syspaths.
+-// Calls cb(syspath, userdata) for each device found.
+-// Returns 0 on success, negative errno on failure.
+-typedef void (*udev_sysdep_enumerate_cb)(const char* syspath, void* userdata);
+-int udev_sysdep_enumerate_devices(udev_sysdep_enumerate_cb cb, void* userdata);
+-
+-// Enumerate subsystem syspaths.
+-// Calls cb(syspath, userdata) for each subsystem found.
+-// Returns 0 on success, negative errno on failure.
+-int udev_sysdep_enumerate_subsystems(udev_sysdep_enumerate_cb cb, void* userdata);
+-
+-// Read udev database entry for a device.
+-// type: 'S' symlink, 'E' env/property, 'G' tag, 'Q' current tag,
+-//       'I' initialized usec, 'V' db version.
+-// Returns 0 on success, negative errno on failure.
+-typedef void (*udev_sysdep_udevdb_cb)(char type, const char* value, void* userdata);
+-int udev_sysdep_read_udev_db(
+-    const char* syspath,
+-    const char* subsystem,
+-    dev_t devnum,
+-    udev_sysdep_udevdb_cb cb,
+-    void* userdata
+-);
+-
+-// Monitor interface â€” opaque handle, not necessarily backed by an fd.
+-struct udev_sysdep_monitor;
+-struct udev_sysdep_monitor* udev_sysdep_monitor_new(void);
+-void udev_sysdep_monitor_free(struct udev_sysdep_monitor* mon);
+-int udev_sysdep_monitor_enable(struct udev_sysdep_monitor* mon);
+-int udev_sysdep_monitor_get_fd(struct udev_sysdep_monitor* mon);
+-int udev_sysdep_monitor_set_buf_size(struct udev_sysdep_monitor* mon, int size);
+-
+-// Receive a uevent from the monitor.
+-// Sets *action, *devpath, *subsystem to heap-allocated strings (caller frees).
+-// Calls cb(key, value, userdata) for each property.
+-// Returns 0 on success, negative errno on failure.
+-typedef void (*udev_sysdep_monitor_cb)(const char* key, const char* value, void* userdata);
+-int udev_sysdep_monitor_receive(
+-    struct udev_sysdep_monitor* mon,
+-    char** action,
+-    char** devpath,
+-    char** subsystem,
+-    udev_sysdep_monitor_cb cb,
+-    void* userdata
+-);
+-
+-// Queue interface â€” opaque handle for event queue readiness signaling.
+-struct udev_sysdep_queue;
+-struct udev_sysdep_queue* udev_sysdep_queue_new(void);
+-void udev_sysdep_queue_free(struct udev_sysdep_queue* queue);
+-int udev_sysdep_queue_get_fd(struct udev_sysdep_queue* queue);
+-int udev_sysdep_queue_flush(struct udev_sysdep_queue* queue);
+-
+-// Hardware database (hwdb) interface.
+-struct udev_sysdep_hwdb;
+-struct udev_sysdep_hwdb* udev_sysdep_hwdb_open(void);
+-void udev_sysdep_hwdb_close(struct udev_sysdep_hwdb* hwdb);
+-
+-typedef void (*udev_sysdep_hwdb_cb)(const char* key, const char* value, void* userdata);
+-int udev_sysdep_hwdb_lookup(
+-    struct udev_sysdep_hwdb* hwdb,
+-    const char* modalias,
+-    udev_sysdep_hwdb_cb cb,
+-    void* userdata
+-);
+-
+-#endif
+diff --git libudev-workdir/udev_config.c libudev-workdir/udev_config.c
+new file mode 100644
+index 0000000..8da05f4
+--- /dev/null
++++ libudev-workdir/udev_config.c
+@@ -0,0 +1,468 @@
++#include "udev_config.h"
++#include <ctype.h>
++#include <dirent.h>
++#include <errno.h>
++#include <limits.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <sys/sysmacros.h>
++
++#define DEFAULT_CONFIG_DIR "/etc/udev/devices.d"
++
++struct kv {
++    char* key;
++    char* value;
++};
++
++struct device_record {
++    char* syspath; // "/sys" + devpath
++    char* devpath;
++    char* sysname;
++    char* subsystem;
++    char* devname; // raw DEVNAME value
++    char* driver;
++    char* parent_devpath; // PARENT= value, may be NULL
++    dev_t devnum;
++    char devnum_type; // 'b', 'c', or 0 if no MAJOR set
++    int has_devnum;
++
++    struct kv* properties;
++    size_t nproperties;
++
++    struct kv* sysattrs;
++    size_t nsysattrs;
++};
++
++static struct device_record* g_records = NULL;
++static size_t g_nrecords = 0;
++static int g_loaded = 0;
++
++// --- Debug logging ---
++//
++// Enable by setting UDEV_DEBUG=1 (or any non-empty, non-"0" value) in the
++// environment. Output goes to stderr with a "libudev:" prefix.
++
++static int debug_enabled(void) {
++    static int cached = -1;
++    if (cached < 0) {
++        const char* env = getenv("UDEV_DEBUG");
++        cached = (env && *env && strcmp(env, "0") != 0) ? 1 : 0;
++    }
++    return cached;
++}
++
++#define DBG(...) \
++    do { \
++        if (debug_enabled()) { \
++            fprintf(stderr, "libudev: "); \
++            fprintf(stderr, __VA_ARGS__); \
++            fputc('\n', stderr); \
++        } \
++    } while (0)
++
++// --- Small helpers ---
++
++static char* xstrdup(const char* s) {
++    return s ? strdup(s) : NULL;
++}
++
++static char* trim(char* s) {
++    while (*s && isspace((unsigned char)*s))
++        s++;
++    char* end = s + strlen(s);
++    while (end > s && isspace((unsigned char)end[-1]))
++        end--;
++    *end = '\0';
++    return s;
++}
++
++static void kv_array_add(struct kv** arr, size_t* n, const char* key, const char* value) {
++    struct kv* na = realloc(*arr, (*n + 1) * sizeof(**arr));
++    if (!na)
++        return;
++    na[*n].key = strdup(key);
++    na[*n].value = value ? strdup(value) : NULL;
++    *arr = na;
++    (*n)++;
++}
++
++static struct device_record* find_by_syspath(const char* syspath) {
++    if (!syspath)
++        return NULL;
++    for (size_t i = 0; i < g_nrecords; i++) {
++        if (strcmp(g_records[i].syspath, syspath) == 0)
++            return &g_records[i];
++    }
++    return NULL;
++}
++
++// --- Parser ---
++
++static const char* config_dir(void) {
++    const char* env = getenv("UDEV_DEVICES_DIR");
++    return (env && *env) ? env : DEFAULT_CONFIG_DIR;
++}
++
++static int parse_file(const char* path, struct device_record* out) {
++    FILE* f = fopen(path, "re");
++    if (!f)
++        return -errno;
++
++    memset(out, 0, sizeof(*out));
++
++    char line[4096];
++    while (fgets(line, sizeof(line), f)) {
++        char* s = trim(line);
++        if (*s == '\0' || *s == '#')
++            continue;
++
++        char* eq = strchr(s, '=');
++        if (!eq)
++            continue;
++        *eq = '\0';
++        char* key = trim(s);
++        char* value = trim(eq + 1);
++
++        // ATTR{name}=value
++        if (strncmp(key, "ATTR{", 5) == 0) {
++            char* end = strchr(key + 5, '}');
++            if (!end)
++                continue;
++            *end = '\0';
++            kv_array_add(&out->sysattrs, &out->nsysattrs, key + 5, value);
++            continue;
++        }
++
++        // Well-known keys: capture into struct fields, but don't echo
++        // PARENT= back through the properties list. PARENT is the NAME of
++        // another device in the same subsystem, or "<subsystem>/<name>"
++        // for a cross-subsystem parent.
++        if (strcmp(key, "PARENT") == 0) {
++            free(out->parent_devpath);
++            out->parent_devpath = strdup(value);
++            continue;
++        }
++
++        // Everything else becomes a property.
++        kv_array_add(&out->properties, &out->nproperties, key, value);
++
++        if (strcmp(key, "NAME") == 0) {
++            free(out->sysname);
++            out->sysname = strdup(value);
++        } else if (strcmp(key, "SUBSYSTEM") == 0) {
++            free(out->subsystem);
++            out->subsystem = strdup(value);
++        } else if (strcmp(key, "DEVNAME") == 0) {
++            free(out->devname);
++            out->devname = strdup(value);
++        } else if (strcmp(key, "DRIVER") == 0) {
++            free(out->driver);
++            out->driver = strdup(value);
++        }
++        // MAJOR/MINOR, if present, are kept as plain properties but the
++        // canonical device number is taken from stat()ing DEVNAME below.
++    }
++    fclose(f);
++
++    // NAME is required and SUBSYSTEM is required: the syspath is
++    // synthesised as /sys/devices/<SUBSYSTEM>/<NAME>. Filenames in the
++    // config dir are not significant.
++    if (!out->sysname || !out->sysname[0]) {
++        fprintf(stderr, "libudev: %s: missing NAME, ignoring\n", path);
++        return -EINVAL;
++    }
++    if (!out->subsystem || !out->subsystem[0]) {
++        fprintf(stderr, "libudev: %s: missing SUBSYSTEM, ignoring\n", path);
++        return -EINVAL;
++    }
++
++    char devpath[PATH_MAX];
++    snprintf(devpath, sizeof(devpath), "/devices/%s/%s", out->subsystem, out->sysname);
++    out->devpath = strdup(devpath);
++
++    char syspath[PATH_MAX];
++    snprintf(syspath, sizeof(syspath), "/sys%s", out->devpath);
++    out->syspath = strdup(syspath);
++
++    // Discover the device number by stat()ing DEVNAME. DEVNAME must be an
++    // absolute path; the major/minor the OS reports for that node is what
++    // libinput and friends will look up via udev_device_new_from_devnum().
++    if (out->devname) {
++        if (out->devname[0] != '/') {
++            fprintf(stderr, "libudev: %s: DEVNAME must be an absolute path, ignoring\n", path);
++            return -EINVAL;
++        }
++        struct stat dst;
++        if (stat(out->devname, &dst) == 0 && (S_ISCHR(dst.st_mode) || S_ISBLK(dst.st_mode))) {
++            out->devnum = dst.st_rdev;
++            out->has_devnum = 1;
++            out->devnum_type = S_ISBLK(dst.st_mode) ? 'b' : 'c';
++        } else {
++            DBG("%s: stat(%s) failed or not a device node: %s", path, out->devname, strerror(errno));
++        }
++    }
++
++    DBG("loaded %s: syspath=%s subsystem=%s devname=%s devnum=%c%u:%u parent=%s props=%zu attrs=%zu",
++        path,
++        out->syspath,
++        out->subsystem ? out->subsystem : "(none)",
++        out->devname ? out->devname : "(none)",
++        out->has_devnum ? out->devnum_type : '-',
++        out->has_devnum ? major(out->devnum) : 0u,
++        out->has_devnum ? minor(out->devnum) : 0u,
++        out->parent_devpath ? out->parent_devpath : "(none)",
++        out->nproperties,
++        out->nsysattrs);
++
++    return 0;
++}
++
++void udev_config_init(void) {
++    if (g_loaded)
++        return;
++    g_loaded = 1;
++
++    const char* dir = config_dir();
++    DBG("scanning config dir %s", dir);
++    DIR* d = opendir(dir);
++    if (!d) {
++        DBG("opendir(%s) failed: %s", dir, strerror(errno));
++        return;
++    }
++
++    struct dirent* de;
++    while ((de = readdir(d))) {
++        if (de->d_name[0] == '.')
++            continue;
++
++        char path[PATH_MAX];
++        snprintf(path, sizeof(path), "%s/%s", dir, de->d_name);
++
++        struct stat st;
++        if (stat(path, &st) < 0 || !S_ISREG(st.st_mode))
++            continue;
++
++        struct device_record rec;
++        if (parse_file(path, &rec) < 0) {
++            // free anything parse_file allocated before failure
++            free(rec.devpath);
++            free(rec.subsystem);
++            free(rec.devname);
++            free(rec.driver);
++            free(rec.parent_devpath);
++            for (size_t i = 0; i < rec.nproperties; i++) {
++                free(rec.properties[i].key);
++                free(rec.properties[i].value);
++            }
++            free(rec.properties);
++            for (size_t i = 0; i < rec.nsysattrs; i++) {
++                free(rec.sysattrs[i].key);
++                free(rec.sysattrs[i].value);
++            }
++            free(rec.sysattrs);
++            continue;
++        }
++
++        struct device_record* na = realloc(g_records, (g_nrecords + 1) * sizeof(*g_records));
++        if (!na)
++            continue;
++        g_records = na;
++        g_records[g_nrecords++] = rec;
++    }
++    closedir(d);
++    DBG("loaded %zu device(s) from %s", g_nrecords, dir);
++}
++
++// --- Lookups ---
++
++char* udev_config_resolve_syspath(const char* syspath) {
++    udev_config_init();
++    if (!syspath)
++        return NULL;
++
++    // Accept "/sys/..." or bare "/..." (treat as devpath)
++    char buf[PATH_MAX];
++    if (strncmp(syspath, "/sys", 4) != 0) {
++        if (syspath[0] != '/')
++            return NULL;
++        snprintf(buf, sizeof(buf), "/sys%s", syspath);
++        syspath = buf;
++    }
++
++    struct device_record* r = find_by_syspath(syspath);
++    DBG("resolve_syspath(%s) -> %s", syspath, r ? r->syspath : "(none)");
++    return r ? strdup(r->syspath) : NULL;
++}
++
++char* udev_config_probe_device(const char* subsystem, const char* sysname) {
++    udev_config_init();
++    if (!subsystem || !sysname)
++        return NULL;
++
++    for (size_t i = 0; i < g_nrecords; i++) {
++        struct device_record* r = &g_records[i];
++        if (r->subsystem && strcmp(r->subsystem, subsystem) == 0 && strcmp(r->sysname, sysname) == 0) {
++            DBG("probe_device(%s, %s) -> %s", subsystem, sysname, r->syspath);
++            return strdup(r->syspath);
++        }
++    }
++    DBG("probe_device(%s, %s) -> (none)", subsystem, sysname);
++    return NULL;
++}
++
++char* udev_config_resolve_devnum(char type, dev_t devnum) {
++    udev_config_init();
++    for (size_t i = 0; i < g_nrecords; i++) {
++        struct device_record* r = &g_records[i];
++        if (r->has_devnum && r->devnum_type == type && r->devnum == devnum) {
++            DBG("resolve_devnum(%c, %u:%u) -> %s", type, major(devnum), minor(devnum), r->syspath);
++            return strdup(r->syspath);
++        }
++    }
++    DBG("resolve_devnum(%c, %u:%u) -> (none)", type, major(devnum), minor(devnum));
++    return NULL;
++}
++
++char* udev_config_get_subsystem(const char* syspath) {
++    udev_config_init();
++    struct device_record* r = find_by_syspath(syspath);
++    return (r && r->subsystem) ? strdup(r->subsystem) : NULL;
++}
++
++char* udev_config_get_driver(const char* syspath) {
++    udev_config_init();
++    struct device_record* r = find_by_syspath(syspath);
++    return (r && r->driver) ? strdup(r->driver) : NULL;
++}
++
++char* udev_config_get_devnode(const char* syspath) {
++    udev_config_init();
++    struct device_record* r = find_by_syspath(syspath);
++    if (!r || !r->devname)
++        return NULL;
++    return strdup(r->devname);
++}
++
++char* udev_config_get_parent_syspath(const char* syspath) {
++    udev_config_init();
++    struct device_record* r = find_by_syspath(syspath);
++    if (!r || !r->parent_devpath)
++        return NULL;
++
++    // PARENT may be either "<subsystem>/<name>" or just "<name>" (in which
++    // case the child's own subsystem is assumed).
++    const char* sep = strchr(r->parent_devpath, '/');
++    char buf[PATH_MAX];
++    if (sep) {
++        snprintf(buf, sizeof(buf), "/sys/devices/%s", r->parent_devpath);
++    } else {
++        if (!r->subsystem)
++            return NULL;
++        snprintf(buf, sizeof(buf), "/sys/devices/%s/%s", r->subsystem, r->parent_devpath);
++    }
++
++    if (!find_by_syspath(buf))
++        return NULL;
++
++    return strdup(buf);
++}
++
++int udev_config_read_uevent(const char* syspath, udev_config_kv_cb cb, void* userdata) {
++    udev_config_init();
++    struct device_record* r = find_by_syspath(syspath);
++    if (!r)
++        return -ENOENT;
++    for (size_t i = 0; i < r->nproperties; i++)
++        cb(r->properties[i].key, r->properties[i].value ? r->properties[i].value : "", userdata);
++    return 0;
++}
++
++char* udev_config_read_sysattr(const char* syspath, const char* sysattr) {
++    udev_config_init();
++    struct device_record* r = find_by_syspath(syspath);
++    if (!r || !sysattr) {
++        DBG("read_sysattr(%s, %s) -> (no device)", syspath, sysattr ? sysattr : "(null)");
++        return NULL;
++    }
++    for (size_t i = 0; i < r->nsysattrs; i++) {
++        if (strcmp(r->sysattrs[i].key, sysattr) == 0) {
++            DBG("read_sysattr(%s, %s) -> %s", syspath, sysattr, r->sysattrs[i].value ? r->sysattrs[i].value : "");
++            return xstrdup(r->sysattrs[i].value);
++        }
++    }
++    DBG("read_sysattr(%s, %s) -> (none)", syspath, sysattr);
++    return NULL;
++}
++
++int udev_config_list_sysattrs(const char* syspath, udev_config_name_cb cb, void* userdata) {
++    udev_config_init();
++    struct device_record* r = find_by_syspath(syspath);
++    if (!r)
++        return -ENOENT;
++    for (size_t i = 0; i < r->nsysattrs; i++)
++        cb(r->sysattrs[i].key, userdata);
++    return 0;
++}
++
++int udev_config_enumerate_devices(udev_config_path_cb cb, void* userdata) {
++    udev_config_init();
++    for (size_t i = 0; i < g_nrecords; i++)
++        cb(g_records[i].syspath, userdata);
++    return 0;
++}
++
++int udev_config_enumerate_subsystems(udev_config_path_cb cb, void* userdata) {
++    udev_config_init();
++    // Emit each distinct subsystem once, as "/sys/class/<subsystem>".
++    char** seen = NULL;
++    size_t nseen = 0;
++
++    for (size_t i = 0; i < g_nrecords; i++) {
++        const char* sub = g_records[i].subsystem;
++        if (!sub)
++            continue;
++        int dup = 0;
++        for (size_t j = 0; j < nseen; j++) {
++            if (strcmp(seen[j], sub) == 0) {
++                dup = 1;
++                break;
++            }
++        }
++        if (dup)
++            continue;
++        char** ns = realloc(seen, (nseen + 1) * sizeof(*seen));
++        if (!ns)
++            break;
++        seen = ns;
++        seen[nseen++] = strdup(sub);
++
++        char path[PATH_MAX];
++        snprintf(path, sizeof(path), "/sys/class/%s", sub);
++        cb(path, userdata);
++    }
++
++    for (size_t j = 0; j < nseen; j++)
++        free(seen[j]);
++    free(seen);
++    return 0;
++}
++
++char* udev_config_lookup_net_ifindex(int ifindex) {
++    udev_config_init();
++    char want[16];
++    snprintf(want, sizeof(want), "%d", ifindex);
++
++    for (size_t i = 0; i < g_nrecords; i++) {
++        struct device_record* r = &g_records[i];
++        if (!r->subsystem || strcmp(r->subsystem, "net") != 0)
++            continue;
++        for (size_t j = 0; j < r->nsysattrs; j++) {
++            if (strcmp(r->sysattrs[j].key, "ifindex") == 0 && r->sysattrs[j].value &&
++                strcmp(r->sysattrs[j].value, want) == 0)
++                return strdup(r->syspath);
++        }
++    }
++    return NULL;
++}
+diff --git libudev-workdir/udev_config.h libudev-workdir/udev_config.h
+new file mode 100644
+index 0000000..fe01972
+--- /dev/null
++++ libudev-workdir/udev_config.h
+@@ -0,0 +1,57 @@
++#ifndef _LIBUDEV_CONFIG_H_
++#define _LIBUDEV_CONFIG_H_
++
++// Config-driven device registry. Devices are described by Linux-style
++// uevent files under /etc/udev/devices.d/ (override with $UDEV_DEVICES_DIR).
++//
++// File format: KEY=VALUE per line. '#' starts a comment. Blank lines and
++// trailing whitespace are ignored.
++//
++// Recognized keys (others are kept as plain properties):
++//   DEVPATH=/class/...     (required) syspath = "/sys" + DEVPATH
++//   SUBSYSTEM=...          subsystem name
++//   DEVNAME=...            /dev node basename or absolute path
++//   DEVTYPE=...            device subtype
++//   DRIVER=...             driver name
++//   MAJOR=...  MINOR=...   device number
++//   PARENT=/class/...      parent device's DEVPATH (explicit)
++//   ATTR{name}=value       sysattr (udev-rule style, repeatable)
++
++#include <sys/types.h>
++
++typedef void (*udev_config_kv_cb)(const char* key, const char* value, void* userdata);
++typedef void (*udev_config_name_cb)(const char* name, void* userdata);
++typedef void (*udev_config_path_cb)(const char* syspath, void* userdata);
++
++// Idempotent. Scans the config directory on first call.
++void udev_config_init(void);
++
++// Lookups. All returned strings are heap-allocated; caller frees.
++char* udev_config_resolve_syspath(const char* syspath);
++char* udev_config_probe_device(const char* subsystem, const char* sysname);
++char* udev_config_resolve_devnum(char type, dev_t devnum);
++
++// Per-device accessors. Return strdup'd values or NULL.
++char* udev_config_get_subsystem(const char* syspath);
++char* udev_config_get_driver(const char* syspath);
++char* udev_config_get_devnode(const char* syspath);
++char* udev_config_get_parent_syspath(const char* syspath);
++
++// Iterate KEY=VALUE properties of a device (everything that was in the file
++// except ATTR{} entries and the parent directive). Returns 0 on success,
++// negative errno on failure.
++int udev_config_read_uevent(const char* syspath, udev_config_kv_cb cb, void* userdata);
++
++// Sysattrs.
++char* udev_config_read_sysattr(const char* syspath, const char* sysattr);
++int udev_config_list_sysattrs(const char* syspath, udev_config_name_cb cb, void* userdata);
++
++// Enumeration.
++int udev_config_enumerate_devices(udev_config_path_cb cb, void* userdata);
++int udev_config_enumerate_subsystems(udev_config_path_cb cb, void* userdata);
++
++// Lookup network device by ifindex (reads the "ifindex" sysattr of net devices).
++// Returns the syspath as strdup'd string, or NULL.
++char* udev_config_lookup_net_ifindex(int ifindex);
++
++#endif
+diff --git libudev-clean/udev_device.c libudev-workdir/udev_device.c
+index a895d56..601ceb9 100644
+--- libudev-clean/udev_device.c
++++ libudev-workdir/udev_device.c
+@@ -1,3 +1,4 @@
++#include "udev_config.h"
+ #include "udev_internal.h"
+ #include <ctype.h>
+ #include <dirent.h>
+@@ -75,13 +76,13 @@ static void ensure_uevent_loaded(struct udev_device* dev) {
+         return;
+     dev->uevent_loaded = 1;
+ 
+-    udev_sysdep_read_uevent(dev->syspath, uevent_cb, dev);
++    udev_config_read_uevent(dev->syspath, uevent_cb, dev);
+ 
+     // Add well-known properties
+     if (dev->devpath)
+         udev_list_entry_add(&dev->properties, "DEVPATH", dev->devpath);
+ 
+-    char* subsys = udev_sysdep_get_subsystem(dev->syspath);
++    char* subsys = udev_config_get_subsystem(dev->syspath);
+     if (subsys) {
+         udev_list_entry_add(&dev->properties, "SUBSYSTEM", subsys);
+         if (!dev->subsystem)
+@@ -129,7 +130,20 @@ static void ensure_db_loaded(struct udev_device* dev) {
+ 
+     ensure_uevent_loaded(dev);
+ 
+-    udev_sysdep_read_udev_db(dev->syspath, dev->subsystem, dev->devnum, db_cb, dev);
++    // No on-disk udev database in the config-driven backend. Synthesize a
++    // non-zero 'I' (initialized usec) record so udev_device_get_is_initialized
++    // returns true; this matches what libinput and similar consumers expect.
++    struct timespec _ts;
++    if (clock_gettime(CLOCK_MONOTONIC, &_ts) == 0) {
++        char buf[32];
++        snprintf(
++            buf,
++            sizeof(buf),
++            "%llu",
++            (unsigned long long)_ts.tv_sec * 1000000ULL + (unsigned long long)_ts.tv_nsec / 1000ULL
++        );
++        db_cb('I', buf, dev);
++    }
+ }
+ 
+ static char* extract_sysnum(const char* sysname) {
+@@ -185,7 +199,7 @@ struct udev_device* udev_device_new_from_syspath(struct udev* udev, const char*
+     if (!udev || !syspath)
+         return NULL;
+ 
+-    char* resolved = udev_sysdep_resolve_syspath(syspath);
++    char* resolved = udev_config_resolve_syspath(syspath);
+     if (!resolved)
+         return NULL;
+ 
+@@ -196,7 +210,7 @@ struct udev_device* udev_device_new_from_devnum(struct udev* udev, char type, de
+     if (!udev)
+         return NULL;
+ 
+-    char* syspath = udev_sysdep_resolve_devnum(type, devnum);
++    char* syspath = udev_config_resolve_devnum(type, devnum);
+     if (!syspath)
+         return NULL;
+ 
+@@ -211,34 +225,9 @@ struct udev_device* udev_device_new_from_subsystem_sysname(
+     if (!udev || !subsystem || !sysname)
+         return NULL;
+ 
+-    char path[PATH_MAX];
+-    char resolved[PATH_MAX];
+-
+-    char uevent[PATH_MAX + 8];
+-
+-    // Try /sys/bus/{subsystem}/devices/{sysname}
+-    snprintf(path, sizeof(path), "/sys/bus/%s/devices/%s", subsystem, sysname);
+-    if (realpath(path, resolved)) {
+-        snprintf(uevent, sizeof(uevent), "%s/uevent", resolved);
+-        if (access(uevent, F_OK) == 0)
+-            return device_new(udev, strdup(resolved));
+-    }
+-
+-    // Try /sys/class/{subsystem}/{sysname}
+-    snprintf(path, sizeof(path), "/sys/class/%s/%s", subsystem, sysname);
+-    if (realpath(path, resolved)) {
+-        snprintf(uevent, sizeof(uevent), "%s/uevent", resolved);
+-        if (access(uevent, F_OK) == 0)
+-            return device_new(udev, strdup(resolved));
+-    }
+-
+-    // Try /sys/subsystem/{subsystem}/devices/{sysname}
+-    snprintf(path, sizeof(path), "/sys/subsystem/%s/devices/%s", subsystem, sysname);
+-    if (realpath(path, resolved)) {
+-        snprintf(uevent, sizeof(uevent), "%s/uevent", resolved);
+-        if (access(uevent, F_OK) == 0)
+-            return device_new(udev, strdup(resolved));
+-    }
++    char* probed = udev_config_probe_device(subsystem, sysname);
++    if (probed)
++        return device_new(udev, probed);
+ 
+     return NULL;
+ }
+@@ -260,35 +249,10 @@ struct udev_device* udev_device_new_from_device_id(struct udev* udev, const char
+         int target_ifindex = atoi(id + 1);
+         if (target_ifindex <= 0)
+             return NULL;
+-
+-        DIR* ndir = opendir("/sys/class/net");
+-        if (!ndir)
++        char* syspath = udev_config_lookup_net_ifindex(target_ifindex);
++        if (!syspath)
+             return NULL;
+-
+-        struct udev_device* result = NULL;
+-        struct dirent* nde;
+-        while ((nde = readdir(ndir))) {
+-            if (nde->d_name[0] == '.')
+-                continue;
+-            char ifpath[PATH_MAX];
+-            snprintf(ifpath, sizeof(ifpath), "/sys/class/net/%s/ifindex", nde->d_name);
+-            FILE* f = fopen(ifpath, "re");
+-            if (!f)
+-                continue;
+-            int idx = 0;
+-            if (fscanf(f, "%d", &idx) == 1 && idx == target_ifindex) {
+-                fclose(f);
+-                char netpath[PATH_MAX];
+-                char netresolved[PATH_MAX];
+-                snprintf(netpath, sizeof(netpath), "/sys/class/net/%s", nde->d_name);
+-                if (realpath(netpath, netresolved))
+-                    result = device_new(udev, strdup(netresolved));
+-                break;
+-            }
+-            fclose(f);
+-        }
+-        closedir(ndir);
+-        return result;
++        return device_new(udev, syspath);
+     }
+     case '+': {
+         // +subsystem:sysname
+@@ -403,7 +367,7 @@ struct udev_device* udev_device_get_parent(struct udev_device* udev_device) {
+ 
+     if (!udev_device->parent_loaded) {
+         udev_device->parent_loaded = 1;
+-        char* parent_syspath = udev_sysdep_get_parent_syspath(udev_device->syspath);
++        char* parent_syspath = udev_config_get_parent_syspath(udev_device->syspath);
+         if (parent_syspath)
+             udev_device->parent = device_new(udev_device->udev, parent_syspath);
+     }
+@@ -447,7 +411,7 @@ const char* udev_device_get_subsystem(struct udev_device* udev_device) {
+     if (!udev_device)
+         return NULL;
+     if (!udev_device->subsystem)
+-        udev_device->subsystem = udev_sysdep_get_subsystem(udev_device->syspath);
++        udev_device->subsystem = udev_config_get_subsystem(udev_device->syspath);
+     return udev_device->subsystem;
+ }
+ 
+@@ -483,7 +447,7 @@ const char* udev_device_get_devnode(struct udev_device* udev_device) {
+     if (!udev_device->devnode) {
+         ensure_uevent_loaded(udev_device);
+         if (!udev_device->devnode)
+-            udev_device->devnode = udev_sysdep_resolve_devnode(udev_device->syspath);
++            udev_device->devnode = udev_config_get_devnode(udev_device->syspath);
+     }
+     return udev_device->devnode;
+ }
+@@ -534,7 +498,7 @@ struct udev_list_entry* udev_device_get_sysattr_list_entry(struct udev_device* u
+         return NULL;
+     if (!udev_device->sysattrs_listed) {
+         udev_device->sysattrs_listed = 1;
+-        udev_sysdep_list_sysattrs(udev_device->syspath, sysattr_list_cb, udev_device);
++        udev_config_list_sysattrs(udev_device->syspath, sysattr_list_cb, udev_device);
+     }
+     return udev_list_get_head(&udev_device->sysattrs);
+ }
+@@ -554,7 +518,7 @@ const char* udev_device_get_driver(struct udev_device* udev_device) {
+     if (!udev_device->driver) {
+         ensure_uevent_loaded(udev_device);
+         if (!udev_device->driver)
+-            udev_device->driver = udev_sysdep_get_driver(udev_device->syspath);
++            udev_device->driver = udev_config_get_driver(udev_device->syspath);
+     }
+     return udev_device->driver;
+ }
+@@ -606,8 +570,8 @@ const char* udev_device_get_sysattr_value(struct udev_device* udev_device, const
+     if (entry && udev_list_entry_get_value(entry))
+         return udev_list_entry_get_value(entry);
+ 
+-    // Read from sysfs
+-    char* value = udev_sysdep_read_sysattr(udev_device->syspath, sysattr);
++    // Read from registry
++    char* value = udev_config_read_sysattr(udev_device->syspath, sysattr);
+     if (!value)
+         return NULL;
+ 
+@@ -628,13 +592,10 @@ int udev_device_set_sysattr_value(struct udev_device* udev_device, const char* s
+         return 0;
+     }
+ 
+-    int r = udev_sysdep_write_sysattr(udev_device->syspath, sysattr, value);
+-    if (r < 0)
+-        return r;
+-
+-    // Update cache
+-    udev_list_entry_add(&udev_device->sysattrs, sysattr, value);
+-    return 0;
++    // The config-driven backend is read-only; sysattrs come from static
++    // configuration files and cannot be modified at runtime.
++    (void)value;
++    return -EROFS;
+ }
+ 
+ int udev_device_has_tag(struct udev_device* udev_device, const char* tag) {
+diff --git libudev-clean/udev_enumerate.c libudev-workdir/udev_enumerate.c
+index 931e6fa..d1f54ce 100644
+--- libudev-clean/udev_enumerate.c
++++ libudev-workdir/udev_enumerate.c
+@@ -1,3 +1,4 @@
++#include "udev_config.h"
+ #include "udev_internal.h"
+ #include <fnmatch.h>
+ #include <stdlib.h>
+@@ -116,8 +117,8 @@ static int device_matches_filters(struct udev_enumerate* e, const char* syspath)
+             return 0;
+     }
+ 
+-    // Subsystem check (can be done via sysdep without full device)
+-    char* subsystem = udev_sysdep_get_subsystem(syspath);
++    // Subsystem check (can be done via the registry without full device)
++    char* subsystem = udev_config_get_subsystem(syspath);
+     if (subsystem) {
+         if (!match_name_in_list(subsystem, &e->match_subsystem)) {
+             free(subsystem);
+@@ -362,7 +363,7 @@ int udev_enumerate_scan_devices(struct udev_enumerate* udev_enumerate) {
+     udev_list_cleanup(&udev_enumerate->results);
+     udev_list_init(&udev_enumerate->results, 0);
+ 
+-    udev_sysdep_enumerate_devices(enumerate_cb, udev_enumerate);
++    udev_config_enumerate_devices(enumerate_cb, udev_enumerate);
+     sort_results(&udev_enumerate->results);
+ 
+     return 0;
+@@ -375,7 +376,7 @@ int udev_enumerate_scan_subsystems(struct udev_enumerate* udev_enumerate) {
+     udev_list_cleanup(&udev_enumerate->results);
+     udev_list_init(&udev_enumerate->results, 0);
+ 
+-    udev_sysdep_enumerate_subsystems(enumerate_cb, udev_enumerate);
++    udev_config_enumerate_subsystems(enumerate_cb, udev_enumerate);
+     sort_results(&udev_enumerate->results);
+ 
+     return 0;
+diff --git libudev-clean/udev_hwdb.c libudev-workdir/udev_hwdb.c
+index e82462b..204b442 100644
+--- libudev-clean/udev_hwdb.c
++++ libudev-workdir/udev_hwdb.c
+@@ -1,10 +1,12 @@
+ #include "udev_internal.h"
+ #include <stdlib.h>
+ 
++// No hwdb backing in the config-driven build. udev_hwdb_new returns a valid
++// handle so callers can use it, but lookups always return an empty list.
++
+ struct udev_hwdb {
+     struct udev* udev;
+     size_t refcount;
+-    struct udev_sysdep_hwdb* sysdep_hwdb;
+     struct udev_list properties;
+ };
+ 
+@@ -12,19 +14,12 @@ struct udev_hwdb* udev_hwdb_new(struct udev* udev) {
+     if (!udev)
+         return NULL;
+ 
+-    struct udev_sysdep_hwdb* sysdep = udev_sysdep_hwdb_open();
+-    if (!sysdep)
+-        return NULL;
+-
+     struct udev_hwdb* hwdb = calloc(1, sizeof(*hwdb));
+-    if (!hwdb) {
+-        udev_sysdep_hwdb_close(sysdep);
++    if (!hwdb)
+         return NULL;
+-    }
+ 
+     hwdb->udev = udev_ref(udev);
+     hwdb->refcount = 1;
+-    hwdb->sysdep_hwdb = sysdep;
+     udev_list_init(&hwdb->properties, 1);
+ 
+     return hwdb;
+@@ -45,18 +40,12 @@ struct udev_hwdb* udev_hwdb_unref(struct udev_hwdb* hwdb) {
+     if (hwdb->refcount > 0)
+         return hwdb;
+ 
+-    udev_sysdep_hwdb_close(hwdb->sysdep_hwdb);
+     udev_list_cleanup(&hwdb->properties);
+     udev_unref(hwdb->udev);
+     free(hwdb);
+     return NULL;
+ }
+ 
+-static void hwdb_property_cb(const char* key, const char* value, void* userdata) {
+-    struct udev_list* list = userdata;
+-    udev_list_entry_add(list, key, value);
+-}
+-
+ struct udev_list_entry* udev_hwdb_get_properties_list_entry(
+     struct udev_hwdb* hwdb,
+     const char* modalias,
+@@ -66,12 +55,5 @@ struct udev_list_entry* udev_hwdb_get_properties_list_entry(
+         return NULL;
+ 
+     (void)flags;
+-
+-    // Clear previous results
+-    udev_list_cleanup(&hwdb->properties);
+-    udev_list_init(&hwdb->properties, 1);
+-
+-    udev_sysdep_hwdb_lookup(hwdb->sysdep_hwdb, modalias, hwdb_property_cb, &hwdb->properties);
+-
+-    return udev_list_get_head(&hwdb->properties);
++    return NULL;
+ }
+diff --git libudev-clean/udev_internal.h libudev-workdir/udev_internal.h
+index 34f0b7d..6aabda6 100644
+--- libudev-clean/udev_internal.h
++++ libudev-workdir/udev_internal.h
+@@ -28,6 +28,4 @@ struct udev {
+     void (*log_fn)(struct udev*, int, const char*, int, const char*, const char*, va_list);
+ };
+ 
+-#include "sysdeps/sysdeps.h"
+-
+ #endif
+diff --git libudev-clean/udev_monitor.c libudev-workdir/udev_monitor.c
+index 57657af..00845f1 100644
+--- libudev-clean/udev_monitor.c
++++ libudev-workdir/udev_monitor.c
+@@ -1,70 +1,48 @@
++#define _GNU_SOURCE
+ #include "udev_internal.h"
+-#include <limits.h>
+-#include <stdio.h>
++#include <errno.h>
++#include <fcntl.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <unistd.h>
++
++// The config-driven backend has no kernel uevent source. udev_monitor is
++// implemented as an inert pipe: get_fd() returns a real fd suitable for
++// poll()/select(), but the read end never becomes readable, so callers
++// that block on it simply wait forever (matching "no events" semantics).
+ 
+ struct udev_monitor {
+     struct udev* udev;
+     size_t refcount;
+-    struct udev_sysdep_monitor* sysdep;
++    int read_fd;
++    int write_fd;
+ 
+     struct udev_list filter_subsystem; // name=subsystem, value=devtype (or NULL)
+     struct udev_list filter_tag;
+ };
+ 
+-struct monitor_dev_ctx {
+-    struct udev_list properties;
+-};
+-
+-static void monitor_prop_cb(const char* key, const char* value, void* userdata) {
+-    struct monitor_dev_ctx* ctx = userdata;
+-    udev_list_entry_add(&ctx->properties, key, value);
+-}
+-
+-static int passes_subsystem_filter(struct udev_monitor* mon, const char* subsystem, const char* devtype) {
+-    if (!udev_list_get_head(&mon->filter_subsystem))
+-        return 1; // No filter, pass all
+-
+-    struct udev_list_entry* entry;
+-    udev_list_entry_foreach(entry, udev_list_get_head(&mon->filter_subsystem)) {
+-        const char* filter_sub = udev_list_entry_get_name(entry);
+-        const char* filter_devtype = udev_list_entry_get_value(entry);
+-
+-        if (!subsystem || strcmp(filter_sub, subsystem) != 0)
+-            continue;
+-
+-        if (!filter_devtype)
+-            return 1;
+-
+-        if (devtype && strcmp(filter_devtype, devtype) == 0)
+-            return 1;
+-    }
+-
+-    return 0;
+-}
+-
+ struct udev_monitor* udev_monitor_new_from_netlink(struct udev* udev, const char* name) {
+     if (!udev || !name)
+         return NULL;
+ 
+-    // Both "udev" and "kernel" are valid; without a daemon, both use kernel events
+     if (strcmp(name, "udev") != 0 && strcmp(name, "kernel") != 0)
+         return NULL;
+ 
+-    struct udev_sysdep_monitor* sysdep = udev_sysdep_monitor_new();
+-    if (!sysdep)
++    int fds[2];
++    if (pipe2(fds, O_CLOEXEC | O_NONBLOCK) < 0)
+         return NULL;
+ 
+     struct udev_monitor* mon = calloc(1, sizeof(*mon));
+     if (!mon) {
+-        udev_sysdep_monitor_free(sysdep);
++        close(fds[0]);
++        close(fds[1]);
+         return NULL;
+     }
+ 
+     mon->udev = udev_ref(udev);
+     mon->refcount = 1;
+-    mon->sysdep = sysdep;
++    mon->read_fd = fds[0];
++    mon->write_fd = fds[1];
+ 
+     udev_list_init(&mon->filter_subsystem, 0);
+     udev_list_init(&mon->filter_tag, 0);
+@@ -87,7 +65,10 @@ struct udev_monitor* udev_monitor_unref(struct udev_monitor* udev_monitor) {
+     if (udev_monitor->refcount > 0)
+         return udev_monitor;
+ 
+-    udev_sysdep_monitor_free(udev_monitor->sysdep);
++    if (udev_monitor->read_fd >= 0)
++        close(udev_monitor->read_fd);
++    if (udev_monitor->write_fd >= 0)
++        close(udev_monitor->write_fd);
+ 
+     udev_list_cleanup(&udev_monitor->filter_subsystem);
+     udev_list_cleanup(&udev_monitor->filter_tag);
+@@ -106,68 +87,28 @@ struct udev* udev_monitor_get_udev(struct udev_monitor* udev_monitor) {
+ int udev_monitor_enable_receiving(struct udev_monitor* udev_monitor) {
+     if (!udev_monitor)
+         return -1;
+-    return udev_sysdep_monitor_enable(udev_monitor->sysdep);
++    return 0;
+ }
+ 
+ int udev_monitor_set_receive_buffer_size(struct udev_monitor* udev_monitor, int size) {
+     if (!udev_monitor)
+         return -1;
+-    return udev_sysdep_monitor_set_buf_size(udev_monitor->sysdep, size);
++    (void)size;
++    return 0;
+ }
+ 
+ int udev_monitor_get_fd(struct udev_monitor* udev_monitor) {
+     if (!udev_monitor)
+         return -1;
+-    return udev_sysdep_monitor_get_fd(udev_monitor->sysdep);
++    return udev_monitor->read_fd;
+ }
+ 
+ struct udev_device* udev_monitor_receive_device(struct udev_monitor* udev_monitor) {
+     if (!udev_monitor)
+         return NULL;
+-
+-    char* action = NULL;
+-    char* devpath = NULL;
+-    char* subsystem = NULL;
+-    struct monitor_dev_ctx ctx = {0};
+-    udev_list_init(&ctx.properties, 1);
+-
+-    int r = udev_sysdep_monitor_receive(udev_monitor->sysdep, &action, &devpath, &subsystem, monitor_prop_cb, &ctx);
+-    if (r < 0) {
+-        udev_list_cleanup(&ctx.properties);
+-        return NULL;
+-    }
+-
+-    // Apply subsystem/devtype filter
+-    const char* devtype = NULL;
+-    struct udev_list_entry* dt_entry = udev_list_entry_get_by_name(udev_list_get_head(&ctx.properties), "DEVTYPE");
+-    if (dt_entry)
+-        devtype = udev_list_entry_get_value(dt_entry);
+-
+-    if (!passes_subsystem_filter(udev_monitor, subsystem, devtype)) {
+-        free(action);
+-        free(devpath);
+-        free(subsystem);
+-        udev_list_cleanup(&ctx.properties);
+-        return NULL;
+-    }
+-
+-    // Build syspath from devpath
+-    char syspath[PATH_MAX];
+-    snprintf(syspath, sizeof(syspath), "/sys%s", devpath);
+-
+-    struct udev_device* dev = udev_device_new_from_syspath(udev_monitor->udev, syspath);
+-
+-    free(devpath);
+-    free(subsystem);
+-    udev_list_cleanup(&ctx.properties);
+-
+-    if (!dev) {
+-        free(action);
+-        return NULL;
+-    }
+-
+-    free(action);
+-    return dev;
++    // No events ever arrive on the inert pipe.
++    errno = EAGAIN;
++    return NULL;
+ }
+ 
+ int udev_monitor_filter_add_match_subsystem_devtype(
+@@ -191,7 +132,6 @@ int udev_monitor_filter_add_match_tag(struct udev_monitor* udev_monitor, const c
+ int udev_monitor_filter_update(struct udev_monitor* udev_monitor) {
+     if (!udev_monitor)
+         return -1;
+-    // Filtering is done in userspace; no kernel-side BPF filter needed
+     return 0;
+ }
+ 
+diff --git libudev-clean/udev_queue.c libudev-workdir/udev_queue.c
+index 35d353e..9406a87 100644
+--- libudev-clean/udev_queue.c
++++ libudev-workdir/udev_queue.c
+@@ -1,10 +1,12 @@
+ #include "udev_internal.h"
+ #include <stdlib.h>
+ 
++// No daemon, no event queue. udev_queue is a placeholder so callers that
++// instantiate it don't crash; queries always report "idle" and "empty".
++
+ struct udev_queue {
+     struct udev* udev;
+     size_t refcount;
+-    struct udev_sysdep_queue* sysdep;
+ };
+ 
+ struct udev_queue* udev_queue_new(struct udev* udev) {
+@@ -36,7 +38,6 @@ struct udev_queue* udev_queue_unref(struct udev_queue* udev_queue) {
+     if (udev_queue->refcount > 0)
+         return udev_queue;
+ 
+-    udev_sysdep_queue_free(udev_queue->sysdep);
+     udev_unref(udev_queue->udev);
+     free(udev_queue);
+     return NULL;
+@@ -48,39 +49,26 @@ struct udev* udev_queue_get_udev(struct udev_queue* udev_queue) {
+     return udev_queue->udev;
+ }
+ 
+-// No daemon, so udev is not "active"
+ int udev_queue_get_udev_is_active(struct udev_queue* udev_queue) {
+     (void)udev_queue;
+     return 0;
+ }
+ 
+-// No daemon queue, always empty
+ int udev_queue_get_queue_is_empty(struct udev_queue* udev_queue) {
+     (void)udev_queue;
+     return 1;
+ }
+ 
+ int udev_queue_get_fd(struct udev_queue* udev_queue) {
+-    if (!udev_queue)
+-        return -1;
+-
+-    if (!udev_queue->sysdep)
+-        udev_queue->sysdep = udev_sysdep_queue_new();
+-
+-    if (!udev_queue->sysdep)
+-        return -1;
+-
+-    return udev_sysdep_queue_get_fd(udev_queue->sysdep);
++    (void)udev_queue;
++    return -1;
+ }
+ 
+ int udev_queue_flush(struct udev_queue* udev_queue) {
+-    if (!udev_queue || !udev_queue->sysdep)
+-        return 0;
+-    return udev_sysdep_queue_flush(udev_queue->sysdep);
++    (void)udev_queue;
++    return 0;
+ }
+ 
+-// Deprecated functions
+-
+ unsigned long long int udev_queue_get_kernel_seqnum(struct udev_queue* udev_queue) {
+     (void)udev_queue;
+     return 0;
