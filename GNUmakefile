@@ -96,7 +96,6 @@ KVM ?= 1
 QEMUFLAGS ?=
 
 override QEMUFLAGS += \
-	-display sdl \
 	-serial stdio \
 	-m $(MEM) \
 	-smp $(SMP) \
@@ -117,6 +116,7 @@ endif
 ifeq ($(ARCH),x86_64)
 override QEMUFLAGS += \
 	-device virtio-vga \
+	-rtc base=localtime,clock=host \
 	-machine q35,smm=off
 endif
 
