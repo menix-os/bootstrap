@@ -30,7 +30,7 @@ full-install: build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx/jinx update '*'
 	@cd build-$(ARCH) && ../jinx/jinx install sysroot '*'
 
-MINIMAL_PKGS = base-files zinnia zinnia-utils limine mlibc dinit bash fastfetch
+MINIMAL_PKGS = base-files zinnia zinnia-utils limine mlibc dinit seatd weston bash coreutils fastfetch
 
 # Build only a minimal selection of packages
 .PHONY: minimal-install
@@ -43,7 +43,7 @@ minimal-install: build-$(ARCH)/.jinx-parameters
 # --------------
 
 build-$(ARCH)/zinnia.img:
-	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 2G 256M
+	@PATH=$$PATH:/usr/sbin:/sbin ./tasks/empty-image.sh $@ 4G 256M
 
 .PHONY: build-$(ARCH)/initramfs.tar
 build-$(ARCH)/initramfs.tar:

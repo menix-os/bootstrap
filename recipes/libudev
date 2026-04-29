@@ -20,4 +20,7 @@ package() {
     DESTDIR="${dest_dir}" meson install --no-rebuild
 
     post_package_strip
+
+    mkdir -p "${dest_dir}/etc/udev/"
+    cp -rp "${base_dir}/extras/libudev/." "${dest_dir}/etc/udev/"
 }
