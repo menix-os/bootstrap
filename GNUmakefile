@@ -95,7 +95,8 @@ MEM ?= 2G
 KVM ?= 1
 QEMUFLAGS ?=
 
-override QEMUFLAGS += -serial stdio \
+override QEMUFLAGS += \
+	-serial stdio \
 	-m $(MEM) \
 	-smp $(SMP) \
 	-no-reboot \
@@ -115,6 +116,7 @@ endif
 ifeq ($(ARCH),x86_64)
 override QEMUFLAGS += \
 	-device virtio-vga \
+	-rtc base=localtime,clock=host \
 	-machine q35,smm=off
 endif
 

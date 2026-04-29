@@ -1,0 +1,5 @@
+type = process
+command = /usr/bin/seatd -n 3
+ready-notification = pipefd:3
+smooth-recovery = yes
+restart = yes

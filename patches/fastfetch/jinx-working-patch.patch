@@ -1,5 +1,5 @@
 diff --git fastfetch-clean/CMakeLists.txt fastfetch-workdir/CMakeLists.txt
-index 71c0e88..10ab631 100644
+index 71c0e88..648f6dd 100644
 --- fastfetch-clean/CMakeLists.txt
 +++ fastfetch-workdir/CMakeLists.txt
 @@ -30,6 +30,8 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
@@ -95,7 +95,7 @@ index 71c0e88..10ab631 100644
 +		src/detection/icons/icons_nosupport.c
 +	)
  endif()
-
+ 
  if(ENABLE_DIRECTX_HEADERS)
 @@ -1189,6 +1270,8 @@ elseif(NetBSD)
      target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE)
@@ -104,10 +104,10 @@ index 71c0e88..10ab631 100644
 +elseif(Zinnia)
 +    target_compile_definitions(libfastfetch PUBLIC _GNU_SOURCE _XOPEN_SOURCE _ATFILE_SOURCE)
  endif()
-
+ 
  if(FreeBSD OR OpenBSD OR NetBSD)
 diff --git fastfetch-clean/src/detection/localip/localip_linux.c fastfetch-workdir/src/detection/localip/localip_linux.c
-index 7a85528..1e92fec 100644
+index 7a85528..b045443 100644
 --- fastfetch-clean/src/detection/localip/localip_linux.c
 +++ fastfetch-workdir/src/detection/localip/localip_linux.c
 @@ -6,7 +6,9 @@
@@ -129,7 +129,7 @@ index 7a85528..1e92fec 100644
  #include <netpacket/packet.h>
  #endif
 @@ -120,6 +123,7 @@ static void addNewIp(FFlist* list, const char* name, const char* addr, int type,
-
+ 
  const char* ffDetectLocalIps(const FFLocalIpOptions* options, FFlist* results)
  {
 +#ifndef __zinnia__
@@ -149,12 +149,12 @@ index 7a85528..1e92fec 100644
          }
      }
 +#endif
-
+ 
      return NULL;
  }
 diff --git fastfetch-workdir/src/detection/os/os_zinnia.c fastfetch-workdir/src/detection/os/os_zinnia.c
 new file mode 100644
-index 0000000..f27f087
+index 0000000..56e952e
 --- /dev/null
 +++ fastfetch-workdir/src/detection/os/os_zinnia.c
 @@ -0,0 +1,7 @@
@@ -167,59 +167,59 @@ index 0000000..f27f087
 +}
 diff --git fastfetch-workdir/src/logo/ascii/zinnia.txt fastfetch-workdir/src/logo/ascii/zinnia.txt
 new file mode 100644
-index 0000000..1a271f4
+index 0000000..13693d6
 --- /dev/null
 +++ fastfetch-workdir/src/logo/ascii/zinnia.txt
-@@ -0,0 +1,21 @@
-+**************************************
-+**.................****             **
-+**.................****             **
-+**................********          **
-+**................*********         **
-+**...............*********          **
-+**..............*****            *****
-+**............******    **       *****
-+**..........*******  ******   ********
-+**.......***********  ****************
-+*************** *****  ***************
-+************      *  *********......**
-+**********    **** ********.........**
-+**    *****  ************...........**
-+**    ****     ********.............**
-+**              ******..............**
-+**             ******...............**
-+**             *****................**
-+**         *********................**
-+**         *********................**
-+**************************************
+@@ -0,0 +1,20 @@
++            @@@@%%%%%%@@@@
++        @@%#+=$2:........:$1-+#%@@
++      @@#=$2........$1:-:$2.......$1-*%@
++    @@*$2:.....$1-==+%@@@%===$2:....:$1+%@
++   @%-$2.....$1-%@@@@@@@@@@@@@#$2.....:$1#@
++  @#$2.......$1+@@@@@@@@@@@@@@@-$2......$1*@
++ @#$2......:$1#@@@@@@@@@@@@@@@@@*$2......$1#@
++ @-$2......$1-@@@@@@@@@@@@@@@@@@%$2......:$1%@
++@#$2........:$1*@@@@@@@@@@@@@@@+$2:.......$1*@
++@*$2.........$1=@@@@@@@@@@@@@@%$2:........$1+@
++@*$2..........$1-*#*#@@@@@##*+$2:.........$1+@
++@%$2...............$1-#*+-$2..............$1#@
++ @=$2...............$1#$2:...............$1-@
++ @%$2:...:$1===--$2:....$1%$2................$1%@
++  @%$2:...$1*@@@@@%#+-%-+#%%@@@@%+$2...:$1#@
++   @%=$2...:$1*%@@@@@@@@@@@@@%#=$2....$1=%@
++     @#=$2....:$1--=-$2:$1%$2:$1-===-$2.....$1-#@@
++      @@%+-$2.......$1#$2:.......$1-+%@@
++         @@%#+=-$2::$1++$2::$1-=+#%@@
++              @@@@@@@@@@@
 diff --git fastfetch-clean/src/logo/builtin.c fastfetch-workdir/src/logo/builtin.c
-index b062be1..1a70be8 100644
+index b062be1..4cd38f2 100644
 --- fastfetch-clean/src/logo/builtin.c
 +++ fastfetch-workdir/src/logo/builtin.c
-@@ -2809,6 +2809,16 @@ static const FFlogo M[] = {
-             FF_COLOR_FG_CYAN,
-         },
-     },
+@@ -5015,6 +5015,17 @@ static const FFlogo Y[] = {
+ };
+ 
+ static const FFlogo Z[] = {
 +    // Zinnia
 +    {
 +        .names = {"Zinnia"},
 +        .lines = FASTFETCH_DATATEXT_LOGO_ZINNIA,
 +        .colors = {
-+            FF_COLOR_FG_RED,
++            FF_COLOR_FG_WHITE,
++            FF_COLOR_FG_MAGENTA,
 +        },
-+        .colorKeys = FF_COLOR_FG_RED,
-+        .colorTitle = FF_COLOR_FG_YELLOW,
++        .colorKeys = FF_COLOR_FG_MAGENTA,
++        .colorTitle = FF_COLOR_FG_MAGENTA,
 +    },
-     // Meowix
+     // Zorin
      {
-         .names = {"Meowix"},
+         .names = {"zorin", "zorin-linux", "zorinos", "zorinos-linux"},
 diff --git fastfetch-clean/src/options/general.h fastfetch-workdir/src/options/general.h
-index 8cb0d48..3f9c0dd 100644
+index 8cb0d48..7d47b95 100644
 --- fastfetch-clean/src/options/general.h
 +++ fastfetch-workdir/src/options/general.h
 @@ -16,7 +16,7 @@ typedef struct FFOptionsGeneral
      bool detectVersion;
-
+ 
      // Module options that cannot be put in module option structure
 -    #if defined(__linux__) || defined(__FreeBSD__) || defined(__sun) || defined(__OpenBSD__) || defined(__NetBSD__)
 +    #if defined(__linux__) || defined(__FreeBSD__) || defined(__sun) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__zinnia__)
@@ -237,9 +237,9 @@ index 1c754b1..3512038 100644
 +#include <strings.h>
  #include <stdlib.h>
  #include <assert.h>
-
+ 
 diff --git fastfetch-clean/src/util/platform/FFPlatform_unix.c fastfetch-workdir/src/util/platform/FFPlatform_unix.c
-index b0d0ac1..a1e8b7b 100644
+index b0d0ac1..71b78bb 100644
 --- fastfetch-clean/src/util/platform/FFPlatform_unix.c
 +++ fastfetch-workdir/src/util/platform/FFPlatform_unix.c
 @@ -19,7 +19,7 @@
