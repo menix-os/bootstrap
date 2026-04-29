@@ -1,3 +1,0 @@
-type       = process
-command    = /usr/lib/dinit/modules-load
-restart    = false

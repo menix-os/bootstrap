@@ -1,0 +1,3 @@
+NAME=i8042
+SUBSYSTEM=platform
+DRIVER=i8042
