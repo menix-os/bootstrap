@@ -1,0 +1,22 @@
+diff --git libunistring-clean/lib/getlocalename_l-unsafe.c libunistring-workdir/lib/getlocalename_l-unsafe.c
+index 665e6d6..9a44608 100644
+--- libunistring-clean/lib/getlocalename_l-unsafe.c
++++ libunistring-workdir/lib/getlocalename_l-unsafe.c
+@@ -454,6 +454,8 @@ getlocalename_l_unsafe (int category, locale_t locale)
+       struct gl_locale_category_t *plc =
+         &locale->category[gl_log2_lcmask_to_index (gl_log2_lc_mask (category))];
+       return (struct string_with_storage) { plc->name, STORAGE_OBJECT };
++#elif defined __mlibc__
++      return (struct string_with_storage) { "C", STORAGE_INDEFINITE };
+ #elif __GLIBC__ >= 2 && !defined __UCLIBC__
+       /* Work around an incorrect definition of the _NL_LOCALE_NAME macro in
+          glibc < 2.12.
+@@ -465,7 +467,7 @@ getlocalename_l_unsafe (int category, locale_t locale)
+            nl_langinfo_l (_NL_LOCALE_NAME (category), locale).  */
+         name = locale->__names[category];
+       return (struct string_with_storage) { name, STORAGE_OBJECT };
+-#elif defined __linux__ && HAVE_LANGINFO_H && defined NL_LOCALE_NAME
++#elif (defined __linux__ && HAVE_LANGINFO_H && defined NL_LOCALE_NAME)
+       /* musl libc */
+       const char *name = nl_langinfo_l (NL_LOCALE_NAME (category), locale);
+       return (struct string_with_storage) { name, STORAGE_OBJECT };

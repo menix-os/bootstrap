@@ -1,0 +1,52 @@
+diff --git libbsd-clean/configure libbsd-workdir/configure
+index 4acdd3a..ccd79b0 100755
+--- libbsd-clean/configure
++++ libbsd-workdir/configure
+@@ -14260,7 +14260,7 @@ abi_vis=unknown
+ abi_wcsl=unknown
+ 
+ case $host_os in #(
+-  *-gnu* | gnu*) :
++  *-gnu* | gnu* | *-mlibc*) :
+ 
+     api_time_macros=no
+ 
+diff --git libbsd-clean/configure.ac libbsd-workdir/configure.ac
+index 2a15d72..6fff902 100644
+--- libbsd-clean/configure.ac
++++ libbsd-workdir/configure.ac
+@@ -87,7 +87,7 @@ abi_vis=unknown
+ abi_wcsl=unknown
+ 
+ AS_CASE([$host_os],
+-  [*-gnu* | gnu*], [
++  [*-gnu* | gnu* | *-mlibc*], [
+     api_time_macros=no
+ 
+     abi_accmode=yes
+diff --git libbsd-clean/src/getpeereid.c libbsd-workdir/src/getpeereid.c
+index 193f366..92033f0 100644
+--- libbsd-clean/src/getpeereid.c
++++ libbsd-workdir/src/getpeereid.c
+@@ -40,7 +40,7 @@ int
+ getpeereid(int s, uid_t *euid, gid_t *egid)
+ {
+ /* XXX: This should be autodetected at build time instead. */
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__zinnia__)
+ 	struct ucred cred;
+ #elif defined(__OpenBSD__)
+ 	struct sockpeercred cred;
+diff --git libbsd-clean/src/progname.c libbsd-workdir/src/progname.c
+index 83e8652..54ab297 100644
+--- libbsd-clean/src/progname.c
++++ libbsd-workdir/src/progname.c
+@@ -50,7 +50,7 @@
+ #endif
+ 
+ #ifdef HAVE___PROGNAME
+-extern const char *__progname;
++extern char *__progname;
+ #else
+ static const char *__progname = NULL;
+ #endif
