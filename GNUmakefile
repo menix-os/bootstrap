@@ -28,7 +28,7 @@ build-$(ARCH)/.jinx-parameters:
 .PHONY: full-install
 full-install: build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx/jinx update '*'
-	@cd build-$(ARCH) && ../jinx/jinx install sysroot '*'
+	@cd build-$(ARCH) && sudo ../jinx/jinx install sysroot '*'
 
 MINIMAL_PKGS = base-files zinnia zinnia-utils limine mlibc dinit seatd weston bash coreutils fastfetch
 
@@ -36,7 +36,7 @@ MINIMAL_PKGS = base-files zinnia zinnia-utils limine mlibc dinit seatd weston ba
 .PHONY: minimal-install
 minimal-install: build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx/jinx update $(MINIMAL_PKGS)
-	@cd build-$(ARCH) && ../jinx/jinx install sysroot $(MINIMAL_PKGS)
+	@cd build-$(ARCH) && sudo ../jinx/jinx install sysroot $(MINIMAL_PKGS)
 
 # --------------
 # Image creation
@@ -79,7 +79,7 @@ iso: build-$(ARCH)/.jinx-parameters build-$(ARCH)/initramfs.tar
 .PHONY: remake-kernel
 remake-kernel: build-$(ARCH)/.jinx-parameters
 	@cd build-$(ARCH) && ../jinx/jinx build zinnia
-	@cd build-$(ARCH) && ../jinx/jinx reinstall sysroot zinnia
+	@cd build-$(ARCH) && sudo ../jinx/jinx reinstall sysroot zinnia
 	@cd build-$(ARCH) && ../jinx/jinx reinstall initramfs zinnia
 
 ovmf/ovmf-code-$(ARCH).fd:
