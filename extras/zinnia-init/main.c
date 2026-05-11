@@ -23,6 +23,7 @@ int main(int argc, char **argv, char **envp) {
   insertmod("/usr/share/zinnia/modules/nvme.kso", NULL);
   insertmod("/usr/share/zinnia/modules/ext2.kso", NULL);
   insertmod("/usr/share/zinnia/modules/virtio_gpu.kso", NULL);
+  insertmod("/usr/share/zinnia/modules/virtio_net.kso", NULL);
 
   printf("init: Mounting ext2 root partition on /realfs\n");
 
