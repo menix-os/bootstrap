@@ -1,0 +1,4 @@
+domain 53/udp
+domain 53/tcp
+https  443/tcp
+http   443/tcp
