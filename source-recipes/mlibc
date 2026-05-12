@@ -3,5 +3,5 @@
 name=mlibc
 version=6.3.0
 git_url="https://github.com/zinnia-os/mlibc.git"
-commit="b44e75e18e744a270580d9cd6f8f6d75c1c5ceca"
+commit="d5efaaaffcb7622429986edb835792ba7d612380"
 shallow=no
