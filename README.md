@@ -9,7 +9,7 @@ It also includes several ports of popular programs and tools.
 
 To build the distribution you will need the following tools installed on your system:
 
-- A POSIX-compatible shell
+- Bash
 - GNU make
 - curl
 
@@ -17,7 +17,7 @@ To create a bootable image you will additionally need:
 
 - dosfstools (for mkfs.vfat)
 - e2fsprogs (for mkfs.ext2)
-- parted (for partitioning the image)
+- sgdisk (for partitioning the image)
 
 To run the built image you will also need QEMU for the target architecture.
 
